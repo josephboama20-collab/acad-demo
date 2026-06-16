@@ -1,20 +1,30 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Frown, Smile, Meh, Sun, TrendingUp, Target, Zap } from 'lucide-react';
+import { useAuth } from './AuthContext.jsx';
 import { correlationInsight, pearsonCorrelation } from '../utils/analytics.js';
-import { loadJSON, saveJSON, STORAGE_KEYS } from '../utils/storage.js';
+import { persistWithCloud } from '../utils/cloudSync.js';
+import { loadJSON, STORAGE_KEYS } from '../utils/storage.js';
 
 const HabitsContext = createContext(null);
 
 export function HabitsProvider({ children }) {
+  const { userId, dataEpoch } = useAuth();
   const [logs, setLogs] = useState(() => loadJSON(STORAGE_KEYS.habits) ?? []);
 
-  const persist = useCallback((updater) => {
-    setLogs((prev) => {
-      const next = typeof updater === 'function' ? updater(prev) : updater;
-      saveJSON(STORAGE_KEYS.habits, next);
-      return next;
-    });
-  }, []);
+  useEffect(() => {
+    setLogs(loadJSON(STORAGE_KEYS.habits) ?? []);
+  }, [dataEpoch]);
+
+  const persist = useCallback(
+    (updater) => {
+      setLogs((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater;
+        persistWithCloud(userId, 'habits', next);
+        return next;
+      });
+    },
+    [userId],
+  );
 
   const addLog = useCallback(
     (entry) => {

@@ -3,6 +3,7 @@ import { useAuth } from './contexts/AuthContext.jsx';
 import { usePlanCapacity } from './hooks/usePlanCapacity.js';
 import Nav from './components/Nav.jsx';
 import AppNotifications from './components/AppNotifications.jsx';
+import StagingBanner from './components/StagingBanner.jsx';
 import Loader from './components/Loader.jsx';
 import Modal from './components/Modal.jsx';
 import Landing from './pages/Landing.jsx';
@@ -20,9 +21,11 @@ import StudyRoom from './pages/StudyRoom.jsx';
 import Courses from './pages/Courses.jsx';
 import AccountSettings from './pages/AccountSettings.jsx';
 import ManagePlan from './pages/ManagePlan.jsx';
+import Privacy from './pages/Privacy.jsx';
+import Terms from './pages/Terms.jsx';
 
 export default function App() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isCloudMode } = useAuth();
   const { enabledTools } = usePlanCapacity();
   const [page, setPage] = useState(() => (user ? 'dashboard' : 'landing'));
   const [authMode, setAuthMode] = useState('signup');
@@ -87,8 +90,8 @@ export default function App() {
     return (
       <Loader
         label="Signing out…"
-        onDone={() => {
-          signOut();
+        onDone={async () => {
+          await signOut();
           setSigningOut(false);
           setPage('landing');
         }}
@@ -98,6 +101,7 @@ export default function App() {
 
   return (
     <div className={`app${studyRoomLocked ? ' app--study-locked' : ''}`}>
+      <StagingBanner />
       {!studyRoomLocked && page !== 'study-room' && <Nav page={page} setPage={navigate} />}
       {user && page !== 'onboarding' && page !== 'landing' && page !== 'auth' && page !== 'study-room' && <AppNotifications />}
       {page === 'landing' && <Landing setPage={navigate} />}
@@ -128,10 +132,16 @@ export default function App() {
       {page === 'courses' && enabledTools.includes('courses') && <Courses setPage={navigate} />}
       {page === 'settings' && user && <AccountSettings setPage={navigate} />}
       {page === 'manage-plan' && user && <ManagePlan setPage={navigate} />}
+      {page === 'privacy' && <Privacy setPage={navigate} />}
+      {page === 'terms' && <Terms setPage={navigate} />}
       {signoutConfirm && (
         <Modal
           title="Sign out of Acad"
-          body="Your profile and progress stay on this device. Sign back in with the same email to continue."
+          body={
+            isCloudMode
+              ? 'You will be signed out on this device. Your data remains in your cloud account — sign in again to continue.'
+              : 'Your profile and progress stay on this device. Sign back in with the same email to continue.'
+          }
           confirmLabel="Sign out"
           confirmClass="btn-danger"
           onConfirm={() => {

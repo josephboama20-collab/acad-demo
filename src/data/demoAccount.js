@@ -1,6 +1,5 @@
 import { SAMPLE_COURSES, SAMPLE_FLASHCARDS } from './constants.js';
 import { STORAGE_KEYS, uid } from '../utils/storage.js';
-import { saveForgeWorkspace } from '../utils/forgeStorage.js';
 
 /** Shared password for every plan demo account. */
 export const PLAN_DEMO_PASSWORD = 'demo';
@@ -248,25 +247,44 @@ export function isDemoLogin(email, password) {
   return isPlanLogin(email, password);
 }
 
-export function applyPlanSeed(planIdOrEmail) {
+export function buildPlanSeed(planIdOrEmail) {
   const account = getPlanAccount(planIdOrEmail);
-  if (!account) return false;
+  if (!account) return null;
 
   const scholar = demoScholar(account);
-  localStorage.setItem(STORAGE_KEYS.scholar, JSON.stringify(scholar));
-  localStorage.setItem(STORAGE_KEYS.game, JSON.stringify(demoGame(account)));
-  localStorage.setItem(STORAGE_KEYS.courses, JSON.stringify(coursesForPlan(account.courseCount)));
-  localStorage.setItem(STORAGE_KEYS.flashcards, JSON.stringify(demoFlashcards()));
-  localStorage.setItem(STORAGE_KEYS.habits, JSON.stringify(demoHabitLogs()));
+  const game = demoGame(account);
+  const courses = coursesForPlan(account.courseCount);
+  const flashcards = demoFlashcards();
+  const habits = demoHabitLogs();
 
+  let forge = {};
   const project = scholar.projects[0];
   if (project) {
-    saveForgeWorkspace(project.title, {
-      draft: 'Scope: analyze a local transit routing system.\n\nWeek 1 notes: mapped peak-hour demand between key stops and the central hub.',
-      milestones: { 0: true, 1: true },
-    });
+    forge = {
+      [project.title]: {
+        draft: 'Scope: analyze a local transit routing system.\n\nWeek 1 notes: mapped peak-hour demand between key stops and the central hub.',
+        milestones: { 0: true, 1: true },
+        updatedAt: new Date().toISOString(),
+      },
+    };
   }
 
+  return { scholar, game, courses, flashcards, habits, forge, account };
+}
+
+export function writePlanSeedToLocal(seed) {
+  localStorage.setItem(STORAGE_KEYS.scholar, JSON.stringify(seed.scholar));
+  localStorage.setItem(STORAGE_KEYS.game, JSON.stringify(seed.game));
+  localStorage.setItem(STORAGE_KEYS.courses, JSON.stringify(seed.courses));
+  localStorage.setItem(STORAGE_KEYS.flashcards, JSON.stringify(seed.flashcards));
+  localStorage.setItem(STORAGE_KEYS.habits, JSON.stringify(seed.habits));
+  localStorage.setItem(STORAGE_KEYS.forgeWork, JSON.stringify(seed.forge));
+}
+
+export function applyPlanSeed(planIdOrEmail) {
+  const seed = buildPlanSeed(planIdOrEmail);
+  if (!seed) return false;
+  writePlanSeedToLocal(seed);
   window.location.reload();
   return true;
 }

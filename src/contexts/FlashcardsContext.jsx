@@ -1,20 +1,30 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useAuth } from './AuthContext.jsx';
 import { SAMPLE_FLASHCARDS } from '../data/constants.js';
 import { applySM2, createCard, isDue } from '../utils/sm2.js';
-import { loadJSON, saveJSON, STORAGE_KEYS } from '../utils/storage.js';
+import { persistWithCloud } from '../utils/cloudSync.js';
+import { loadJSON, STORAGE_KEYS } from '../utils/storage.js';
 
 const FlashcardsContext = createContext(null);
 
 export function FlashcardsProvider({ children, onCardReviewed }) {
+  const { userId, dataEpoch } = useAuth();
   const [cards, setCards] = useState(() => loadJSON(STORAGE_KEYS.flashcards) ?? SAMPLE_FLASHCARDS);
 
-  const persist = useCallback((updater) => {
-    setCards((prev) => {
-      const next = typeof updater === 'function' ? updater(prev) : updater;
-      saveJSON(STORAGE_KEYS.flashcards, next);
-      return next;
-    });
-  }, []);
+  useEffect(() => {
+    setCards(loadJSON(STORAGE_KEYS.flashcards) ?? SAMPLE_FLASHCARDS);
+  }, [dataEpoch]);
+
+  const persist = useCallback(
+    (updater) => {
+      setCards((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater;
+        persistWithCloud(userId, 'flashcards', next);
+        return next;
+      });
+    },
+    [userId],
+  );
 
   const addCard = useCallback(
     (front, back, subject) => persist((list) => [createCard(front, back, subject), ...list]),

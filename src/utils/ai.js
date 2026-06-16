@@ -1,3 +1,5 @@
+import { isCloudEnabled, supabase } from '../lib/supabase.js';
+
 const FLASHCARD_BANK = {
   Mathematics: [
     { front: 'What is the quadratic formula?', back: 'x = (−b ± √(b²−4ac)) / 2a, where ax² + bx + c = 0' },
@@ -81,7 +83,17 @@ function delay(ms = 1200) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function callBuddyViaEdge(messages, subject, method) {
+  if (!isCloudEnabled() || !supabase) return null;
+  const { data, error } = await supabase.functions.invoke('buddy-chat', {
+    body: { messages, subject, method },
+  });
+  if (error) return null;
+  return data?.reply ?? null;
+}
+
 async function callAnthropic(messages, systemPrompt) {
+  if (isCloudEnabled()) return null;
   const key = import.meta.env.VITE_ANTHROPIC_API_KEY;
   if (!key) return null;
 
@@ -138,6 +150,9 @@ export async function chatWithBuddy(messages, subject, _mastery = {}, method = '
     .slice(-8);
 
   const systemFn = METHOD_PROMPTS[method] || METHOD_PROMPTS.socratic;
+  const edgeReply = await callBuddyViaEdge(apiMessages, subject, method);
+  if (edgeReply) return edgeReply;
+
   const apiReply = await callAnthropic(apiMessages, systemFn(subject));
   if (apiReply) return apiReply;
 

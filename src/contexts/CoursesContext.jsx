@@ -1,22 +1,30 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useAuth } from './AuthContext.jsx';
 import { canAddCourse } from '../utils/planCapacity.js';
+import { persistWithCloud } from '../utils/cloudSync.js';
 import { masteryPctColor } from '../utils/themeColors.js';
-import { loadJSON, saveJSON, STORAGE_KEYS, uid } from '../utils/storage.js';
+import { loadJSON, STORAGE_KEYS, uid } from '../utils/storage.js';
 
 const CoursesContext = createContext(null);
 
 export function CoursesProvider({ children }) {
-  const { profile } = useAuth();
+  const { profile, userId, dataEpoch } = useAuth();
   const [courses, setCourses] = useState(() => loadJSON(STORAGE_KEYS.courses) ?? []);
 
-  const persist = useCallback((updater) => {
-    setCourses((prev) => {
-      const next = typeof updater === 'function' ? updater(prev) : updater;
-      saveJSON(STORAGE_KEYS.courses, next);
-      return next;
-    });
-  }, []);
+  useEffect(() => {
+    setCourses(loadJSON(STORAGE_KEYS.courses) ?? []);
+  }, [dataEpoch]);
+
+  const persist = useCallback(
+    (updater) => {
+      setCourses((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater;
+        persistWithCloud(userId, 'courses', next);
+        return next;
+      });
+    },
+    [userId],
+  );
 
   const addCourse = useCallback(
     (input) => {

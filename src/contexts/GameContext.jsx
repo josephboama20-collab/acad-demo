@@ -1,12 +1,15 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useAuth } from './AuthContext.jsx';
 import { ACHIEVEMENTS, CHALLENGES, LEADERBOARD } from '../data/constants.js';
-import { loadJSON, saveJSON, STORAGE_KEYS } from '../utils/storage.js';
+import { persistWithCloud } from '../utils/cloudSync.js';
+import { loadJSON, STORAGE_KEYS } from '../utils/storage.js';
 
 const DEFAULT_GAME = { xp: 340, achievements: [], challengeProgress: {} };
 
 const GameContext = createContext(null);
 
 export function GameProvider({ children }) {
+  const { userId, dataEpoch } = useAuth();
   const [state, setState] = useState(() => {
     const saved = loadJSON(STORAGE_KEYS.game);
     return saved
@@ -18,17 +21,34 @@ export function GameProvider({ children }) {
       : DEFAULT_GAME;
   });
 
-  const persist = useCallback((updater) => {
-    setState((prev) => {
-      const next = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
-      saveJSON(STORAGE_KEYS.game, {
-        xp: next.xp,
-        achievements: next.achievements,
-        challengeProgress: next.challengeProgress,
+  useEffect(() => {
+    const saved = loadJSON(STORAGE_KEYS.game);
+    setState(
+      saved
+        ? {
+            xp: saved.xp ?? DEFAULT_GAME.xp,
+            achievements: saved.achievements ?? [],
+            challengeProgress: saved.challengeProgress ?? {},
+          }
+        : DEFAULT_GAME,
+    );
+  }, [dataEpoch]);
+
+  const persist = useCallback(
+    (updater) => {
+      setState((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
+        const payload = {
+          xp: next.xp,
+          achievements: next.achievements,
+          challengeProgress: next.challengeProgress,
+        };
+        persistWithCloud(userId, 'game', payload);
+        return next;
       });
-      return next;
-    });
-  }, []);
+    },
+    [userId],
+  );
 
   const level = useMemo(() => Math.floor(state.xp / 1000) + 1, [state.xp]);
   const xpInLevel = useMemo(() => state.xp % 1000, [state.xp]);

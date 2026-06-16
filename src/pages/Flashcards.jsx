@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFlashcards } from '../contexts/FlashcardsContext.jsx';
 import { useGame } from '../contexts/GameContext.jsx';
 import { useTheme } from '../contexts/ThemeContext.jsx';
+import PreviewBadge from '../components/PreviewBadge.jsx';
 import { generateFlashcardsFromText } from '../utils/ai.js';
 import { RATING_LABELS } from '../data/constants.js';
 import { readCssVar } from '../utils/themeColors.js';
@@ -369,8 +370,8 @@ function ManageCards({ cards, subjects, addCard, addCards, deleteCard }) {
         </div>
 
         <div className="fc-add-box">
-          <p className="fc-add-title">Generate from Text</p>
-          <div className="fc-gen-info">Paste study material and the AI will generate flashcards.</div>
+          <p className="fc-add-title">Generate from Text <PreviewBadge label="Sample cards" /></p>
+          <div className="fc-gen-info">Paste study material to add sample cards by subject. Full AI generation ships in a later release.</div>
           <div className="form-group">
             <label className="form-label">Subject</label>
             <select

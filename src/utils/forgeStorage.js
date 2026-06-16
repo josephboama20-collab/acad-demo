@@ -1,4 +1,5 @@
 import { loadJSON, saveJSON, STORAGE_KEYS } from './storage.js';
+import { persistWithCloud } from './cloudSync.js';
 
 function allWorkspaces() {
   return loadJSON(STORAGE_KEYS.forgeWork) ?? {};
@@ -25,7 +26,7 @@ export function getMilestoneProgress(project) {
   return { ...fromProject, ...fromWorkspace };
 }
 
-export function saveForgeWorkspace(projectTitle, { draft, milestones }) {
+export function saveForgeWorkspace(projectTitle, { draft, milestones }, userId = null) {
   if (!projectTitle) return;
   const all = allWorkspaces();
   all[projectTitle] = {
@@ -33,5 +34,5 @@ export function saveForgeWorkspace(projectTitle, { draft, milestones }) {
     milestones,
     updatedAt: new Date().toISOString(),
   };
-  saveJSON(STORAGE_KEYS.forgeWork, all);
+  persistWithCloud(userId, 'forge', all);
 }

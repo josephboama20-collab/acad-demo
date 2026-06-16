@@ -5,7 +5,7 @@ import { resolveProjectMilestones } from '../utils/projects.js';
 import ContextNote from '../components/ContextNote.jsx';
 
 export default function Forge({ setPage, project }) {
-  const { setFocusMode, settings, saveProject } = useAuth();
+  const { setFocusMode, settings, saveProject, userId } = useAuth();
   const [milestones, setMilestones] = useState({});
   const [draft, setDraft] = useState('');
   const [saved, setSaved] = useState(false);
@@ -40,7 +40,7 @@ export default function Forge({ setPage, project }) {
   function toggleMilestone(i) {
     setMilestones((prev) => {
       const next = { ...prev, [i]: !prev[i] };
-      saveForgeWorkspace(project.title, { draft, milestones: next });
+      saveForgeWorkspace(project.title, { draft, milestones: next }, userId);
       return next;
     });
   }
@@ -50,7 +50,7 @@ export default function Forge({ setPage, project }) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
   function saveDraft() {
-    saveForgeWorkspace(project.title, { draft, milestones });
+    saveForgeWorkspace(project.title, { draft, milestones }, userId);
     saveProject({ ...project, draftPreview: draft.slice(0, 120) });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -58,7 +58,7 @@ export default function Forge({ setPage, project }) {
 
   function onDraftChange(value) {
     setDraft(value);
-    saveForgeWorkspace(project.title, { draft: value, milestones });
+    saveForgeWorkspace(project.title, { draft: value, milestones }, userId);
   }
 
   return (
