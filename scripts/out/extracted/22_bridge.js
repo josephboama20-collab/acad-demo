@@ -1,0 +1,1 @@
+function dm({children:e}){let{courses:t,updateTopicMastery:n}=St();return(0,f.jsx)(te,{onCardReviewed:(0,l.useCallback)((e,r)=>{let i=e.subject;for(let e of t){let t=e.topics.find(t=>t.name===i||e.code===i);if(t){let i=r>=4?5:r===3?2:-3,a=Math.min(100,Math.max(0,t.masteryLevel+i));n(e.courseId,t.name,a);break}}},[t,n]),children:e})}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="twilight">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Plan your academic comeback. Acad scales focused training tools to your available time and the areas you choose to recover." />
+    <meta name="theme-color" content="#0b1118" />
+    <title>Acad · Plan your academic comeback</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      try {
+        var t = localStorage.getItem('acad_theme_v1');
+        if (t === 'light' || t === 'dark' || t === 'twilight') {
+          document.documentElement.setAttribute('data-theme', t);
+          var c = { light: '#eef2f7', twilight: '#0b1118', dark: '#030508' };
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute('content', c[t]);
+        }
+      } catch (e) {}
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
