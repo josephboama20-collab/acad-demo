@@ -1,4 +1,5 @@
 import { isCloudEnabled, supabase } from '../lib/supabase.js';
+import { callDeepSeek } from './llmClient.js';
 
 const FLASHCARD_BANK = {
   Mathematics: [
@@ -152,6 +153,9 @@ export async function chatWithBuddy(messages, subject, _mastery = {}, method = '
   const systemFn = METHOD_PROMPTS[method] || METHOD_PROMPTS.socratic;
   const edgeReply = await callBuddyViaEdge(apiMessages, subject, method);
   if (edgeReply) return edgeReply;
+
+  const deepseekReply = await callDeepSeek(apiMessages, systemFn(subject));
+  if (deepseekReply) return deepseekReply;
 
   const apiReply = await callAnthropic(apiMessages, systemFn(subject));
   if (apiReply) return apiReply;

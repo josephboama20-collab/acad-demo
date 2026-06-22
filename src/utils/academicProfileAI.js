@@ -1,5 +1,6 @@
 import { isCloudEnabled, supabase } from '../lib/supabase.js';
 import { normalizeAcademicProfile } from './academicProfileUtils.js';
+import { callDeepSeek } from './llmClient.js';
 
 const PROFILE_SCHEMA_HINT = `Return ONLY valid JSON (no markdown fences) matching this shape:
 {
@@ -134,6 +135,17 @@ async function callAcademicProfileEdge(params) {
   return data?.profile ?? null;
 }
 
+async function callAcademicProfileDeepSeek(params) {
+  const text = await callDeepSeek(
+    [{ role: 'user', content: buildLearnPrompt(params) }],
+    'You output only valid JSON academic profile data for student onboarding. No prose outside JSON.',
+    4096,
+  );
+  const parsed = parseJsonFromText(text);
+  if (!parsed) return null;
+  return normalizeAcademicProfile({ ...parsed, source: 'ai' }, params);
+}
+
 async function callAcademicProfileDirect(params) {
   const key = import.meta.env.VITE_ANTHROPIC_API_KEY;
   if (!key) return null;
@@ -173,6 +185,9 @@ export async function learnAcademicProfile(params) {
   if (edgeProfile) {
     return normalizeAcademicProfile(edgeProfile, params);
   }
+
+  const deepseekProfile = await callAcademicProfileDeepSeek(params);
+  if (deepseekProfile) return deepseekProfile;
 
   const directProfile = await callAcademicProfileDirect(params);
   if (directProfile) return directProfile;
