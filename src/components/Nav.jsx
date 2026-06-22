@@ -10,6 +10,8 @@ import {
   House,
   Layers,
   LogOut,
+  PanelLeft,
+  PanelLeftClose,
   Settings,
   Users,
 } from 'lucide-react';
@@ -67,7 +69,7 @@ export default function Nav({ page, setPage, authMode = 'signup' }) {
   const { user, settings, streak } = useAuth();
   const { enabledTools } = usePlanCapacity();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [expanded] = useState(() => {
+  const [expanded, setExpanded] = useState(() => {
     try {
       return localStorage.getItem('acad-nav-expanded') !== 'false';
     } catch {
@@ -80,6 +82,18 @@ export default function Nav({ page, setPage, authMode = 'signup' }) {
   const go = (key, arg) => {
     setPage(key, arg);
     setDrawerOpen(false);
+  };
+
+  const toggleExpanded = () => {
+    setExpanded((v) => {
+      const next = !v;
+      try {
+        localStorage.setItem('acad-nav-expanded', String(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
   };
 
   if (page === 'onboarding') {
@@ -125,6 +139,20 @@ export default function Nav({ page, setPage, authMode = 'signup' }) {
             <span className="nav-demo-badge" title="Demo environment — sample data and features for evaluation. Progress is saved locally on this device.">
               Demo
             </span>
+          </button>
+          <button
+            type="button"
+            className="dock-toggle"
+            onClick={toggleExpanded}
+            aria-label={expanded ? 'Collapse navigation' : 'Expand navigation'}
+            aria-expanded={expanded}
+            id="btn-dock-toggle"
+          >
+            {expanded ? (
+              <PanelLeftClose size={18} strokeWidth={2} aria-hidden="true" />
+            ) : (
+              <PanelLeft size={18} strokeWidth={2} aria-hidden="true" />
+            )}
           </button>
         </div>
         <div className="dock-items">

@@ -358,36 +358,37 @@ body::before {
   border-color: color-mix(in srgb, var(--mastery-mastered) 30%, transparent);
 }
 
-/* Theme toggle */
+/* Theme toggle — icon only, no box or label */
 .theme-toggle {
-  display: flex;
-  gap: 2px;
-  padding: 3px;
-  background: var(--void-light);
-  border: 1px solid var(--border-dim);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  border: none;
 }
 
 .theme-toggle--single {
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 6px 12px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   cursor: pointer;
-  color: var(--mist);
-  font-family: var(--font-ui);
-  font-size: 11px;
-  text-transform: capitalize;
-  transition: color var(--tr-fast), border-color var(--tr-fast), background var(--tr-fast);
+  color: var(--slate);
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  transition: color var(--tr-fast), background var(--tr-fast);
 }
 
 .theme-toggle--single:hover {
   color: var(--parchment);
-  border-color: var(--border);
-  background: var(--surface-mid);
+  background: var(--surface);
 }
 
 .theme-toggle-label {
-  letter-spacing: 0.04em;
+  display: none !important;
 }
 
 .theme-toggle-btn {
@@ -416,8 +417,8 @@ body::before {
 }
 
 .theme-toggle--dock {
-  width: 100%;
-  margin-bottom: 4px;
+  width: auto;
+  margin-bottom: 0;
 }
 
 .theme-toggle--dock .theme-toggle-btn {
@@ -429,13 +430,16 @@ body::before {
 }
 
 .nav-top-links .theme-toggle {
-  border: 1px solid var(--border-dim);
+  border: none;
+  background: transparent;
 }
 
 .dock-theme-wrap {
   width: 100%;
-  padding: 0 6px;
+  padding: 0;
   margin-bottom: 6px;
+  display: flex;
+  justify-content: center;
 }
 
 #global-nav.nav-dock:not(.expanded) .dock-theme-wrap {
@@ -444,9 +448,8 @@ body::before {
 }
 
 #global-nav.nav-dock:not(.expanded) .theme-toggle--dock {
-  flex-direction: row;
-  width: auto;
-  padding: 6px 8px;
+  width: 36px;
+  height: 36px;
 }
 
 #global-nav.nav-dock:not(.expanded) .theme-toggle--single .theme-toggle-label {
@@ -454,8 +457,26 @@ body::before {
 }
 
 #global-nav.nav-dock:not(.expanded) .theme-toggle--dock .theme-toggle-btn {
-  width: 28px;
-  height: 26px;
+  width: 36px;
+  height: 36px;
+}
+
+/* Sidebar collapse control */
+#global-nav.nav-dock .dock-toggle {
+  display: flex;
+  flex-shrink: 0;
+  margin-top: 6px;
+  color: var(--slate);
+}
+
+#global-nav.nav-dock.expanded .dock-toggle {
+  margin-top: 0;
+  color: var(--mist);
+}
+
+#global-nav.nav-dock .dock-toggle:hover {
+  color: var(--parchment);
+  background: var(--surface);
 }
 
 .mob-drawer-theme {
