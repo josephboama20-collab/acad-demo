@@ -9,7 +9,6 @@ import {
   Layers,
   Minus,
 } from 'lucide-react';
-import { applyPlanSeed, PLAN_ACCOUNTS, PLAN_DEMO_PASSWORD } from '../data/demoAccount.js';
 
 const FEATURES = [
   { icon: BookOpen, title: 'Your courses', desc: 'Add what you need to recover. Every tool orbits the courses you define.' },
@@ -63,8 +62,8 @@ export default function Landing({ setPage }) {
                   Start your plan
                   <ArrowRight size={16} aria-hidden="true" />
                 </button>
-                <button id="btn-gw-demo" type="button" className="btn btn-outline" onClick={() => applyPlanSeed('1month')}>
-                  Try 1-month demo
+                <button id="btn-gw-signin" type="button" className="btn btn-outline" onClick={() => setPage('auth', 'login')}>
+                  Sign in
                 </button>
               </div>
               <p className="lp-hero-note">
@@ -179,33 +178,6 @@ export default function Landing({ setPage }) {
                 ))}
               </ul>
             </article>
-          </div>
-        </div>
-      </section>
-
-      <section className="lp-section lp-demos">
-        <div className="lp-container">
-          <div className="lp-section-head">
-            <p className="lp-kicker">Demo accounts</p>
-            <h2 className="lp-section-title">Try any comeback plan</h2>
-            <p className="lp-section-desc">
-              One-click sign in. Password for all: <span className="font-mono">{PLAN_DEMO_PASSWORD}</span>
-            </p>
-          </div>
-          <div className="lp-demo-grid">
-            {PLAN_ACCOUNTS.map((account) => (
-              <button
-                key={account.id}
-                type="button"
-                id={`btn-gw-plan-${account.id}`}
-                className="lp-demo-card"
-                onClick={() => applyPlanSeed(account.id)}
-              >
-                <span className="lp-demo-label">{account.label}</span>
-                <span className="lp-demo-tag">{account.tagline}</span>
-                <span className="lp-demo-email font-mono">{account.email}</span>
-              </button>
-            ))}
           </div>
         </div>
       </section>

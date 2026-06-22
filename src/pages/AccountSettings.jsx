@@ -131,7 +131,7 @@ export default function AccountSettings({ setPage }) {
           <section className="card as-section">
             <p className="card-label">Appearance</p>
             <SettingRow label="Color theme" desc={`Currently ${theme}`}>
-              <ThemeToggle variant="dock" />
+              <ThemeToggle variant="top" />
             </SettingRow>
           </section>
 

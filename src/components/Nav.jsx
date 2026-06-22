@@ -4,6 +4,7 @@ import {
   BookOpen,
   Bot,
   ChartLine,
+  Flame,
   GraduationCap,
   Ellipsis,
   FolderGit2,
@@ -56,11 +57,15 @@ function DockButton({ item, active, onClick, danger }) {
   );
 }
 
-function StreakBadge({ streak }) {
+function DockStreakRow({ streak }) {
+  const label = streak === 1 ? '1 day streak' : `${streak} day streak`;
   return (
-    <div className="dock-streak" title={`${streak} day streak`} aria-label={`${streak} day streak`}>
-      <span className="dock-streak-n font-mono">{streak}</span>
-      <span className="dock-streak-lbl">days</span>
+    <div className="dock-btn dock-meta dock-meta--static" role="status" aria-label={label}>
+      <span className="dock-icon" aria-hidden="true">
+        <Flame size={18} strokeWidth={2} />
+      </span>
+      <span className="dock-label" aria-hidden="true">{label}</span>
+      <span className="dock-tooltip" aria-hidden="true">{label}</span>
     </div>
   );
 }
@@ -136,9 +141,6 @@ export default function Nav({ page, setPage, authMode = 'signup' }) {
           <button id="btn-nav-logo" className="nav-logo" onClick={() => go('dashboard')} aria-label="Acad home">
             <NavMark />
             <span className="nav-name">Acad</span>
-            <span className="nav-demo-badge" title="Demo environment — sample data and features for evaluation. Progress is saved locally on this device.">
-              Demo
-            </span>
           </button>
           <button
             type="button"
@@ -165,10 +167,8 @@ export default function Nav({ page, setPage, authMode = 'signup' }) {
           )}
         </div>
         <div className="dock-bottom">
-          <div className="dock-theme-wrap">
-            <ThemeToggle variant="dock" />
-          </div>
-          {settings.showStreak !== false && <StreakBadge streak={streak.current} />}
+          <ThemeToggle variant="dock-row" />
+          {settings.showStreak !== false && <DockStreakRow streak={streak.current} />}
           <DockButton item={{ key: 'settings', icon: Settings, label: 'Settings' }} active={page === 'settings'} onClick={() => go('settings')} />
           <DockButton item={{ key: 'signout', icon: LogOut, label: 'Sign out' }} active={false} onClick={() => go('signout-confirm')} danger />
         </div>
@@ -215,13 +215,9 @@ export default function Nav({ page, setPage, authMode = 'signup' }) {
                 );
               })}
             </div>
-            <div className="mob-drawer-streak">
-              <span className="mob-streak-lbl">Streak</span>
-              <span className="mob-streak-val font-mono">{streak.current} days</span>
-            </div>
-            <div className="mob-drawer-theme">
-              <span className="mob-drawer-theme-label">Appearance</span>
-              <ThemeToggle variant="dock" />
+            <div className="mob-drawer-meta">
+              <ThemeToggle variant="dock-row" />
+              <DockStreakRow streak={streak.current} />
             </div>
           </div>
         </div>

@@ -110,7 +110,7 @@ export default function SemesterJourney({ setPage }) {
       <main className="page rep-page anim-fade-in">
         <div className="rep-wrap container">
           <h1 className="rep-title">Semester journey</h1>
-          <p className="pb-sub">Complete onboarding to set your university and programme, or use a demo account from the landing page.</p>
+          <p className="pb-sub">Complete onboarding to set your university and programme.</p>
           <button className="btn btn-primary" onClick={() => setPage('manage-plan')}>Manage plan</button>
         </div>
       </main>

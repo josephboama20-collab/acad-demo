@@ -23,7 +23,9 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 VITE_APP_ENV=staging
 ```
 
-Remove `VITE_DEEPSEEK_API_KEY` from Netlify once edge AI is deployed.
+Do **not** set `VITE_DEEPSEEK_API_KEY` on Netlify — use edge functions only.
+
+Preloaded demo UI removed; testers create accounts via Sign up.
 
 ### 2.3 Edge functions (secure AI)
 
