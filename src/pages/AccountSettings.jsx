@@ -4,6 +4,7 @@ import { usePlanCapacity } from '../hooks/usePlanCapacity.js';
 import { useTheme } from '../contexts/ThemeContext.jsx';
 import ThemeToggle from '../components/ThemeToggle.jsx';
 import PlanBanner from '../components/PlanBanner.jsx';
+import DeleteAccountModal from '../components/DeleteAccountModal.jsx';
 
 function SettingRow({ label, desc, children }) {
   return (
@@ -33,12 +34,12 @@ function Toggle({ checked, onChange, id }) {
 }
 
 export default function AccountSettings({ setPage }) {
-  const { user, profile, streak, settings, updateUser, updateSettings, setFocusMode, isCloudMode, deleteAccount } = useAuth();
+  const { user, profile, streak, settings, updateUser, updateSettings, setFocusMode, isCloudMode, deleteAccount, deleteAllLocalData } = useAuth();
   const { plan } = usePlanCapacity();
   const { theme } = useTheme();
   const [name, setName] = useState(user?.name || '');
   const [saved, setSaved] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteError, setDeleteError] = useState('');
 
   function saveProfile() {
@@ -47,6 +48,16 @@ export default function AccountSettings({ setPage }) {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     }
+  }
+
+  async function handleDeleteConfirm() {
+    if (isCloudMode) {
+      await deleteAccount();
+    } else {
+      await deleteAllLocalData();
+    }
+    setDeleteOpen(false);
+    setPage('landing');
   }
 
   return (
@@ -157,7 +168,7 @@ export default function AccountSettings({ setPage }) {
             <p className="as-row-desc" style={{ marginBottom: 16 }}>
               {isCloudMode
                 ? 'Your study data syncs to your cloud account. You can delete your account and all associated data permanently.'
-                : 'Your data is stored locally on this device. Signing out keeps your progress saved for when you return.'}
+                : 'Your data is stored locally on this device. You can erase all local data or sign out to keep progress for later.'}
             </p>
             {deleteError && <p className="form-error" role="alert">{deleteError}</p>}
             <div className="as-actions">
@@ -167,32 +178,29 @@ export default function AccountSettings({ setPage }) {
               <button type="button" className="btn btn-outline" onClick={() => setPage('signout-confirm')}>
                 Sign out
               </button>
-              {isCloudMode && (
-                <button
-                  type="button"
-                  className="btn btn-danger"
-                  disabled={deleting}
-                  onClick={async () => {
-                    if (!window.confirm('Delete your account and all cloud data? This cannot be undone.')) return;
-                    setDeleting(true);
-                    setDeleteError('');
-                    try {
-                      await deleteAccount();
-                      setPage('landing');
-                    } catch (err) {
-                      setDeleteError(err.message || 'Could not delete account.');
-                    } finally {
-                      setDeleting(false);
-                    }
-                  }}
-                >
-                  {deleting ? 'Deleting…' : 'Delete account'}
-                </button>
-              )}
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={() => {
+                  setDeleteError('');
+                  setDeleteOpen(true);
+                }}
+              >
+                {isCloudMode ? 'Delete account' : 'Erase all local data'}
+              </button>
             </div>
           </section>
         </div>
       </div>
+
+      {deleteOpen && (
+        <DeleteAccountModal
+          isCloudMode={isCloudMode}
+          userEmail={user?.email}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeleteOpen(false)}
+        />
+      )}
     </main>
   );
 }

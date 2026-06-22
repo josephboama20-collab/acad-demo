@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useAuth } from './AuthContext.jsx';
-import { SAMPLE_FLASHCARDS } from '../data/constants.js';
+import { syncFlashcardsFromLoggedCourses } from '../utils/flashcardsFromCourses.js';
 import { applySM2, createCard, isDue } from '../utils/sm2.js';
 import { persistWithCloud } from '../utils/cloudSync.js';
 import { loadJSON, STORAGE_KEYS } from '../utils/storage.js';
@@ -9,11 +9,22 @@ const FlashcardsContext = createContext(null);
 
 export function FlashcardsProvider({ children, onCardReviewed }) {
   const { userId, dataEpoch } = useAuth();
-  const [cards, setCards] = useState(() => loadJSON(STORAGE_KEYS.flashcards) ?? SAMPLE_FLASHCARDS);
+  const [cards, setCards] = useState(() => loadJSON(STORAGE_KEYS.flashcards) ?? []);
 
   useEffect(() => {
-    setCards(loadJSON(STORAGE_KEYS.flashcards) ?? SAMPLE_FLASHCARDS);
-  }, [dataEpoch]);
+    const semesters = loadJSON(STORAGE_KEYS.semesters);
+    const gradeHistory = semesters?.gradeHistory ?? [];
+    const existing = loadJSON(STORAGE_KEYS.flashcards) ?? [];
+    const synced = syncFlashcardsFromLoggedCourses(gradeHistory, existing);
+    const changed = synced.length !== existing.length
+      || synced.some((c, i) => c.cardId !== existing[i]?.cardId);
+    if (changed) {
+      persistWithCloud(userId, 'flashcards', synced);
+      setCards(synced);
+      return;
+    }
+    setCards(existing);
+  }, [dataEpoch, userId]);
 
   const persist = useCallback(
     (updater) => {
@@ -59,7 +70,7 @@ export function FlashcardsProvider({ children, onCardReviewed }) {
   const dueCards = useMemo(() => cards.filter(isDue), [cards]);
   const subjects = useMemo(() => [...new Set(cards.map((c) => c.subject))].sort(), [cards]);
   const masteryMap = useMemo(() => {
-    const map = { learning: 0, reviewing: 0, mastered: 0 };
+    const map = { learning: 0, reviewing: 0, mastered: 0, total: cards.length };
     cards.forEach((c) => {
       if (map[c.masteryLevel] !== undefined) map[c.masteryLevel] += 1;
     });

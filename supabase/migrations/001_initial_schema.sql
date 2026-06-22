@@ -10,7 +10,7 @@ create table if not exists public.profiles (
 
 create table if not exists public.user_data (
   user_id uuid not null references auth.users (id) on delete cascade,
-  bucket text not null check (bucket in ('scholar', 'courses', 'flashcards', 'game', 'habits', 'forge')),
+  bucket text not null check (bucket in ('scholar', 'courses', 'flashcards', 'game', 'habits', 'forge', 'semesters')),
   payload jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now(),
   primary key (user_id, bucket)

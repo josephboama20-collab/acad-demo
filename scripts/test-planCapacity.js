@@ -50,10 +50,16 @@ assert(tools2mo.includes('projects'), '2 month tier includes projects');
 assert(!tools2mo.includes('study-room'), '2 month tier excludes study rooms');
 
 const tools3mo = getEnabledTools(profile3mo, 1);
-assert(tools3mo.includes('study-room'), '3 month tier includes study rooms');
+assert(tools3mo.includes('study-groups'), '3 month tier includes study groups');
 
 const preCourse = getEnabledTools(profile3mo, 0);
-assert(preCourse.length === 2 && preCourse.includes('dashboard') && preCourse.includes('courses'), 'no courses: dashboard + courses only');
+assert(
+  preCourse.length === 3
+    && preCourse.includes('dashboard')
+    && preCourse.includes('courses')
+    && preCourse.includes('semester-journey'),
+  'no courses: dashboard + courses + semester journey',
+);
 
 assert(canAddCourse(profile1mo, 1), 'can add when under limit');
 assert(!canAddCourse(profile1mo, 2), 'cannot add at limit');

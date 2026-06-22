@@ -15,10 +15,16 @@ export function pickDailyTask(profile) {
   } while (idx === lastIndex && TASKS.length > 1);
   lastIndex = idx;
   const task = TASKS[idx];
+  let desc = task.desc;
   if (profile?.sharpness?.startsWith('Very dull')) {
-    return { ...task, desc: task.desc.replace('short analysis', 'brief analysis').replace('under 3 minutes', 'under 2 minutes') };
+    desc = desc.replace('short analysis', 'brief analysis').replace('under 3 minutes', 'under 2 minutes');
   }
-  return task;
+  if (profile?.progressionStatus === 'regressed') {
+    desc = `${desc} Prioritize fundamentals and rebuild confidence before speed.`;
+  } else if (profile?.progressionStatus === 'improved') {
+    desc = `${desc} Push for depth and stretch one level beyond your comfort zone.`;
+  }
+  return { ...task, desc };
 }
 
 export function fetchDailyTask(profile) {

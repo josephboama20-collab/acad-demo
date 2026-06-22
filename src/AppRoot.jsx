@@ -4,6 +4,7 @@ import { CoursesProvider } from './contexts/CoursesContext.jsx';
 import { FlashcardMasteryBridge } from './contexts/FlashcardMasteryBridge.jsx';
 import { HabitsProvider } from './contexts/HabitsContext.jsx';
 import { StudyGroupsProvider } from './contexts/StudyGroupsContext.jsx';
+import { SemestersProvider } from './contexts/SemestersContext.jsx';
 import { ThemeProvider } from './contexts/ThemeContext.jsx';
 import App from './App.jsx';
 
@@ -16,7 +17,9 @@ export default function AppRoot() {
           <FlashcardMasteryBridge>
             <HabitsProvider>
               <StudyGroupsProvider>
-                <App />
+                <SemestersProvider>
+                  <App />
+                </SemestersProvider>
               </StudyGroupsProvider>
             </HabitsProvider>
           </FlashcardMasteryBridge>

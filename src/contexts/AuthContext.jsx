@@ -30,6 +30,10 @@ export function AuthProvider({ children }) {
     setDataEpoch((n) => n + 1);
   }, []);
 
+  const bumpDataEpoch = useCallback(() => {
+    setDataEpoch((n) => n + 1);
+  }, []);
+
   useEffect(() => {
     if (!isCloudEnabled() || !supabase) return undefined;
 
@@ -184,6 +188,13 @@ export function AuthProvider({ children }) {
     setDataEpoch((n) => n + 1);
   }, [userId]);
 
+  const deleteAllLocalData = useCallback(async () => {
+    Object.values(STORAGE_KEYS).forEach((key) => localStorage.removeItem(key));
+    setSession(null);
+    setState(mergeScholar(null));
+    setDataEpoch((n) => n + 1);
+  }, []);
+
   const setFocusMode = useCallback((focusMode) => {
     persist((s) => ({ ...s, settings: { ...s.settings, focusMode } }));
   }, [persist]);
@@ -212,10 +223,12 @@ export function AuthProvider({ children }) {
       signUp,
       signIn,
       deleteAccount,
+      deleteAllLocalData,
       setFocusMode,
       updateSettings,
       updateUser,
       reloadFromStorage,
+      bumpDataEpoch,
     }),
     [
       state,
@@ -231,10 +244,12 @@ export function AuthProvider({ children }) {
       signUp,
       signIn,
       deleteAccount,
+      deleteAllLocalData,
       setFocusMode,
       updateSettings,
       updateUser,
       reloadFromStorage,
+      bumpDataEpoch,
     ],
   );
 

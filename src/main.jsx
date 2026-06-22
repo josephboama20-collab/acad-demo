@@ -7,6 +7,13 @@ import './styles/themes.css';
 
 initTheme();
 
+if (import.meta.env.VITE_APP_ENV === 'staging') {
+  const robots = document.createElement('meta');
+  robots.name = 'robots';
+  robots.content = 'noindex, nofollow';
+  document.head.appendChild(robots);
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AppRoot />

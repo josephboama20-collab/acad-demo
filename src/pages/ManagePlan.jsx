@@ -134,6 +134,16 @@ export default function ManagePlan({ setPage }) {
             </div>
           </section>
 
+          <section className="card mp-section">
+            <p className="card-label">Add new semester</p>
+            <p className="mp-hint">
+              After a break, log your most recent completed term and refresh focus courses — shorter than full onboarding.
+            </p>
+            <button type="button" className="btn btn-outline" onClick={() => setPage('semester-update')}>
+              Add new semester
+            </button>
+          </section>
+
           <section className="card mp-section mp-danger">
             <p className="card-label">Reset plan</p>
             <p className="mp-hint">

@@ -48,7 +48,7 @@ export default function PlanBanner({ compact = false }) {
           {profile?.sharpness && <span>State: {profile.sharpness.split(' ')[0]}</span>}
           {profile?.intention && <span>Goal: {profile.intention}</span>}
           {plan.atCourseLimit && <span className="plan-banner-limit">At your plan limit. Remove a course to swap.</span>}
-          {plan.needsCourses && <span className="plan-banner-cta">Add courses to unlock tools</span>}
+          {plan.needsCourses && <span className="plan-banner-cta">Complete setup or open Semester journey</span>}
         </div>
       </div>
     </aside>

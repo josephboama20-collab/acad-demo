@@ -55,6 +55,7 @@ export default function Auth({ setPage, initialMode = 'signup' }) {
         flashcards: seed.flashcards,
         habits: seed.habits,
         forge: seed.forge,
+        semesters: seed.semesters,
       });
       window.location.reload();
     } catch (err) {
@@ -145,10 +146,16 @@ export default function Auth({ setPage, initialMode = 'signup' }) {
             <button id="btn-auth-tab-login" className={`auth-tab${mode === 'login' ? ' on' : ''}`} role="tab" aria-selected={mode === 'login'} onClick={() => setMode('login')}>Sign in</button>
           </div>
           {mode === 'signup' && (
-            <div className="form-group">
-              <label className="form-label" htmlFor="input-auth-name">Full Name</label>
-              <input id="input-auth-name" className="form-input" placeholder="Your name" value={form.name} onChange={(e) => update('name', e.target.value)} />
-            </div>
+            <>
+              <p className="auth-setup-note">
+                After creating your account, you will complete a thorough academic setup — university, programme, and grades.
+                Accurate, properly capitalized names help AI map your curriculum. You can correct anything AI gets wrong.
+              </p>
+              <div className="form-group">
+                <label className="form-label" htmlFor="input-auth-name">Full Name</label>
+                <input id="input-auth-name" className="form-input" placeholder="Your name" value={form.name} onChange={(e) => update('name', e.target.value)} />
+              </div>
+            </>
           )}
           <div className="form-group">
             <label className="form-label" htmlFor="input-auth-email">Email Address</label>

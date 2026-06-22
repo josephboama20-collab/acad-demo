@@ -2,9 +2,17 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useCourses } from '../contexts/CoursesContext.jsx';
 import { useFlashcards } from '../contexts/FlashcardsContext.jsx';
+import { useSemesters } from '../contexts/SemestersContext.jsx';
 import { fetchDailyTask } from '../utils/tasks.js';
 import { usePlanCapacity } from '../hooks/usePlanCapacity.js';
 import { canAccessProjects } from '../utils/projectEligibility.js';
+import {
+  canLogNewSemesterNow,
+  shouldOpenSemesterAddFlow,
+} from '../utils/semesterAccess.js';
+import { getConditioningProgress } from '../utils/conditioningProgress.js';
+import { useHabits } from '../contexts/HabitsContext.jsx';
+import PlanCountdown from '../components/PlanCountdown.jsx';
 import Kpi from '../components/Kpi.jsx';
 import TaskSkeleton from '../components/TaskSkeleton.jsx';
 
@@ -71,7 +79,9 @@ export default function Dashboard({ setPage }) {
   const { user, profile, streak, metrics, completeTask } = useAuth();
   const { courses, weakTopics, allTopics } = useCourses();
   const { dueCards, masteryMap } = useFlashcards();
-  const { plan, isToolEnabled } = usePlanCapacity();
+  const { plan, isToolEnabled, enabledTools } = usePlanCapacity();
+  const { logs } = useHabits();
+  const { progressionStatus, gradeHistory, academicProfile } = useSemesters();
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
   const [seconds, setSeconds] = useState(600);
@@ -84,7 +94,7 @@ export default function Dashboard({ setPage }) {
     setDone(false);
     setSeconds(600);
     setRunning(false);
-    fetchDailyTask(profile).then((res) => {
+    fetchDailyTask({ ...profile, progressionStatus }).then((res) => {
       setTask(res.data);
       setLoading(false);
     });
@@ -112,10 +122,38 @@ export default function Dashboard({ setPage }) {
   const greeting = hours < 12 ? 'Good morning' : hours < 17 ? 'Good afternoon' : 'Good evening';
   const dateStr = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   const loadLabel = profile?.sharpness?.startsWith('Very sharp') ? 'High' : profile?.sharpness?.startsWith('Somewhat') ? 'Moderate' : 'Low';
-  const avgMastery = allTopics.length > 0 ? Math.round(allTopics.reduce((a, t) => a + t.masteryLevel, 0) / allTopics.length) : null;
+  const avgMastery = allTopics.length > 0
+    ? Math.round(allTopics.reduce((a, t) => a + t.masteryLevel, 0) / allTopics.length)
+    : null;
+  const hasMastery = avgMastery != null && avgMastery > 0;
   const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
   const ss = String(seconds % 60).padStart(2, '0');
   const projectsUnlocked = canAccessProjects(streak, metrics, profile);
+  const ap = academicProfile || profile?.academicProfile;
+  const latestTerm = gradeHistory.at(-1) || null;
+
+  const level = ap?.currentLevel ?? 100;
+  const sem = ap?.currentSemester ?? 1;
+  const pendingSemesterUpdate = ap ? shouldOpenSemesterAddFlow(level, sem, gradeHistory, profile) : false;
+  const canLogSemesterNow = ap ? canLogNewSemesterNow(level, sem, gradeHistory, profile) : false;
+  const timelineBlocked = pendingSemesterUpdate && !canLogSemesterNow;
+
+  const conditioning = useMemo(
+    () => getConditioningProgress({
+      profile,
+      streak,
+      metrics,
+      courses,
+      gradeHistory,
+      flashcardStats: masteryMap,
+      wellnessLogCount: logs.length,
+      projectsUnlocked,
+      enabledTools,
+    }),
+    [profile, streak, metrics, courses, gradeHistory, masteryMap, logs.length, projectsUnlocked, enabledTools],
+  );
+
+  const termsLogged = gradeHistory.length;
 
   return (
     <main className="page dash-page anim-fade-in">
@@ -124,12 +162,25 @@ export default function Dashboard({ setPage }) {
           <div>
             <p className="dash-greeting">{greeting}</p>
             <h1 className="dash-name">{user?.name || 'Member'}</h1>
-            <p className="dash-sub">
-              {dateStr}<span className="dash-sub-sep">·</span>
-              {courses.length > 0 ? `${courses.length} courses · ${avgMastery}% avg mastery` : plan.durationLabel}
-              <span className="dash-sub-sep">·</span>
-              Cognitive Load: <span className="dash-load">{loadLabel}</span>
-            </p>
+            <div className="dash-meta" aria-label="Profile summary">
+              <span className="dash-meta-chip">{dateStr}</span>
+              {ap && (
+                <>
+                  <span className="dash-meta-chip">{ap.institutionName}</span>
+                  <span className="dash-meta-chip">Level {ap.currentLevel} · Sem {ap.currentSemester}</span>
+                </>
+              )}
+              <span className="dash-meta-chip">
+                {courses.length > 0
+                  ? hasMastery
+                    ? `${courses.length} courses · ${avgMastery}% avg`
+                    : `${courses.length} course${courses.length === 1 ? '' : 's'}`
+                  : plan.durationLabel}
+              </span>
+              <span className={`dash-meta-chip dash-meta-chip-accent load-${loadLabel.toLowerCase()}`}>
+                Cognitive load: {loadLabel}
+              </span>
+            </div>
           </div>
           <div className="dash-streak-badge" title="Current streak">
             <span className="dash-streak-n font-mono">{streak.current}</span>
@@ -137,15 +188,88 @@ export default function Dashboard({ setPage }) {
           </div>
         </div>
       </header>
+
       <div className="dash-body container">
-        <div className="dash-top-row">
-          <div className="kpi-row" role="list" aria-label="Performance metrics">
-            <Kpi id="kpi-streak" value={streak.current} label="Day Streak" gold />
-            <Kpi id="kpi-completion" value={`${Math.round(metrics.completionRate * 100)}%`} label="Completion Rate" />
-            <Kpi id="kpi-tasks" value={metrics.tasksCompleted} label="Tasks Completed" />
-            <Kpi id="kpi-projects" value={metrics.activeProjects} label="Active Projects" />
-          </div>
+        <div className="kpi-row dash-kpi-row" role="list" aria-label="Performance metrics">
+          <Kpi id="kpi-streak" value={streak.current} label="Day Streak" gold />
+          <Kpi id="kpi-completion" value={`${Math.round(metrics.completionRate * 100)}%`} label="Completion Rate" />
+          <Kpi id="kpi-tasks" value={metrics.tasksCompleted} label="Tasks Completed" />
+          <Kpi id="kpi-projects" value={metrics.activeProjects} label="Active Projects" />
         </div>
+
+        <section className="dash-hero-grid">
+          <article className="card dash-hero-countdown" aria-label="Plan timeline countdown">
+            <div className="dash-plan-head dash-timeline-head">
+              <p className="card-label">Comeback plan</p>
+            </div>
+            <PlanCountdown profile={profile} endedLabel="Window complete" />
+            <div className="prog-bar dash-conditioning-bar" role="progressbar" aria-valuenow={conditioning.timeline.pct} aria-valuemin={0} aria-valuemax={100}>
+              <div className="prog-fill dash-conditioning-fill timeline" style={{ width: `${conditioning.timeline.pct}%` }} />
+            </div>
+            {timelineBlocked && (
+              <p className="dash-timeline-gate">Semester logging unlocks at zero.</p>
+            )}
+            {canLogSemesterNow && (
+              <button type="button" className="btn btn-primary btn-sm dash-hero-cta" onClick={() => setPage('semester-update')}>
+                Add new semester
+              </button>
+            )}
+          </article>
+
+          <aside className="dash-hero-side">
+            {isToolEnabled('semester-journey') && (
+              <section className="card dash-plan-card dash-hero-card dash-semester-card" aria-label="Semester journey">
+                <div className="dash-plan-head">
+                  <p className="card-label">Semester journey</p>
+                  <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPage('semester-journey')}>
+                    Hub
+                  </button>
+                </div>
+                <div className="dash-semester-stats">
+                  <div className={`dash-semester-stat${ap ? ' active' : ''}`}>
+                    <span className="dash-semester-stat-val font-mono">
+                      {ap ? `L${ap.currentLevel} · S${ap.currentSemester}` : '—'}
+                    </span>
+                    <span className="dash-semester-stat-lbl">Entering</span>
+                  </div>
+                  <div className={`dash-semester-stat${termsLogged > 0 ? ' active' : ''}`}>
+                    <span className="dash-semester-stat-val font-mono">{termsLogged}</span>
+                    <span className="dash-semester-stat-lbl">Terms logged</span>
+                  </div>
+                  <div className={`dash-semester-stat${latestTerm?.gpa != null ? ' active' : ''}`}>
+                    <span className="dash-semester-stat-val font-mono">{latestTerm?.gpa ?? '—'}</span>
+                    <span className="dash-semester-stat-lbl">Latest GPA</span>
+                  </div>
+                </div>
+                {ap && (
+                  <p className="dash-semester-program">{ap.programName}</p>
+                )}
+                {pendingSemesterUpdate && !canLogSemesterNow && (
+                  <p className="dash-semester-note">Logging opens when plan ends</p>
+                )}
+              </section>
+            )}
+            <section className="card dash-plan-card dash-hero-card" aria-label="Your plan">
+              <div className="dash-plan-head">
+                <p className="card-label">Your plan</p>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPage('manage-plan')}>
+                  Manage
+                </button>
+              </div>
+              <div className="dash-plan-grid">
+                {[['Window', plan.durationLabel], ['State', profile?.sharpness], ['Effort', (profile?.effort || '').split(' ')[0]], ['Intention', profile?.intention || profile?.goal]]
+                  .filter(([, v]) => v)
+                  .map(([k, v]) => (
+                    <div key={k} className="dash-plan-item">
+                      <span className="dash-plan-key">{k}</span>
+                      <span className="dash-plan-val">{v}</span>
+                    </div>
+                  ))}
+              </div>
+            </section>
+          </aside>
+        </section>
+
         <div className="dash-grid dash-grid-redesign">
           <div className="dash-col-main">
             <article className="task-card" aria-label="Daily conditioning task">
@@ -163,7 +287,11 @@ export default function Dashboard({ setPage }) {
                   <div className="task-body">
                     <p className="task-desc">{task.desc}</p>
                     <div className="timer-disp" aria-live="polite">
-                      <span className="font-mono timer-plain">{mm}:{ss}</span>
+                      <span className="timer-disp-time" aria-label={`${mm} minutes ${ss} seconds remaining`}>
+                        <span className="timer-segment">{mm}</span>
+                        <span className="timer-colon" aria-hidden="true">:</span>
+                        <span className="timer-segment">{ss}</span>
+                      </span>
                       <span className="timer-unit">remaining</span>
                     </div>
                     <div className="prog-bar" role="progressbar" aria-valuenow={((600 - seconds) / 600) * 100} aria-valuemin={0} aria-valuemax={100}>
@@ -190,24 +318,38 @@ export default function Dashboard({ setPage }) {
               )}
             </article>
           </div>
+
           <aside className="dash-col-side">
             <section className="card dash-consistency-card" aria-label="Consistency map">
               <p className="card-label">Consistency map</p>
               <p className="card-sublabel">Each cell is one day. Darker = you completed a task that day.</p>
               <ConsistencyMap history={streak.history} />
             </section>
-            {isToolEnabled('projects') && (
-            <button id="btn-dash-projects" className="card card-cta" onClick={() => setPage('projects')}>
-              <p className="card-cta-label">{projectsUnlocked ? 'Portfolio projects' : 'Projects (locked)'}</p>
-              <p className="card-cta-desc">
-                {projectsUnlocked
-                  ? 'Course-tailored projects focused on your weakest topics.'
-                  : 'Unlock by building consistency: streak, active days, and task completion.'}
-              </p>
-            </button>
-            )}
           </aside>
         </div>
+
+        <section className="card dash-conditioning-card" aria-label="Conditioning program">
+          <div className="dash-plan-head">
+            <p className="card-label">Conditioning program</p>
+            <span className="dash-conditioning-overall font-mono">{conditioning.overallPct}% complete</span>
+          </div>
+          <div className="dash-conditioning-sections dash-conditioning-grid">
+            {conditioning.sections.filter((s) => !s.optional).map((section) => (
+              <div key={section.id} className={`dash-conditioning-row${section.done ? ' done' : ' pending'}`}>
+                <div className="dash-conditioning-row-body">
+                  <span className="dash-conditioning-label">{section.label}</span>
+                  <span className="dash-conditioning-detail">{section.detail}</span>
+                  {section.progress != null && section.progress > 0 && (
+                    <div className="prog-bar dash-conditioning-mini-bar" aria-hidden="true">
+                      <div className="prog-fill dash-conditioning-fill" style={{ width: `${section.progress}%` }} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {courses.length > 0 ? (
           <section className="dash-insights" aria-label="Course insights">
             <p className="card-label">Course velocity</p>
@@ -241,14 +383,31 @@ export default function Dashboard({ setPage }) {
                 )}
                 {weakTopics.length > 0 && <button className="dash-insight-link" onClick={() => setPage('flashcards')}>Study weak areas</button>}
               </div>
-              <div className="card dash-insight-card">
-                <p className="dash-insight-title">Today&apos;s Summary</p>
-                <div className="dash-today-stats">
-                  <div className="dash-today-stat"><span className="dash-today-val font-mono">{dueCards.length}</span><span className="dash-today-lbl">Cards due</span></div>
-                  <div className="dash-today-stat"><span className="dash-today-val font-mono">{masteryMap.mastered}</span><span className="dash-today-lbl">Mastered</span></div>
-                  <div className="dash-today-stat"><span className="dash-today-val font-mono">{courses.length}</span><span className="dash-today-lbl">Courses</span></div>
+              <div className="card dash-insight-card dash-summary-card">
+                <div className="dash-summary-head">
+                  <p className="dash-insight-title">Today&apos;s Summary</p>
+                  {dueCards.length > 0 ? (
+                    <button type="button" className="btn btn-primary btn-sm dash-summary-cta" onClick={() => setPage('flashcards')}>
+                      Review cards
+                    </button>
+                  ) : (
+                    <span className="dash-summary-badge">All caught up</span>
+                  )}
                 </div>
-                {dueCards.length > 0 && <button className="dash-insight-link" onClick={() => setPage('flashcards')}>Review cards</button>}
+                <div className="dash-summary-grid">
+                  <div className={`dash-summary-stat${dueCards.length > 0 ? ' accent' : ''}`}>
+                    <span className="dash-summary-val">{dueCards.length}</span>
+                    <span className="dash-summary-lbl">Cards due</span>
+                  </div>
+                  <div className="dash-summary-stat">
+                    <span className="dash-summary-val">{masteryMap.mastered}</span>
+                    <span className="dash-summary-lbl">Mastered</span>
+                  </div>
+                  <div className="dash-summary-stat">
+                    <span className="dash-summary-val">{courses.length}</span>
+                    <span className="dash-summary-lbl">Courses</span>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -257,29 +416,16 @@ export default function Dashboard({ setPage }) {
             <p className="card-label">Get started</p>
             <div className="empty-state" style={{ marginTop: 8 }}>
               <p className="empty-state-title">Add your first course</p>
-              <p className="empty-state-desc">Everything on Acad orbits the courses you add. Start there. Tools unlock once you define what you are recovering.</p>
-              <button className="btn btn-primary" onClick={() => setPage('courses')}>Add courses</button>
+              <p className="empty-state-desc">
+                Focus courses are chosen during onboarding. Open Courses to review your list, or Semester journey to log past terms and your academic profile.
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 4 }}>
+                <button type="button" className="btn btn-primary" onClick={() => setPage('courses')}>Open courses</button>
+                <button type="button" className="btn btn-outline" onClick={() => setPage('semester-journey')}>Semester journey</button>
+              </div>
             </div>
           </section>
         )}
-        <section className="card dash-plan-card dash-plan-below" aria-label="Your plan">
-          <div className="dash-plan-head">
-            <p className="card-label">Your plan</p>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPage('manage-plan')}>
-              Manage plan
-            </button>
-          </div>
-          <div className="dash-plan-grid">
-            {[['Window', plan.durationLabel], ['State', profile?.sharpness], ['Effort', (profile?.effort || '').split(' ')[0]], ['Intention', profile?.intention || profile?.goal]]
-              .filter(([, v]) => v)
-              .map(([k, v]) => (
-                <div key={k} className="dash-plan-item">
-                  <span className="dash-plan-key">{k}</span>
-                  <span className="dash-plan-val">{v}</span>
-                </div>
-              ))}
-          </div>
-        </section>
       </div>
     </main>
   );

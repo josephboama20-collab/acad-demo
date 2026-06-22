@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useCourses } from '../contexts/CoursesContext.jsx';
 import { useFlashcards } from '../contexts/FlashcardsContext.jsx';
 import { useGame } from '../contexts/GameContext.jsx';
+import { useSemesters } from '../contexts/SemestersContext.jsx';
 import { usePlanCapacity } from '../hooks/usePlanCapacity.js';
 import PlanBanner from '../components/PlanBanner.jsx';
 import { masteryPctColor } from '../utils/themeColors.js';
+import { trendLabel } from '../utils/semesterUtils.js';
 
 const QUIZ_TIME_SEC = 45;
 
@@ -143,63 +145,7 @@ function CourseRadar({ categories }) {
   );
 }
 
-function AddCourseModal({ onAdd, onClose, atLimit, maxCourses }) {
-  const [code, setCode] = useState('');
-  const [name, setName] = useState('');
-  const [topicsText, setTopicsText] = useState('');
-
-  function submit(e) {
-    e.preventDefault();
-    if (!code.trim() || !name.trim() || atLimit) return;
-    const topics = topicsText
-      .split('\n')
-      .map((t) => t.trim())
-      .filter(Boolean)
-      .map((t) => ({ name: t, importance: 'medium', masteryLevel: 0 }));
-    onAdd({ code: code.trim(), name: name.trim(), topics });
-    onClose();
-  }
-
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="cs-add-modal" onClick={(e) => e.stopPropagation()}>
-        <h2 className="cs-modal-title">Add course</h2>
-        <p className="cs-modal-desc">
-          {atLimit
-            ? `You have reached your plan limit of ${maxCourses} course${maxCourses === 1 ? '' : 's'}. Remove one to add another.`
-            : 'Add a course you want to recover. Topics drive flashcards, recall drills, and daily tasks.'}
-        </p>
-        <form onSubmit={submit}>
-          <div className="form-group">
-            <label className="form-label">Course code</label>
-            <input className="form-input" value={code} onChange={(e) => setCode(e.target.value)} placeholder="BIO" required disabled={atLimit} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Course name</label>
-            <input className="form-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Cell & Genetics" required disabled={atLimit} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Topics (one per line)</label>
-            <textarea
-              className="form-input"
-              value={topicsText}
-              onChange={(e) => setTopicsText(e.target.value)}
-              placeholder={'Cell Biology\nGenetics\nEvolution'}
-              rows={5}
-              disabled={atLimit}
-            />
-          </div>
-          <div className="modal-actions">
-            <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn btn-primary" disabled={atLimit}>Add course</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function CoursesHome({ courses, weakTopics, allTopics, openCourse, openTopic, setShowAddForm, canAddCourse, plan }) {
+function CoursesHome({ courses, weakTopics, allTopics, openCourse, openTopic, setPage, plan }) {
   const avgMastery = allTopics.length > 0 ? Math.round(allTopics.reduce((a, t) => a + t.masteryLevel, 0) / allTopics.length) : 0;
   const priority = weakTopics.slice(0, 3);
 
@@ -217,9 +163,6 @@ function CoursesHome({ courses, weakTopics, allTopics, openCourse, openTopic, se
             </span>
           </p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowAddForm(true)} disabled={!canAddCourse}>
-          {canAddCourse ? '+ Add course' : 'At plan limit'}
-        </button>
       </header>
 
       {priority.length > 0 && (
@@ -253,9 +196,11 @@ function CoursesHome({ courses, weakTopics, allTopics, openCourse, openTopic, se
         <div className="cs-empty">
           <p className="cs-empty-icon">📚</p>
           <h3>No courses yet</h3>
-          <p>Add the courses you need to recover. Every tool on Acad (flashcards, recall, reports) is built around what you add here.</p>
-          <button className="btn btn-primary" onClick={() => setShowAddForm(true)} style={{ marginTop: 16 }}>
-            Add first course
+          <p>
+            New accounts pick focus courses during setup. You can also log past semesters in Semester journey — those courses appear here.
+          </p>
+          <button type="button" className="btn btn-primary" onClick={() => setPage('semester-journey')} style={{ marginTop: 16 }}>
+            Open semester journey
           </button>
         </div>
       ) : (
@@ -287,7 +232,18 @@ function CoursesHome({ courses, weakTopics, allTopics, openCourse, openTopic, se
   );
 }
 
-function CourseDetail({ course, openTopic, goHome, deleteCourse, radarData }) {
+function TrendBadge({ delta }) {
+  if (delta === undefined || delta === null) return null;
+  const t = trendLabel(delta);
+  if (t.cls === 'trend-flat') return null;
+  return (
+    <span className={`cs-trend-badge ${t.cls}`} title={`${t.label} vs last semester`}>
+      {t.cls === 'trend-up' ? '▲' : '▼'} {Math.abs(delta)}pts
+    </span>
+  );
+}
+
+function CourseDetail({ course, openTopic, goHome, deleteCourse, radarData, deltaMap }) {
   const avg = course.topics.length > 0 ? Math.round(course.topics.reduce((a, t) => a + t.masteryLevel, 0) / course.topics.length) : 0;
   const radar = radarData.find((r) => r.courseId === course.courseId);
 
@@ -312,10 +268,15 @@ function CourseDetail({ course, openTopic, goHome, deleteCourse, radarData }) {
       <section className="cs-topics-section">
         <p className="cs-section-label">Topics (click to study)</p>
         <div className="cs-topics-list">
-          {course.topics.map((t) => (
+          {course.topics.map((t) => {
+            const d = deltaMap?.[`${course.courseId}:${t.topicId}`];
+            return (
             <button key={t.topicId} className="cs-topic-row" onClick={() => openTopic(course, t)}>
               <div className="cs-topic-info">
-                <span className="cs-topic-name-lg">{t.name}</span>
+                <span className="cs-topic-name-lg">
+                  {t.name}
+                  {d !== undefined && <TrendBadge delta={d} />}
+                </span>
                 {t.lastStudied && (
                   <span className="cs-topic-last">Last studied: {new Date(t.lastStudied).toLocaleDateString()}</span>
                 )}
@@ -339,7 +300,8 @@ function CourseDetail({ course, openTopic, goHome, deleteCourse, radarData }) {
               </div>
               <span className="cs-topic-arrow">→</span>
             </button>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -673,14 +635,21 @@ function TopicStudy({ course, topic, updateTopicMastery, earnXP, addCards, cards
 }
 
 export default function Courses({ setPage }) {
-  const { courses, addCourse, deleteCourse, updateTopicMastery, radarData, weakTopics, allTopics } = useCourses();
+  const { courses, deleteCourse, updateTopicMastery, radarData, weakTopics, allTopics } = useCourses();
   const { cards, addCards } = useFlashcards();
   const { earnXP } = useGame();
-  const { plan, canAddCourse } = usePlanCapacity();
+  const { plan } = usePlanCapacity();
+  const { getDeltas } = useSemesters();
+
+  const deltaMap = useMemo(() => {
+    const deltas = getDeltas(courses);
+    const m = {};
+    deltas.forEach((d) => { m[`${d.courseId}:${d.topicId}`] = d.delta; });
+    return m;
+  }, [getDeltas, courses]);
   const [view, setView] = useState('home');
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedTopic, setSelectedTopic] = useState(null);
-  const [showAddForm, setShowAddForm] = useState(false);
 
   const openCourse = (c) => {
     setSelectedCourse(c);
@@ -703,8 +672,7 @@ export default function Courses({ setPage }) {
             allTopics={allTopics}
             openCourse={openCourse}
             openTopic={openTopic}
-            setShowAddForm={setShowAddForm}
-            canAddCourse={canAddCourse}
+            setPage={setPage}
             plan={plan}
           />
         )}
@@ -719,6 +687,7 @@ export default function Courses({ setPage }) {
             }}
             deleteCourse={deleteCourse}
             radarData={radarData}
+            deltaMap={deltaMap}
           />
         )}
         {view === 'topic-study' && selectedCourse && selectedTopic && (
@@ -730,14 +699,6 @@ export default function Courses({ setPage }) {
             addCards={addCards}
             cards={cards}
             goBack={() => openCourse(selectedCourse)}
-          />
-        )}
-        {showAddForm && (
-          <AddCourseModal
-            onAdd={addCourse}
-            onClose={() => setShowAddForm(false)}
-            atLimit={!canAddCourse}
-            maxCourses={plan.maxCourses}
           />
         )}
       </div>
