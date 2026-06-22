@@ -82,6 +82,38 @@ Deno.serve(async (req) => {
     }
 
     const { params } = await req.json();
+    const prompt = buildLearnPrompt(params || {});
+    const system = 'You output only valid JSON academic profile data. No markdown fences or prose.';
+
+    const deepseekKey = Deno.env.get('DEEPSEEK_API_KEY');
+    if (deepseekKey) {
+      const dsRes = await fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${deepseekKey}`,
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          max_tokens: 4096,
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: prompt },
+          ],
+        }),
+      });
+      if (dsRes.ok) {
+        const dsData = await dsRes.json();
+        const text = dsData.choices?.[0]?.message?.content ?? '';
+        const profile = parseJsonFromText(text);
+        if (profile) {
+          return new Response(JSON.stringify({ profile: { ...profile, source: 'ai' } }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      }
+    }
+
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'AI not configured' }), { status: 503, headers: corsHeaders });
@@ -97,8 +129,8 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 4096,
-        system: 'You output only valid JSON academic profile data. No markdown fences or prose.',
-        messages: [{ role: 'user', content: buildLearnPrompt(params || {}) }],
+        system,
+        messages: [{ role: 'user', content: prompt }],
       }),
     });
 

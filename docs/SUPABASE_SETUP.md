@@ -29,8 +29,10 @@ npx supabase db push
 Install Supabase CLI, then:
 
 ```bash
-supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+supabase secrets set DEEPSEEK_API_KEY=sk-...
+supabase secrets set ANTHROPIC_API_KEY=sk-ant-...   # optional fallback
 supabase functions deploy buddy-chat --no-verify-jwt
+supabase functions deploy academic-profile --no-verify-jwt
 supabase functions deploy delete-account --no-verify-jwt
 ```
 
@@ -46,7 +48,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 VITE_APP_ENV=staging
 ```
 
-Do **not** set `VITE_ANTHROPIC_API_KEY` when cloud mode is on — AI runs through `buddy-chat`.
+Do **not** set `VITE_ANTHROPIC_API_KEY` or `VITE_DEEPSEEK_API_KEY` when cloud mode is on — AI runs through edge functions.
 
 ## 6. Seed demo users
 

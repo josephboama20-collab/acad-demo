@@ -7,8 +7,8 @@ export default function StagingBanner() {
       <strong>Staging</strong>
       <span>
         {import.meta.env.VITE_SUPABASE_URL
-          ? 'Cloud alpha — sign in to sync across devices. Demo password: demo'
-          : 'Data stays on this device. Demo logins use password demo. Configure Supabase for cloud sync.'}
+          ? 'Cloud alpha — demo password: demo'
+          : 'Data stays on this device · demo password: demo'}
       </span>
     </div>
   );

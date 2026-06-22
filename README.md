@@ -57,6 +57,8 @@ Cloud mode: run `npm run seed:demo` first, then use demo buttons on Auth.
 
 ## Documentation
 
+- [`docs/TIER_1_COMPLETE.md`](docs/TIER_1_COMPLETE.md) — staging sign-off
+- [`docs/TIER_2.md`](docs/TIER_2.md) — Supabase + secure AI (current focus)
 - [`docs/PRODUCTION_ROLLOUT.md`](docs/PRODUCTION_ROLLOUT.md) — full path to production
 - [`docs/SUPABASE_SETUP.md`](docs/SUPABASE_SETUP.md) — Phase 2 backend setup
 - [`docs/STAGING_TEST_PLAN.md`](docs/STAGING_TEST_PLAN.md) — QA checklist

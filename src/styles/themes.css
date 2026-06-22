@@ -2349,6 +2349,17 @@ body::before {
   color: var(--parchment);
   background: color-mix(in srgb, var(--verdigris) 22%, var(--void-mid));
   border-bottom: 1px solid var(--border-dim);
+  position: relative;
+  z-index: 50;
+}
+
+.staging-banner strong {
+  flex-shrink: 0;
+}
+
+.staging-banner span {
+  flex: 1 1 12rem;
+  min-width: 0;
 }
 
 .staging-banner code {
@@ -2362,6 +2373,120 @@ body::before {
 @media (max-width: 768px) {
   .page {
     padding-bottom: calc(var(--nav-mobile-h) + 24px);
+  }
+
+  :root {
+    --pad-x: 18px;
+  }
+
+  .container,
+  .page-wrap.container,
+  .fc-wrap,
+  .cs-wrap,
+  .rep-wrap.container {
+    padding-left: var(--pad-x) !important;
+    padding-right: var(--pad-x) !important;
+  }
+
+  .dash-header {
+    padding-top: 20px !important;
+    padding-bottom: 16px !important;
+  }
+
+  .dash-header-inner {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 14px;
+  }
+
+  .dash-header-inner > div:first-child {
+    padding-right: 46px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dash-streak-badge {
+    flex-direction: row;
+    gap: 10px;
+    padding: 8px 14px !important;
+  }
+
+  .dash-streak-lbl {
+    margin-top: 0 !important;
+  }
+
+  .dash-streak-n {
+    font-size: 24px !important;
+  }
+
+  .dash-meta-chip {
+    max-width: 100%;
+  }
+
+  .kpi {
+    min-width: 0 !important;
+    flex: 1 1 calc(50% - 5px) !important;
+  }
+
+  .kpi-val {
+    font-size: 22px !important;
+  }
+
+  .plan-countdown-val {
+    font-size: clamp(1rem, 3.8vw, 1.25rem) !important;
+  }
+
+  .plan-countdown-unit {
+    min-width: 2.35rem !important;
+  }
+
+  .plan-countdown-sep {
+    font-size: 0.9rem !important;
+  }
+
+  .page-head,
+  .fc-header > div:first-child,
+  .cs-header > div:first-child,
+  .rep-header > div:first-child,
+  .ab-header > div:first-child {
+    padding-right: 46px;
+    min-width: 0;
+  }
+
+  .fc-dash-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .fc-kpi {
+    min-width: 0;
+  }
+
+  .mob-label {
+    font-size: 9px !important;
+    letter-spacing: 0.02em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0 2px;
+  }
+
+  .staging-banner {
+    padding: 8px 14px;
+    font-size: 11px;
+    gap: 4px 8px;
+  }
+
+  .acad-notif-fab {
+    top: 10px !important;
+    bottom: auto !important;
+    right: 12px !important;
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .app:has(.staging-banner) .acad-notif-fab {
+    top: 68px !important;
   }
 
   .dash-body {
@@ -2420,12 +2545,6 @@ body::before {
 
   .sg-conv-list {
     max-height: 160px;
-  }
-
-  .acad-notif-fab {
-    top: auto;
-    bottom: calc(var(--nav-mobile-h) + 12px);
-    right: 12px;
   }
 
   .acad-toast-stack {
@@ -2601,7 +2720,12 @@ body::before {
 
 @media (max-width: 520px) {
   .fc-mastery-breakdown-full .fc-mastery-row {
-    grid-template-columns: 8px 68px 1fr 28px;
+    grid-template-columns: 8px 68px 1fr minmax(32px, auto);
+  }
+
+  .fc-mastery-count {
+    min-width: 1.5em;
+    font-variant-numeric: tabular-nums;
   }
 }
 

@@ -34,12 +34,42 @@ Deno.serve(async (req) => {
     }
 
     const { messages, subject = 'General', method = 'socratic' } = await req.json();
+    const systemPrompt = (METHOD_PROMPTS[method] || METHOD_PROMPTS.socratic)(subject);
+    const apiMessages = (messages || []).map((m: { role: string; content: string }) => ({
+      role: m.role,
+      content: m.content,
+    }));
+
+    const deepseekKey = Deno.env.get('DEEPSEEK_API_KEY');
+    if (deepseekKey) {
+      const dsRes = await fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${deepseekKey}`,
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          max_tokens: 1024,
+          messages: [{ role: 'system', content: systemPrompt }, ...apiMessages],
+        }),
+      });
+      if (dsRes.ok) {
+        const dsData = await dsRes.json();
+        const reply = dsData.choices?.[0]?.message?.content ?? '';
+        if (reply) {
+          return new Response(JSON.stringify({ reply }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      }
+    }
+
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'AI not configured' }), { status: 503, headers: corsHeaders });
     }
 
-    const systemPrompt = (METHOD_PROMPTS[method] || METHOD_PROMPTS.socratic)(subject);
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -51,10 +81,7 @@ Deno.serve(async (req) => {
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1024,
         system: systemPrompt,
-        messages: (messages || []).map((m: { role: string; content: string }) => ({
-          role: m.role,
-          content: m.content,
-        })),
+        messages: apiMessages,
       }),
     });
 
