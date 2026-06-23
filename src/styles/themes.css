@@ -1052,6 +1052,71 @@ body::before {
   font-size: 0.9rem;
 }
 
+.curriculum-preview {
+  margin: 20px 0;
+  padding: 16px;
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-md, 8px);
+  max-height: 320px;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.curriculum-preview-label {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.curriculum-badge {
+  margin-left: 8px;
+  font-weight: 600;
+  color: var(--success, #2d8a4e);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.curriculum-level-title {
+  margin: 12px 0 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.curriculum-sem-title {
+  margin: 8px 0 4px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.curriculum-course-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+
+.curriculum-course-list li {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr auto;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-dim);
+  font-size: 0.85rem;
+  align-items: baseline;
+}
+
+.curriculum-code {
+  font-size: 0.8rem;
+}
+
+.curriculum-meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
 /* Loader spinner */
 .lo-spinner {
   width: 28px;

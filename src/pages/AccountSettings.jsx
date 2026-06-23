@@ -180,6 +180,9 @@ export default function AccountSettings({ setPage }) {
               <>
                 <p className="as-row-desc">
                   <strong>{ap.institutionName}</strong> · {ap.programName}
+                  {ap.source === 'catalogue' && (
+                    <span className="as-badge-warn" style={{ color: 'var(--success, #2d8a4e)' }}> Official catalogue</span>
+                  )}
                   {ap.source === 'fallback' && (
                     <span className="as-badge-warn"> Estimated (offline)</span>
                   )}

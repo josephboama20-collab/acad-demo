@@ -60,6 +60,7 @@ export default function Onboarding({ setPage }) {
     return {
       universityName: answers.universityName,
       programName: answers.programName,
+      departmentName: answers.departmentName,
       country: answers.country,
       trackType: answers.trackType,
       secondaryProgram: answers.secondaryProgram,
@@ -211,6 +212,7 @@ export default function Onboarding({ setPage }) {
     }
     if (current.type === 'text') {
       const val = (answers[current.field] || '').trim();
+      if (current.optional && !val) return true;
       if (!val) return false;
       if (current.field === 'universityName') return validateInstitutionName(val).ok;
       if (current.field === 'programName') return validateProgramName(val).ok;
@@ -367,6 +369,9 @@ export default function Onboarding({ setPage }) {
               Use the official, properly capitalized name. AI cannot map your programme from vague or lowercase entries.
             </p>
           )}
+          {current.optional && (
+            <p className="ob-hint">Optional — skip if you are not sure; Acad will still map your programme.</p>
+          )}
           <input
             className="form-input"
             placeholder={current.placeholder}
@@ -435,6 +440,9 @@ export default function Onboarding({ setPage }) {
               <p><strong>{learnedProfile.institutionName}</strong> · {learnedProfile.programName}</p>
               <p className="ob-hint">{learnedProfile.gradingScale?.label}</p>
               <p className="ob-hint">{Object.keys(learnedProfile.curriculum || {}).length} year levels mapped</p>
+              {learnedProfile.source === 'catalogue' && (
+                <p className="ob-hint ai-learn-success">Matched official UG course catalogue (CSCD / UGRC codes).</p>
+              )}
               {learnedProfile.source === 'ai' && (
                 <p className="ob-hint ai-learn-success">Mapped with AI from your university and programme names.</p>
               )}

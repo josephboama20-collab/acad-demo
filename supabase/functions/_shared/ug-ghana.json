@@ -1,0 +1,94 @@
+{
+  "institutionKey": "university-of-ghana",
+  "institutionName": "University of Ghana",
+  "gradingScale": {
+    "label": "University of Ghana grading scale",
+    "grades": [
+      { "letter": "A", "points": 4.0, "min": 80, "max": 100, "label": "Outstanding" },
+      { "letter": "B+", "points": 3.5, "min": 75, "max": 79, "label": "Very Good" },
+      { "letter": "B", "points": 3.0, "min": 70, "max": 74, "label": "Good" },
+      { "letter": "C+", "points": 2.5, "min": 65, "max": 69, "label": "Fairly Good" },
+      { "letter": "C", "points": 2.0, "min": 60, "max": 64, "label": "Average" },
+      { "letter": "D+", "points": 1.5, "min": 55, "max": 59, "label": "Below Average" },
+      { "letter": "D", "points": 1.0, "min": 50, "max": 54, "label": "Marginal Pass" },
+      { "letter": "E", "points": 0.5, "min": 45, "max": 49, "label": "Unsatisfactory" },
+      { "letter": "F", "points": 0, "min": 0, "max": 44, "label": "Fail" }
+    ]
+  },
+  "programmes": {
+    "bsc-computer-science": {
+      "matchPatterns": ["computer science"],
+      "excludePatterns": ["information technology", "information tech"],
+      "programName": "BSc Computer Science",
+      "departmentName": "Department of Computer Science, School of Physical and Mathematical Sciences",
+      "adaptationNotes": "Curriculum from the University of Ghana College of Basic & Applied Sciences handbook (Computer Science single major). Core CSCD and UGRC courses per level. Electives are not listed — add yours on the grade steps if required.",
+      "curriculum": {
+        "100": {
+          "1": [
+            { "code": "UGRC 150", "name": "Critical Thinking and Practical Reasoning", "credits": 3, "type": "ugrc" },
+            { "code": "MATH 121", "name": "Algebra and Trigonometry", "credits": 3, "type": "core" },
+            { "code": "STAT 101", "name": "Introduction to Statistics", "credits": 3, "type": "core" },
+            { "code": "CSCD 101", "name": "Introduction to Computer Science I", "credits": 3, "type": "core" }
+          ],
+          "2": [
+            { "code": "UGRC 110", "name": "Academic Writing I", "credits": 3, "type": "ugrc" },
+            { "code": "UGRC 131", "name": "Understanding Human Society", "credits": 3, "type": "ugrc" },
+            { "code": "MATH 122", "name": "Calculus I", "credits": 3, "type": "core" },
+            { "code": "STAT 102", "name": "Elementary Probability", "credits": 3, "type": "core" },
+            { "code": "CSCD 102", "name": "Introduction to Computer Science II", "credits": 3, "type": "core" }
+          ]
+        },
+        "200": {
+          "1": [
+            { "code": "UGRC 210", "name": "Academic Writing II", "credits": 3, "type": "ugrc" },
+            { "code": "CSCD 201", "name": "Information Systems", "credits": 3, "type": "core" },
+            { "code": "MATH 223", "name": "Calculus II", "credits": 3, "type": "core" },
+            { "code": "CSCD 205", "name": "Programming I (with C++)", "credits": 3, "type": "core" },
+            { "code": "CSCD 211", "name": "Computer Organization and Architecture", "credits": 3, "type": "core" },
+            { "code": "CSCD 207", "name": "Numerical Methods", "credits": 3, "type": "core" }
+          ],
+          "2": [
+            { "code": "UGRC 220", "name": "Introduction to African Studies", "credits": 3, "type": "ugrc" },
+            { "code": "CSCD 202", "name": "Programming II (Java)", "credits": 3, "type": "core" },
+            { "code": "CSCD 216", "name": "Data Structures & Algorithms", "credits": 3, "type": "core" },
+            { "code": "CSCD 218", "name": "Data Communications & Networking I", "credits": 3, "type": "core" },
+            { "code": "CSCD 212", "name": "Computer Ethics", "credits": 1, "type": "core" },
+            { "code": "CSCD 214", "name": "Digital Electronics", "credits": 2, "type": "core" }
+          ]
+        },
+        "300": {
+          "1": [
+            { "code": "CSCD 301", "name": "Object Oriented Analysis & Design", "credits": 3, "type": "core" },
+            { "code": "MATH 355", "name": "Discrete Mathematics", "credits": 3, "type": "core" },
+            { "code": "CSCD 311", "name": "Web Technologies & Development", "credits": 3, "type": "core" },
+            { "code": "CSCD 313", "name": "Database Management Systems", "credits": 3, "type": "core" },
+            { "code": "CSCD 315", "name": "Operating Systems", "credits": 3, "type": "core" }
+          ],
+          "2": [
+            { "code": "CSCD 302", "name": "Programming III (VB .NET)", "credits": 3, "type": "core" },
+            { "code": "CSCD 304", "name": "Design and Analysis of Algorithms", "credits": 3, "type": "core" },
+            { "code": "CSCD 306", "name": "Software Engineering", "credits": 3, "type": "core" },
+            { "code": "CSCD 312", "name": "Introduction to Artificial Intelligence", "credits": 3, "type": "core" },
+            { "code": "CSCD 314", "name": "Research Methods in Computing", "credits": 3, "type": "core" }
+          ]
+        },
+        "400": {
+          "1": [
+            { "code": "CSCD 415", "name": "Compilers", "credits": 3, "type": "core" },
+            { "code": "CSCD 417", "name": "Theory and Survey of Programming Languages", "credits": 3, "type": "core" },
+            { "code": "CSCD 419", "name": "Formal Methods and Models", "credits": 3, "type": "core" },
+            { "code": "CSCD 421", "name": "Accounting Principles in Computing", "credits": 3, "type": "core" },
+            { "code": "CSCD 400", "name": "Project", "credits": 3, "type": "core" }
+          ],
+          "2": [
+            { "code": "CSCD 416", "name": "System Programming", "credits": 3, "type": "core" },
+            { "code": "CSCD 418", "name": "Computer Systems Security", "credits": 3, "type": "core" },
+            { "code": "CSCD 422", "name": "Human Computer Interaction", "credits": 3, "type": "core" },
+            { "code": "CSCD 424", "name": "Management Principles in Computing", "credits": 3, "type": "core" },
+            { "code": "CSCD 400", "name": "Project", "credits": 3, "type": "core" }
+          ]
+        }
+      }
+    }
+  }
+}

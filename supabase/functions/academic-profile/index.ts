@@ -1,5 +1,11 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { callOpenAI, getOpenAIApiKey } from '../_shared/openai.ts';
+import {
+  buildProfileFromCatalogue,
+  findCatalogueMatch,
+  mergeCatalogueWithAi,
+  PROMPT_RULES_UG,
+} from '../_shared/ugCatalogue.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,6 +38,7 @@ function buildLearnPrompt(params: Record<string, unknown>) {
   const secondaryProgram = params.secondaryProgram ?? '';
   const studentPath = params.studentPath === 'new' ? 'Just starting Level 100 Semester 1' : `Continuing at Level ${params.currentLevel} Semester ${params.currentSemester}`;
   const departmentName = params.departmentName ?? '';
+  const ghanaRules = String(country).toLowerCase().includes('ghana') ? `\n\n${PROMPT_RULES_UG}` : '';
 
   return `You are Acad's academic intelligence engine. Infer the academic structure for this student from public programme knowledge.
 
@@ -43,7 +50,7 @@ ${departmentName ? `- Department/Faculty: ${departmentName}` : ''}
 - Structure: ${trackType}${secondaryProgram ? ` (combined with ${secondaryProgram})` : ''}
 - Journey: ${studentPath}
 
-Infer grading scale, semester structure, and core courses per level/semester. Be accurate to known public curricula.
+Infer grading scale, semester structure, and core courses per level/semester. Be accurate to known public curricula. Do not invent course codes.${ghanaRules}
 
 ${PROFILE_SCHEMA_HINT}`;
 }
@@ -84,13 +91,33 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
     }
 
+    const { params } = await req.json();
+    const learnParams = params || {};
+
+    const catalogueMatch = findCatalogueMatch(learnParams);
+    if (catalogueMatch) {
+      const catalogueBase = buildProfileFromCatalogue(learnParams, catalogueMatch);
+      const needsAiMerge = learnParams.trackType === 'Combined major' && learnParams.secondaryProgram;
+
+      if (!needsAiMerge) {
+        return new Response(JSON.stringify({ profile: catalogueBase }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
     const openaiKey = getOpenAIApiKey();
     if (!openaiKey) {
+      if (catalogueMatch) {
+        const catalogueBase = buildProfileFromCatalogue(learnParams, catalogueMatch);
+        return new Response(JSON.stringify({ profile: catalogueBase }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       return new Response(JSON.stringify({ error: 'AI not configured' }), { status: 503, headers: corsHeaders });
     }
 
-    const { params } = await req.json();
-    const prompt = buildLearnPrompt(params || {});
+    const prompt = buildLearnPrompt(learnParams);
     const system = 'You output only valid JSON academic profile data. No markdown fences or prose.';
 
     const { text, error } = await callOpenAI({
@@ -104,18 +131,38 @@ Deno.serve(async (req) => {
     });
 
     if (!text) {
+      if (catalogueMatch) {
+        const catalogueBase = buildProfileFromCatalogue(learnParams, catalogueMatch);
+        return new Response(JSON.stringify({ profile: catalogueBase }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       return new Response(JSON.stringify({ error: 'AI request failed', detail: error }), {
         status: 502,
         headers: corsHeaders,
       });
     }
 
-    const profile = parseJsonFromText(text);
-    if (!profile) {
+    const aiProfile = parseJsonFromText(text);
+    if (!aiProfile) {
+      if (catalogueMatch) {
+        const catalogueBase = buildProfileFromCatalogue(learnParams, catalogueMatch);
+        return new Response(JSON.stringify({ profile: catalogueBase }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       return new Response(JSON.stringify({ error: 'Could not parse AI profile' }), { status: 502, headers: corsHeaders });
     }
 
-    return new Response(JSON.stringify({ profile: { ...profile, source: 'ai' } }), {
+    if (catalogueMatch) {
+      const catalogueBase = buildProfileFromCatalogue(learnParams, catalogueMatch);
+      const merged = mergeCatalogueWithAi(catalogueBase, { ...aiProfile, source: 'catalogue' });
+      return new Response(JSON.stringify({ profile: merged }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify({ profile: { ...aiProfile, source: 'ai' } }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e) {

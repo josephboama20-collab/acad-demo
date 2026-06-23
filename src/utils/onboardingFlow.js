@@ -111,6 +111,18 @@ export function buildOnboardingFlow(ctx) {
     });
   }
 
+  if (country === 'Ghana' && programName?.trim() && trackType) {
+    steps.push({
+      type: 'text',
+      id: 'departmentName',
+      field: 'departmentName',
+      q: 'Which department or school hosts your programme?',
+      hint: 'Helps Acad match the official course catalogue — e.g. School of Physical and Mathematical Sciences for Computer Science.',
+      placeholder: 'e.g. School of Physical and Mathematical Sciences',
+      optional: true,
+    });
+  }
+
   if (trackType === 'Combined major') {
     steps.push({
       type: 'text',
