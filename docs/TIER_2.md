@@ -23,21 +23,20 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 VITE_APP_ENV=staging
 ```
 
-Do **not** set `VITE_DEEPSEEK_API_KEY` on Netlify — use edge functions only.
+Do **not** set `VITE_OPENAI_API_KEY` or other `VITE_*` AI keys on Netlify — use edge functions only.
 
 Preloaded demo UI removed; testers create accounts via Sign up.
 
 ### 2.3 Edge functions (secure AI)
 
 ```bash
-supabase secrets set DEEPSEEK_API_KEY=sk-...
-supabase secrets set ANTHROPIC_API_KEY=sk-ant-...   # optional fallback
+supabase secrets set OPENAI_API_KEY=sk-...
 supabase functions deploy buddy-chat
 supabase functions deploy academic-profile
 supabase functions deploy delete-account
 ```
 
-`buddy-chat` tries DeepSeek first, then Anthropic.
+Edge functions use OpenAI (`gpt-4.1-nano` for Buddy, `gpt-4.1-mini` for programme learning).
 
 ### 2.4 Seed demo users
 

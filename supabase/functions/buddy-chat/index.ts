@@ -1,9 +1,12 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { callOpenAI } from '../_shared/openai.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const BUDDY_MODEL = 'gpt-4.1-nano';
 
 const METHOD_PROMPTS: Record<string, (subject: string) => string> = {
   socratic: (s) => `You are Acad's Socratic Study Buddy for ${s}. Guide through questions, not direct answers. Use markdown sparingly.`,
@@ -33,6 +36,11 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
     }
 
+    const openaiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openaiKey) {
+      return new Response(JSON.stringify({ error: 'AI not configured' }), { status: 503, headers: corsHeaders });
+    }
+
     const { messages, subject = 'General', method = 'socratic' } = await req.json();
     const systemPrompt = (METHOD_PROMPTS[method] || METHOD_PROMPTS.socratic)(subject);
     const apiMessages = (messages || []).map((m: { role: string; content: string }) => ({
@@ -40,61 +48,20 @@ Deno.serve(async (req) => {
       content: m.content,
     }));
 
-    const deepseekKey = Deno.env.get('DEEPSEEK_API_KEY');
-    if (deepseekKey) {
-      const dsRes = await fetch('https://api.deepseek.com/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${deepseekKey}`,
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          max_tokens: 1024,
-          messages: [{ role: 'system', content: systemPrompt }, ...apiMessages],
-        }),
-      });
-      if (dsRes.ok) {
-        const dsData = await dsRes.json();
-        const reply = dsData.choices?.[0]?.message?.content ?? '';
-        if (reply) {
-          return new Response(JSON.stringify({ reply }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
-      }
-    }
-
-    const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
-    if (!apiKey) {
-      return new Response(JSON.stringify({ error: 'AI not configured' }), { status: 503, headers: corsHeaders });
-    }
-
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        system: systemPrompt,
-        messages: apiMessages,
-      }),
+    const { text: reply, error } = await callOpenAI({
+      apiKey: openaiKey,
+      model: BUDDY_MODEL,
+      maxTokens: 512,
+      messages: [{ role: 'system', content: systemPrompt }, ...apiMessages],
     });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      return new Response(JSON.stringify({ error: 'AI request failed', detail: errText }), {
+    if (!reply) {
+      return new Response(JSON.stringify({ error: 'AI request failed', detail: error }), {
         status: 502,
         headers: corsHeaders,
       });
     }
 
-    const data = await res.json();
-    const reply = data.content?.[0]?.text ?? '';
     return new Response(JSON.stringify({ reply }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

@@ -138,7 +138,7 @@ export default function Onboarding({ setPage }) {
   }, [current?.type, focusAnalysis, maxFocusCourses, focusInitialized]);
 
   useEffect(() => {
-    if (current?.type !== 'aiLearn' || aiLearnDone || aiLearning) return;
+    if (current?.type !== 'aiLearn' || aiLearnDone) return;
     let cancelled = false;
     setAiLearning(true);
     setAiError('');
@@ -147,7 +147,6 @@ export default function Onboarding({ setPage }) {
         if (cancelled) return;
         setLearnedProfile(profile);
         setAiLearnDone(true);
-        setAiLearning(false);
       })
       .catch(() => {
         if (cancelled) return;
@@ -155,12 +154,14 @@ export default function Onboarding({ setPage }) {
         setLearnedProfile(fallback);
         setAiLearnDone(true);
         setAiError('Could not reach AI. A basic profile was created — review and edit it on the next step.');
+      })
+      .finally(() => {
         setAiLearning(false);
       });
     return () => {
       cancelled = true;
     };
-  }, [current?.type, current?.id, aiLearnDone, aiLearning, learnParams]);
+  }, [current?.type, current?.id, aiLearnDone, learnParams]);
 
   function toggleFocusCourse(course) {
     setSelectedFocus((prev) => {
