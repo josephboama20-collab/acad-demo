@@ -168,7 +168,6 @@ export function SemestersProvider({ children }) {
     [persist],
   );
 
-  /** Move entering level/semester forward (e.g. after finishing a term). */
   const advanceAcademicPosition = useCallback(
     ({ level, semester }) => {
       if (!level || !semester) return { ok: false, reason: 'invalid_position' };
@@ -184,6 +183,27 @@ export function SemestersProvider({ children }) {
         };
       });
       return { ok: true, level, semester };
+    },
+    [persist],
+  );
+
+  /** Re-run AI programme learning; keeps grade history and semester records. */
+  const relearnAcademicProfile = useCallback(
+    (nextProfile) => {
+      if (!nextProfile) return;
+      persist((s) => {
+        const prev = s.academicProfile || {};
+        return {
+          ...s,
+          academicProfile: {
+            ...nextProfile,
+            semesterHistory: prev.semesterHistory ?? nextProfile.semesterHistory ?? [],
+            currentLevel: prev.currentLevel ?? nextProfile.currentLevel,
+            currentSemester: prev.currentSemester ?? nextProfile.currentSemester,
+            learnedAt: new Date().toISOString(),
+          },
+        };
+      });
     },
     [persist],
   );
@@ -318,13 +338,14 @@ export function SemestersProvider({ children }) {
       closeSemester,
       initializeBaseline,
       initializeAcademicProfile,
+      relearnAcademicProfile,
       advanceAcademicPosition,
       recordSemesterOutcome,
       getDeltas,
       snapshotAvg,
       hasActiveSemester: Boolean(state.currentSemesterId),
     }),
-    [state, currentSemester, closedSemesters, latestClosed, startSemester, closeSemester, initializeBaseline, initializeAcademicProfile, advanceAcademicPosition, recordSemesterOutcome, getDeltas, snapshotAvg],
+    [state, currentSemester, closedSemesters, latestClosed, startSemester, closeSemester, initializeBaseline, initializeAcademicProfile, relearnAcademicProfile, advanceAcademicPosition, recordSemesterOutcome, getDeltas, snapshotAvg],
   );
 
   return <SemestersContext.Provider value={value}>{children}</SemestersContext.Provider>;

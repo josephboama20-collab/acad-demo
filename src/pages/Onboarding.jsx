@@ -4,8 +4,9 @@ import { useSemesters } from '../contexts/SemestersContext.jsx';
 import SemesterCourseEditor from '../components/SemesterCourseEditor.jsx';
 import AcademicProfileReview from '../components/AcademicProfileReview.jsx';
 import CourseFocusPicker from '../components/CourseFocusPicker.jsx';
-import { learnAcademicProfile, buildFallbackAcademicProfile } from '../utils/academicProfileAI.js';
+import { learnAcademicProfile } from '../utils/academicProfileAI.js';
 import { getGradeLettersFromProfile, getGradePointsMap } from '../utils/academicProfileUtils.js';
+import AiLearnProgress from '../components/AiLearnProgress.jsx';
 import {
   hasMinimumAcademicSetup,
   minimumSemesterHistoryRequirement,
@@ -49,6 +50,8 @@ export default function Onboarding({ setPage }) {
   const [aiLearnDone, setAiLearnDone] = useState(false);
   const [aiLearning, setAiLearning] = useState(false);
   const [aiError, setAiError] = useState('');
+  const [aiLearnAttempt, setAiLearnAttempt] = useState(0);
+  const [aiLearnElapsed, setAiLearnElapsed] = useState(0);
   const stepIdRef = useRef(null);
   const prevTotalRef = useRef(0);
 
@@ -138,30 +141,44 @@ export default function Onboarding({ setPage }) {
   }, [current?.type, focusAnalysis, maxFocusCourses, focusInitialized]);
 
   useEffect(() => {
+    if (!aiLearning) {
+      setAiLearnElapsed(0);
+      return undefined;
+    }
+    const timer = setInterval(() => setAiLearnElapsed((s) => s + 1), 1000);
+    return () => clearInterval(timer);
+  }, [aiLearning]);
+
+  function retryAiLearn() {
+    setAiLearnDone(false);
+    setLearnedProfile(null);
+    setAiError('');
+    setAiLearnAttempt((n) => n + 1);
+  }
+
+  useEffect(() => {
     if (current?.type !== 'aiLearn' || aiLearnDone) return;
     let cancelled = false;
     setAiLearning(true);
     setAiError('');
     learnAcademicProfile(learnParams)
-      .then((profile) => {
+      .then(({ profile, source, error }) => {
         if (cancelled) return;
         setLearnedProfile(profile);
         setAiLearnDone(true);
+        if (source === 'fallback' && error) setAiError(error);
       })
-      .catch(() => {
+      .catch((err) => {
         if (cancelled) return;
-        const fallback = buildFallbackAcademicProfile(learnParams);
-        setLearnedProfile(fallback);
-        setAiLearnDone(true);
-        setAiError('Could not reach AI. A basic profile was created — review and edit it on the next step.');
+        setAiError(err?.message || 'Could not reach AI. Tap Retry to try again.');
       })
       .finally(() => {
-        setAiLearning(false);
+        if (!cancelled) setAiLearning(false);
       });
     return () => {
       cancelled = true;
     };
-  }, [current?.type, current?.id, aiLearnDone, learnParams]);
+  }, [current?.type, current?.id, aiLearnDone, learnParams, aiLearnAttempt]);
 
   function toggleFocusCourse(course) {
     setSelectedFocus((prev) => {
@@ -408,18 +425,23 @@ export default function Onboarding({ setPage }) {
 
     if (current.type === 'aiLearn') {
       return (
-        <div className="ai-learn-panel">
-          {aiLearning && <div className="lo-spinner" aria-hidden="true" />}
-          {aiLearnDone && learnedProfile && (
+        <AiLearnProgress
+          loading={aiLearning}
+          elapsedSeconds={aiLearnElapsed}
+          error={aiError}
+          onRetry={!aiLearning && !aiLearnDone && aiError ? retryAiLearn : null}
+          summary={aiLearnDone && learnedProfile ? (
             <div className="ai-learn-summary">
               <p><strong>{learnedProfile.institutionName}</strong> · {learnedProfile.programName}</p>
               <p className="ob-hint">{learnedProfile.gradingScale?.label}</p>
               <p className="ob-hint">{Object.keys(learnedProfile.curriculum || {}).length} year levels mapped</p>
+              {learnedProfile.source === 'ai' && (
+                <p className="ob-hint ai-learn-success">Mapped with AI from your university and programme names.</p>
+              )}
               <p className="ob-accuracy-note">AI can make mistakes — you will review and edit everything on the next step.</p>
             </div>
-          )}
-          {aiError && <p className="form-error">{aiError}</p>}
-        </div>
+          ) : null}
+        />
       );
     }
 
