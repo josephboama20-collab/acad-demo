@@ -170,6 +170,13 @@ export function AuthProvider({ children }) {
       options: { data: { name } },
     });
     if (error) throw error;
+    // If the project requires email confirmation, signUp returns a user but no session.
+    // Do not continue into onboarding in that half-authenticated state.
+    if (data.user && !data.session) {
+      throw new Error(
+        'Account created - check your email to confirm, then sign in. If you did not get a message, try signing in with the same credentials.',
+      );
+    }
     if (data.user) {
       const scholar = mergeScholar({
         user: { name, email },

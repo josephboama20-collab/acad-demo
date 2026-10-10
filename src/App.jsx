@@ -118,6 +118,14 @@ export default function App() {
     }
   }, [user, profile, page]);
 
+  // Authenticated users who hit the public landing (e.g. logo misclick) go back into the app
+  useEffect(() => {
+    if (!user) return;
+    if (page === 'landing' || page === 'auth') {
+      setPage(profile ? 'dashboard' : 'onboarding');
+    }
+  }, [user, profile, page]);
+
   useEffect(() => {
     if (!user) return;
     const gated = ['dashboard', 'courses', 'flashcards', 'habit-tracker', 'semester-journey', 'reports', 'study-groups', 'study-room', 'projects', 'forge', 'settings', 'manage-plan'];

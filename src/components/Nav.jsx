@@ -125,7 +125,8 @@ export default function Nav({ page, setPage, authMode = 'signup', onShowTutorial
   if (page === 'onboarding') {
     return (
       <nav id="global-nav" className="nav-onboarding" aria-label="Global navigation">
-        <button id="btn-nav-logo-ob" className="nav-logo" aria-label="Acad home" onClick={() => go('landing')}>
+        {/* Stay on onboarding - leaving mid-setup dumps users to the public landing and looks like a session loss */}
+        <button id="btn-nav-logo-ob" className="nav-logo" aria-label="Acad" type="button" disabled>
           <NavMark />
         </button>
         <div style={{ marginLeft: 'auto' }}>

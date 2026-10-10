@@ -181,12 +181,38 @@ export default function Auth({ setPage, initialMode = 'signup' }) {
           )}
           {mode === 'signup' && isCloudEnabled() && (
             <label className="auth-terms">
-              <input type="checkbox" checked={form.acceptTerms} onChange={(e) => update('acceptTerms', e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={form.acceptTerms}
+                onChange={(e) => update('acceptTerms', e.target.checked)}
+                aria-required="true"
+              />
               <span>
                 I agree to the{' '}
-                <button type="button" className="auth-terms-link" onClick={() => setPage('privacy')}>Privacy Policy</button>
+                <button
+                  type="button"
+                  className="auth-terms-link"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setPage('privacy');
+                  }}
+                >
+                  Privacy Policy
+                </button>
                 {' '}and{' '}
-                <button type="button" className="auth-terms-link" onClick={() => setPage('terms')}>Terms of Use</button>.
+                <button
+                  type="button"
+                  className="auth-terms-link"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setPage('terms');
+                  }}
+                >
+                  Terms of Use
+                </button>
+                .
               </span>
             </label>
           )}
