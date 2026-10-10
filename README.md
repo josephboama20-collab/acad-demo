@@ -1,6 +1,6 @@
 # Acad
 
-Plan your academic comeback — a React study platform that scales tools to your recovery window (2–3 weeks through 3 months).
+Plan your academic comeback - a React study platform that scales tools to your recovery window (2–3 weeks through 3 months).
 
 ## Modes
 
@@ -17,7 +17,7 @@ Plan your academic comeback — a React study platform that scales tools to your
 
 ## Local-only mode (no Supabase)
 
-Omit `VITE_SUPABASE_*` — cosmetic auth, data stays in the browser. Not used for staging tests.
+Omit `VITE_SUPABASE_*` - cosmetic auth, data stays in the browser. Not used for staging tests.
 
 ## Scripts
 
