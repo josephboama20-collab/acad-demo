@@ -13,6 +13,8 @@ import {
 import { getConditioningProgress } from '../utils/conditioningProgress.js';
 import { useHabits } from '../contexts/HabitsContext.jsx';
 import PlanCountdown from '../components/PlanCountdown.jsx';
+import SetupChecklist from '../components/SetupChecklist.jsx';
+import DeferredSetupPrompt from '../components/DeferredSetupPrompt.jsx';
 import Kpi from '../components/Kpi.jsx';
 import TaskSkeleton from '../components/TaskSkeleton.jsx';
 
@@ -76,7 +78,7 @@ function ConsistencyMap({ history }) {
 }
 
 export default function Dashboard({ setPage }) {
-  const { user, profile, streak, metrics, completeTask } = useAuth();
+  const { user, profile, streak, metrics, completeTask, setProfile } = useAuth();
   const { courses, weakTopics, allTopics } = useCourses();
   const { dueCards, masteryMap } = useFlashcards();
   const { plan, isToolEnabled, enabledTools } = usePlanCapacity();
@@ -87,6 +89,22 @@ export default function Dashboard({ setPage }) {
   const [seconds, setSeconds] = useState(600);
   const [running, setRunning] = useState(false);
   const [done, setDone] = useState(false);
+  const [showSetupChecklist, setShowSetupChecklist] = useState(() => {
+    try {
+      return localStorage.getItem('acad_setup_checklist_dismissed') !== '1';
+    } catch {
+      return true;
+    }
+  });
+  const [gateMessage, setGateMessage] = useState(() => {
+    try {
+      const msg = sessionStorage.getItem('acad_gate_message');
+      if (msg) sessionStorage.removeItem('acad_gate_message');
+      return msg || '';
+    } catch {
+      return '';
+    }
+  });
 
   function loadTask() {
     setLoading(true);
@@ -190,6 +208,24 @@ export default function Dashboard({ setPage }) {
       </header>
 
       <div className="dash-body container">
+        {gateMessage && (
+          <div className="dash-gate-banner" role="status">
+            <p>{gateMessage}</p>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setGateMessage('')}>Dismiss</button>
+          </div>
+        )}
+
+        {showSetupChecklist && conditioning.setupPct < 80 && (
+          <SetupChecklist
+            items={conditioning.setupItems}
+            setupPct={conditioning.setupPct}
+            setPage={setPage}
+            onDismiss={() => setShowSetupChecklist(false)}
+          />
+        )}
+
+        <DeferredSetupPrompt profile={profile} setProfile={setProfile} />
+
         <div className="kpi-row dash-kpi-row" role="list" aria-label="Performance metrics">
           <Kpi id="kpi-streak" value={streak.current} label="Day Streak" gold />
           <Kpi id="kpi-completion" value={`${Math.round(metrics.completionRate * 100)}%`} label="Completion Rate" />
@@ -203,11 +239,14 @@ export default function Dashboard({ setPage }) {
               <p className="card-label">Comeback plan</p>
             </div>
             <PlanCountdown profile={profile} endedLabel="Window complete" />
+            <p className="dash-timeline-note">
+              You can log past semesters anytime. Advancing to your next term unlocks when this countdown ends.
+            </p>
             <div className="prog-bar dash-conditioning-bar" role="progressbar" aria-valuenow={conditioning.timeline.pct} aria-valuemin={0} aria-valuemax={100}>
               <div className="prog-fill dash-conditioning-fill timeline" style={{ width: `${conditioning.timeline.pct}%` }} />
             </div>
             {timelineBlocked && (
-              <p className="dash-timeline-gate">Semester logging unlocks at zero.</p>
+              <p className="dash-timeline-gate">Next-semester advance unlocks when the countdown reaches zero. Past terms can still be added from Semester journey.</p>
             )}
             {canLogSemesterNow && (
               <button type="button" className="btn btn-primary btn-sm dash-hero-cta" onClick={() => setPage('semester-update')}>
@@ -245,7 +284,7 @@ export default function Dashboard({ setPage }) {
                   <p className="dash-semester-program">{ap.programName}</p>
                 )}
                 {pendingSemesterUpdate && !canLogSemesterNow && (
-                  <p className="dash-semester-note">Logging opens when plan ends</p>
+                  <p className="dash-semester-note">Advance to next term when your comeback window ends — add past grades anytime.</p>
                 )}
               </section>
             )}
@@ -334,7 +373,7 @@ export default function Dashboard({ setPage }) {
             <span className="dash-conditioning-overall font-mono">{conditioning.overallPct}% complete</span>
           </div>
           <div className="dash-conditioning-sections dash-conditioning-grid">
-            {conditioning.sections.filter((s) => !s.optional).map((section) => (
+            {conditioning.sections.filter((s) => s.group === 'conditioning' && !s.optional).map((section) => (
               <div key={section.id} className={`dash-conditioning-row${section.done ? ' done' : ' pending'}`}>
                 <div className="dash-conditioning-row-body">
                   <span className="dash-conditioning-label">{section.label}</span>

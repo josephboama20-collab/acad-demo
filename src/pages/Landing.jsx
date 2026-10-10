@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import {
   Activity,
   ArrowRight,
@@ -9,6 +10,9 @@ import {
   Layers,
   Minus,
 } from 'lucide-react';
+import { ONBOARDING_QUESTIONS } from '../data/constants.js';
+import { getPlanSummary } from '../utils/planCapacity.js';
+import { setPreAccountPrefs } from '../utils/preAccountPrefs.js';
 
 const FEATURES = [
   { icon: BookOpen, title: 'Your courses', desc: 'Add what you need to recover. Every tool orbits the courses you define.' },
@@ -40,7 +44,42 @@ const WITH = [
   'Reports that tell you what to study next',
 ];
 
+const DURATION_OPTS = ONBOARDING_QUESTIONS[0].opts;
+const INTENTION_OPTS = ONBOARDING_QUESTIONS[6].opts;
+const PATH_OPTS = [
+  'Just starting (Level 100, Semester 1)',
+  'I am already in my programme',
+];
+
 export default function Landing({ setPage }) {
+  const [duration, setDuration] = useState(DURATION_OPTS[1]);
+  const [intention, setIntention] = useState(INTENTION_OPTS[0]);
+  const [studentPath, setStudentPath] = useState(PATH_OPTS[1]);
+
+  const planPreview = useMemo(() => {
+    const summary = getPlanSummary({ duration }, 1);
+    const toolLabels = {
+      flashcards: 'Flashcards',
+      'ai-buddy': 'AI buddy',
+      'habit-tracker': 'Wellness',
+      reports: 'Reports',
+      projects: 'Projects',
+      'study-groups': 'Study groups',
+    };
+    return {
+      maxCourses: summary.maxCourses,
+      message: summary.message,
+      tools: summary.enabledTools
+        .filter((t) => !['dashboard', 'courses', 'semester-journey'].includes(t))
+        .map((t) => toolLabels[t] || t),
+    };
+  }, [duration]);
+
+  function savePrefsAndSignup() {
+    setPreAccountPrefs({ duration, intention, studentPath });
+    setPage('auth', 'signup');
+  }
+
   return (
     <div className="page lp-page anim-fade-in">
       <section className="lp-hero">
@@ -58,7 +97,7 @@ export default function Landing({ setPage }) {
                 and Acad scales its tools to the time you actually have.
               </p>
               <div className="lp-cta-row">
-                <button id="btn-gw-begin" type="button" className="btn btn-primary lp-cta-primary" onClick={() => setPage('auth', 'signup')}>
+                <button id="btn-gw-begin" type="button" className="btn btn-primary lp-cta-primary" onClick={savePrefsAndSignup}>
                   Start your plan
                   <ArrowRight size={16} aria-hidden="true" />
                 </button>
@@ -88,6 +127,73 @@ export default function Landing({ setPage }) {
                 <div><span className="font-mono">3</span><span>courses</span></div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="lp-section lp-section-tinted lp-planner">
+        <div className="lp-container">
+          <div className="lp-section-head">
+            <p className="lp-kicker">Before you sign up</p>
+            <h2 className="lp-section-title">Shape your comeback window</h2>
+            <p className="lp-section-desc">
+              Two quick choices — no account needed. The rest of setup happens inside Acad as you use it.
+            </p>
+          </div>
+          <div className="lp-planner-grid">
+            <div className="lp-planner-form card">
+              <p className="form-label">How much time do you have?</p>
+              <div className="lp-planner-opts" role="radiogroup" aria-label="Recovery window">
+                {DURATION_OPTS.map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    className={`ob-opt${duration === opt ? ' sel' : ''}`}
+                    onClick={() => setDuration(opt)}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+              <p className="form-label" style={{ marginTop: 20 }}>What would feel like a win?</p>
+              <div className="lp-planner-opts" role="radiogroup" aria-label="Primary intention">
+                {INTENTION_OPTS.map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    className={`ob-opt${intention === opt ? ' sel' : ''}`}
+                    onClick={() => setIntention(opt)}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+              <p className="form-label" style={{ marginTop: 20 }}>Where are you academically?</p>
+              <div className="lp-planner-opts" role="radiogroup" aria-label="Student path">
+                {PATH_OPTS.map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    className={`ob-opt${studentPath === opt ? ' sel' : ''}`}
+                    onClick={() => setStudentPath(opt)}
+                  >
+                    {opt.startsWith('Just') ? 'Just starting' : 'Already in programme'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <aside className="lp-planner-preview card">
+              <p className="card-label">Your plan preview</p>
+              <p className="lp-planner-preview-window">{duration}</p>
+              <ul className="lp-planner-preview-list">
+                <li><strong>{planPreview.maxCourses}</strong> focus course{planPreview.maxCourses === 1 ? '' : 's'}</li>
+                <li>{planPreview.tools.join(' · ')}</li>
+                <li>Advancing to a new semester unlocks when this window ends</li>
+              </ul>
+              <button type="button" className="btn btn-primary" style={{ width: '100%', marginTop: 16 }} onClick={savePrefsAndSignup}>
+                Create account with this plan
+              </button>
+            </aside>
           </div>
         </div>
       </section>
@@ -186,10 +292,10 @@ export default function Landing({ setPage }) {
         <div className="lp-container lp-final-inner">
           <div>
             <h2 className="lp-final-title">Ready to structure your comeback?</h2>
-            <p className="lp-final-desc">Create an account, set your recovery window, and add your first course.</p>
+            <p className="lp-final-desc">About five minutes after signup — then straight to your dashboard.</p>
           </div>
           <div className="lp-cta-row">
-            <button id="btn-gw-create" type="button" className="btn btn-primary" onClick={() => setPage('auth', 'signup')}>
+            <button id="btn-gw-create" type="button" className="btn btn-primary" onClick={savePrefsAndSignup}>
               Create account
             </button>
             <button id="btn-gw-signin" type="button" className="btn btn-outline" onClick={() => setPage('auth', 'login')}>
@@ -205,6 +311,10 @@ export default function Landing({ setPage }) {
             <img src="/favicon.svg" alt="" width={20} height={20} aria-hidden="true" />
             Acad
           </span>
+          <nav className="lp-foot-links" aria-label="Legal">
+            <button type="button" className="lp-foot-link" onClick={() => setPage('privacy')}>Privacy</button>
+            <button type="button" className="lp-foot-link" onClick={() => setPage('terms')}>Terms</button>
+          </nav>
           <span className="lp-foot-copy">© {new Date().getFullYear()} Acad</span>
         </div>
       </footer>

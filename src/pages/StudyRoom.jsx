@@ -18,6 +18,7 @@ import { useGame } from '../contexts/GameContext.jsx';
 import { useStudyGroups } from '../contexts/StudyGroupsContext.jsx';
 import Loader from '../components/Loader.jsx';
 import Modal from '../components/Modal.jsx';
+import BetaBadge from '../components/BetaBadge.jsx';
 import {
   DEFAULT_ROOM_SETTINGS,
   getRoom,
@@ -448,7 +449,7 @@ function ActiveRoom({
     <div className="sr-room sr-room-locked">
       <header className="sr-room-header">
         <span className="tag sr-lock-tag">
-          <Lock size={10} aria-hidden="true" /> Extreme session
+          <Lock size={10} aria-hidden="true" /> Extreme session <BetaBadge label="Beta" />
         </span>
         <span className="sr-room-code font-mono" aria-label={`Room code ${roomCode}`}>
           {roomCode}

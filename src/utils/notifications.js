@@ -5,11 +5,23 @@ import { useFlashcards } from '../contexts/FlashcardsContext.jsx';
 import { useHabits } from '../contexts/HabitsContext.jsx';
 import { canAccessProjects } from './projectEligibility.js';
 
-export function buildAppNotifications({ streak, metrics, profile, logs, todayLog, insights, dueCards, weakTopics, courses }) {
+export function buildAppNotifications({
+  streak,
+  metrics,
+  profile,
+  logs,
+  todayLog,
+  insights,
+  dueCards,
+  weakTopics,
+  courses,
+  settings,
+}) {
   const items = [];
   const hour = new Date().getHours();
+  const dailyReminders = settings?.dailyReminders !== false;
 
-  if (!todayLog && logs !== null) {
+  if (!todayLog && logs !== null && dailyReminders) {
     items.push({
       id: 'wellness-checkin',
       type: 'reminder',
@@ -86,13 +98,13 @@ export function buildAppNotifications({ streak, metrics, profile, logs, todayLog
 }
 
 export function useAppNotifications() {
-  const { streak, metrics, profile } = useAuth();
+  const { streak, metrics, profile, settings } = useAuth();
   const { logs, todayLog, insights } = useHabits();
   const { dueCards } = useFlashcards();
   const { weakTopics, courses } = useCourses();
 
   return useMemo(
-    () => buildAppNotifications({ streak, metrics, profile, logs, todayLog, insights, dueCards, weakTopics, courses }),
-    [streak, metrics, profile, logs, todayLog, insights, dueCards, weakTopics, courses],
+    () => buildAppNotifications({ streak, metrics, profile, logs, todayLog, insights, dueCards, weakTopics, courses, settings }),
+    [streak, metrics, profile, logs, todayLog, insights, dueCards, weakTopics, courses, settings],
   );
 }

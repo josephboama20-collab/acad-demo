@@ -4,31 +4,7 @@ import { getCompletedSemesterSlots, getSemesterCoursesFromProfile } from './acad
 const CALMING_HABIT_OVERRIDES = {
   duration: {
     q: 'How much time do you have for your comeback?',
-    hint: 'There is no wrong answer here. We will shape your plan around what is realistic for you.',
-  },
-  effort: {
-    q: 'What pace feels right for you right now?',
-    hint: 'Be honest with yourself — steady progress beats burnout every time.',
-  },
-  time: {
-    q: 'How much quiet study time can you give each day?',
-    hint: 'Even twenty focused minutes can move you forward. We will meet you where you are.',
-  },
-  position: {
-    q: 'Where are you emotionally, academically?',
-    hint: 'No judgment. This simply helps us pace things kindly.',
-  },
-  sharpness: {
-    q: 'How clear does your mind feel today?',
-    hint: 'Some days are sharper than others. That is completely normal.',
-  },
-  focus: {
-    q: 'Which area matters most to you right now?',
-    hint: 'Your courses and goals will shape everything Acad shows you.',
-  },
-  intention: {
-    q: 'What would feel like a win for you this season?',
-    hint: 'A small, honest intention is often the most powerful one.',
+    hint: 'This sets your course limit and which tools unlock. You can log past semesters anytime; advancing to a new term unlocks when this window ends.',
   },
 };
 
@@ -46,7 +22,37 @@ function habitStep(question) {
 }
 
 /**
- * Mixed onboarding: key parameters → AI learns programme → grade buttons from learned profile.
+ * Single semester slot for the fast onboarding path (most recent completed term only).
+ */
+export function getFastPathSemesterSlot(studentPath, currentLevel, currentSemester) {
+  if (studentPath === 'new') {
+    return {
+      level: 100,
+      semester: 0,
+      label: 'Most recent completed term',
+    };
+  }
+  if (!currentLevel || !currentSemester) {
+    return {
+      level: 100,
+      semester: 0,
+      label: 'Most recent completed term',
+    };
+  }
+  const completed = getCompletedSemesterSlots(currentLevel, currentSemester);
+  if (completed.length === 0) {
+    return {
+      level: 100,
+      semester: 0,
+      label: 'Most recent completed term',
+    };
+  }
+  return completed[completed.length - 1];
+}
+
+/**
+ * Fast onboarding: programme setup → AI profile → one semester → focus course.
+ * Habit questions and full semester history are deferred to in-product setup.
  */
 export function buildOnboardingFlow(ctx) {
   const {
@@ -54,12 +60,12 @@ export function buildOnboardingFlow(ctx) {
     programName,
     country,
     trackType,
-    secondaryProgram,
     studentPath,
     currentLevel,
     currentSemester,
     learnedProfile,
     aiLearnDone,
+    prefillDuration,
   } = ctx;
 
   const steps = [];
@@ -67,8 +73,8 @@ export function buildOnboardingFlow(ctx) {
   steps.push({
     type: 'welcome',
     id: 'welcome',
-    q: 'Welcome — let us set up your academic home',
-    hint: 'A few calm minutes. Tell us your university and programme accurately — Acad\'s AI maps your curriculum from what you enter. You can correct anything the AI gets wrong.',
+    q: 'Let us get you started',
+    hint: 'About five minutes — your university, one semester of grades, and your first focus course. Everything else unfolds inside Acad as you use it.',
   });
 
   steps.push({
@@ -76,7 +82,7 @@ export function buildOnboardingFlow(ctx) {
     id: 'universityName',
     field: 'universityName',
     q: 'Which university are you at?',
-    hint: 'Type the official name with proper capitalization (e.g. University of Ghana). Inaccurate or lowercase names may prevent AI from mapping your programme.',
+    hint: 'Official name helps AI map your programme. You can correct anything on the next steps.',
     placeholder: 'e.g. University of Ghana',
   });
 
@@ -86,7 +92,7 @@ export function buildOnboardingFlow(ctx) {
       id: 'programName',
       field: 'programName',
       q: 'Which programme are you studying?',
-      hint: 'Your full degree title, properly capitalized (e.g. BSc Information Technology). AI uses this to find your courses — edit or add courses later if it misses any.',
+      hint: 'Your full degree title — edit or add courses later if AI misses any.',
       placeholder: 'e.g. BSc Information Technology',
     });
   }
@@ -106,35 +112,12 @@ export function buildOnboardingFlow(ctx) {
       type: 'trackType',
       id: 'trackType',
       q: 'How is your programme structured?',
-      hint: 'Single major or combined — Acad adapts to your department\'s rules.',
+      hint: 'Single major or combined — you can add a second programme later in Settings.',
       opts: ['Single major', 'Combined major'],
     });
   }
 
-  if (country === 'Ghana' && programName?.trim() && trackType) {
-    steps.push({
-      type: 'text',
-      id: 'departmentName',
-      field: 'departmentName',
-      q: 'Which department or school hosts your programme?',
-      hint: 'Helps Acad match the official course catalogue — e.g. School of Physical and Mathematical Sciences for Computer Science.',
-      placeholder: 'e.g. School of Physical and Mathematical Sciences',
-      optional: true,
-    });
-  }
-
-  if (trackType === 'Combined major') {
-    steps.push({
-      type: 'text',
-      id: 'secondaryProgram',
-      field: 'secondaryProgram',
-      q: 'What is your second programme?',
-      hint: 'For combined majors — Acad will account for both.',
-      placeholder: 'e.g. BSc Economics',
-    });
-  }
-
-  if (trackType && (trackType !== 'Combined major' || secondaryProgram?.trim())) {
+  if (trackType) {
     steps.push({
       type: 'studentPath',
       id: 'studentPath',
@@ -143,8 +126,6 @@ export function buildOnboardingFlow(ctx) {
       opts: ['Just starting (Level 100, Semester 1)', 'I am already in my programme'],
     });
   }
-
-  steps.push(habitStep(ONBOARDING_QUESTIONS[0])); // duration
 
   if (studentPath === 'continuing' && universityName && programName) {
     steps.push({
@@ -161,12 +142,14 @@ export function buildOnboardingFlow(ctx) {
       type: 'semesterPick',
       id: 'currentSemester',
       q: `Which semester of Level ${currentLevel} are you in?`,
-      hint: 'This tells us what you have already completed.',
+      hint: 'We will ask for your most recent completed term only — add older terms later from Semester journey.',
       opts: ['Semester 1', 'Semester 2'],
     });
   }
 
-  steps.push(habitStep(ONBOARDING_QUESTIONS[1])); // effort
+  if (!prefillDuration) {
+    steps.push(habitStep(ONBOARDING_QUESTIONS[0]));
+  }
 
   if (universityName?.trim() && programName?.trim() && studentPath) {
     steps.push({
@@ -174,8 +157,8 @@ export function buildOnboardingFlow(ctx) {
       id: 'aiLearn',
       q: aiLearnDone ? 'Acad has learned your programme' : 'Acad is learning your programme…',
       hint: aiLearnDone
-        ? 'Review the summary on the next step — AI can make mistakes, and you can edit everything.'
-        : 'Our AI is mapping your grading scale and course structure from the names you entered. Accurate spelling and capitalization help.',
+        ? 'Review the summary on the next step — you can edit everything.'
+        : 'Mapping your grading scale and course structure. This runs in the background while you continue.',
     });
   }
 
@@ -184,63 +167,44 @@ export function buildOnboardingFlow(ctx) {
       type: 'profileReview',
       id: 'profileReview',
       q: 'Review your academic profile',
-      hint: 'Confirm or edit what AI inferred. You cannot enter Acad until this profile is accurate.',
+      hint: 'Confirm or edit what AI inferred.',
     });
   }
 
-  if (aiLearnDone && learnedProfile && studentPath === 'continuing' && currentLevel && currentSemester) {
-    const completed = getCompletedSemesterSlots(currentLevel, currentSemester);
-    completed.forEach((slot, i) => {
-      if (i === Math.floor(completed.length / 2)) {
-        steps.push(habitStep(ONBOARDING_QUESTIONS[2])); // time
-      }
-      const courses = getSemesterCoursesFromProfile(learnedProfile, slot.level, slot.semester);
-      steps.push({
-        type: 'semesterGrades',
-        id: `grades-${slot.level}-${slot.semester}`,
-        level: slot.level,
-        semester: slot.semester,
-        label: slot.label,
-        q: `Grades for ${slot.label}`,
-        hint: 'Most semesters have 5–7 courses; AI may show fewer — add missing courses below. Enter at least one full term (3+ courses) before continuing.',
-        courses,
-      });
-    });
-  }
-
-  if (studentPath === 'new' && aiLearnDone && learnedProfile) {
+  if (aiLearnDone && learnedProfile && studentPath) {
+    const slot = getFastPathSemesterSlot(studentPath, currentLevel, currentSemester);
+    const courses =
+      studentPath === 'new'
+        ? []
+        : getSemesterCoursesFromProfile(learnedProfile, slot.level, slot.semester);
     steps.push({
       type: 'semesterGrades',
-      id: 'grades-prior-term',
-      level: 100,
-      semester: 0,
-      label: 'Most recent completed term',
-      q: 'Your most recent completed semester',
-      hint: 'Acad works between semesters — after one term ends, before the next begins. Enter at least 3 courses from your most recent completed term (add any AI missed).',
-      courses: [],
+      id: `grades-${slot.level}-${slot.semester}`,
+      level: slot.level,
+      semester: slot.semester,
+      label: slot.label,
+      q: studentPath === 'new' ? 'Your most recent completed semester' : `Grades for ${slot.label}`,
+      hint: 'Enter at least 3 courses from one completed term. Add older semesters anytime from your dashboard.',
+      courses,
+      deferrable: true,
     });
   }
 
-  const hasSemesterSteps = steps.some((s) => s.type === 'semesterGrades');
-  if (aiLearnDone && learnedProfile && hasSemesterSteps) {
+  const hasSemesterStep = steps.some((s) => s.type === 'semesterGrades');
+  if (aiLearnDone && learnedProfile && hasSemesterStep) {
     steps.push({
       type: 'courseFocus',
       id: 'courseFocus',
       q: 'Where should Acad focus your improvement?',
-      hint: 'From your grade history, we suggest courses to strengthen before the next term. Your plan timeline limits how many you can work on now.',
+      hint: 'Pick at least one course for your comeback plan. You can add more when your window allows.',
     });
   }
-
-  steps.push(habitStep(ONBOARDING_QUESTIONS[3])); // position
-  steps.push(habitStep(ONBOARDING_QUESTIONS[4])); // sharpness
-  steps.push(habitStep(ONBOARDING_QUESTIONS[5])); // focus
-  steps.push(habitStep(ONBOARDING_QUESTIONS[6])); // intention
 
   steps.push({
     type: 'complete',
     id: 'complete',
-    q: 'You are all set',
-    hint: 'Your academic profile is confirmed. Acad will adapt each semester — you can always update courses and grades on the Semester page.',
+    q: 'You are ready for your dashboard',
+    hint: 'Your first daily task, flashcards, and AI buddy are waiting. We will help you fill in the rest as you go.',
   });
 
   return steps;

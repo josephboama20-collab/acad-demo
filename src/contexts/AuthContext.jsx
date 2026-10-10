@@ -177,6 +177,14 @@ export function AuthProvider({ children }) {
     return data;
   }, []);
 
+  const resetPassword = useCallback(async (email) => {
+    if (!supabase) throw new Error('Cloud auth is not configured.');
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin,
+    });
+    if (error) throw error;
+  }, []);
+
   const deleteAccount = useCallback(async () => {
     if (!supabase || !userId) throw new Error('Not signed in.');
     const { error } = await supabase.functions.invoke('delete-account');
@@ -222,6 +230,7 @@ export function AuthProvider({ children }) {
       signOut,
       signUp,
       signIn,
+      resetPassword,
       deleteAccount,
       deleteAllLocalData,
       setFocusMode,
@@ -243,6 +252,7 @@ export function AuthProvider({ children }) {
       signOut,
       signUp,
       signIn,
+      resetPassword,
       deleteAccount,
       deleteAllLocalData,
       setFocusMode,

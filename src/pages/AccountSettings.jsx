@@ -8,6 +8,7 @@ import PlanBanner from '../components/PlanBanner.jsx';
 import DeleteAccountModal from '../components/DeleteAccountModal.jsx';
 import AiLearnProgress from '../components/AiLearnProgress.jsx';
 import { buildLearnParamsFromProfile, learnAcademicProfile } from '../utils/academicProfileAI.js';
+import { exportAllUserData } from '../utils/exportUserData.js';
 
 function SettingRow({ label, desc, children }) {
   return (
@@ -49,6 +50,7 @@ export default function AccountSettings({ setPage }) {
   const [relearnElapsed, setRelearnElapsed] = useState(0);
   const [relearnError, setRelearnError] = useState('');
   const [relearnSuccess, setRelearnSuccess] = useState('');
+  const [exportDone, setExportDone] = useState(false);
 
   const ap = academicProfile || profile?.academicProfile;
 
@@ -237,14 +239,14 @@ export default function AccountSettings({ setPage }) {
             <SettingRow label="Focus mode" desc="Hide navigation for distraction-free study sessions.">
               <Toggle checked={settings.focusMode} onChange={setFocusMode} id="as-focus" />
             </SettingRow>
-            <SettingRow label="Email notifications" desc="Receive study reminders and progress updates.">
+            <SettingRow label="Email notifications" desc="Coming soon — in-app reminders are always available.">
               <Toggle
                 checked={settings.emailNotifications !== false}
                 onChange={(v) => updateSettings({ emailNotifications: v })}
                 id="as-email-notif"
               />
             </SettingRow>
-            <SettingRow label="Daily reminders" desc="Prompt to complete your daily task and wellness check-in.">
+            <SettingRow label="Daily reminders" desc="Controls in-app wellness and task reminders.">
               <Toggle
                 checked={settings.dailyReminders !== false}
                 onChange={(v) => updateSettings({ dailyReminders: v })}
@@ -258,6 +260,25 @@ export default function AccountSettings({ setPage }) {
                 id="as-streak"
               />
             </SettingRow>
+          </section>
+
+          <section className="card as-section">
+            <p className="card-label">Data & privacy</p>
+            <p className="as-row-desc">
+              Download a JSON copy of your local study data. Cloud accounts also sync to Supabase.
+            </p>
+            <button
+              type="button"
+              className="btn btn-outline"
+              style={{ marginTop: 12 }}
+              onClick={() => {
+                exportAllUserData();
+                setExportDone(true);
+                setTimeout(() => setExportDone(false), 2000);
+              }}
+            >
+              {exportDone ? 'Downloaded' : 'Export my data'}
+            </button>
           </section>
 
           <section className="card as-section as-danger">

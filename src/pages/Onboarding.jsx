@@ -27,12 +27,18 @@ import {
   parseSemester,
 } from '../utils/onboardingFlow.js';
 import { computeGpaFromGrades } from '../utils/semesterUtils.js';
+import { getPreAccountPrefs, clearPreAccountPrefs } from '../utils/preAccountPrefs.js';
 
 export default function Onboarding({ setPage }) {
+  const preAccount = useMemo(() => getPreAccountPrefs(), []);
   const { setProfile, userId, bumpDataEpoch } = useAuth();
   const { initializeAcademicProfile } = useSemesters();
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState(() => ({
+    duration: preAccount?.duration || '',
+    intention: preAccount?.intention || '',
+    studentPath: preAccount?.studentPath || '',
+  }));
   const [selected, setSelected] = useState(null);
   const [animKey, setAnimKey] = useState(0);
   const [semesterGrades, setSemesterGrades] = useState({});
@@ -52,7 +58,9 @@ export default function Onboarding({ setPage }) {
   const [aiError, setAiError] = useState('');
   const [aiLearnAttempt, setAiLearnAttempt] = useState(0);
   const [aiLearnElapsed, setAiLearnElapsed] = useState(0);
+  const [deferredSemesterGrades, setDeferredSemesterGrades] = useState(false);
   const stepIdRef = useRef(null);
+  const aiFetchStartedRef = useRef(false);
   const prevTotalRef = useRef(0);
 
   const ctx = useMemo(() => {
@@ -69,8 +77,9 @@ export default function Onboarding({ setPage }) {
       currentSemester: answers.currentSemester ? parseSemester(answers.currentSemester) : null,
       learnedProfile,
       aiLearnDone,
+      prefillDuration: Boolean(answers.duration || preAccount?.duration),
     };
-  }, [answers, learnedProfile, aiLearnDone]);
+  }, [answers, learnedProfile, aiLearnDone, preAccount]);
 
   const steps = useMemo(() => buildOnboardingFlow(ctx), [ctx]);
   const total = steps.length;
@@ -81,6 +90,11 @@ export default function Onboarding({ setPage }) {
   const maxFocusCourses = getMaxCourses({ duration: answers.duration });
 
   const learnParams = useMemo(() => buildLearnParams(answers), [answers]);
+
+  const learnParamsReady = useMemo(() => {
+    const params = buildLearnParams(answers);
+    return Boolean(params.universityName && params.programName && params.studentPath && answers.country && answers.trackType);
+  }, [answers]);
 
   function getStepCourses(step) {
     const removed = new Set(removedCoursesByStep[step.id] || []);
@@ -155,10 +169,12 @@ export default function Onboarding({ setPage }) {
     setLearnedProfile(null);
     setAiError('');
     setAiLearnAttempt((n) => n + 1);
+    aiFetchStartedRef.current = false;
   }
 
   useEffect(() => {
-    if (current?.type !== 'aiLearn' || aiLearnDone) return;
+    if (!learnParamsReady || aiLearnDone || aiFetchStartedRef.current) return;
+    aiFetchStartedRef.current = true;
     let cancelled = false;
     setAiLearning(true);
     setAiError('');
@@ -179,7 +195,7 @@ export default function Onboarding({ setPage }) {
     return () => {
       cancelled = true;
     };
-  }, [current?.type, current?.id, aiLearnDone, learnParams, aiLearnAttempt]);
+  }, [learnParamsReady, learnParams, aiLearnDone, aiLearnAttempt]);
 
   function toggleFocusCourse(course) {
     setSelectedFocus((prev) => {
@@ -198,8 +214,10 @@ export default function Onboarding({ setPage }) {
     if (current.type === 'welcome' || current.type === 'info') return true;
     if (current.type === 'complete') {
       if (!hasMinimumAcademicSetup(answers, learnedProfile, aiLearnDone, profileReviewConfirmed)) return false;
-      const semCheck = minimumSemesterHistoryRequirement(semesterGrades, steps);
-      if (!semCheck.ok) return false;
+      if (!deferredSemesterGrades) {
+        const semCheck = minimumSemesterHistoryRequirement(semesterGrades, steps);
+        if (!semCheck.ok) return false;
+      }
       return selectedFocus.length >= 1;
     }
     if (current.type === 'semesterGrades') {
@@ -235,10 +253,12 @@ export default function Onboarding({ setPage }) {
     }
     if (current?.type === 'complete') {
       if (!hasMinimumAcademicSetup(answers, learnedProfile, aiLearnDone, profileReviewConfirmed)) {
-        return 'Confirm your academic profile and complete all programme steps before entering Acad.';
+        return 'Confirm your academic profile before entering Acad.';
       }
-      const semCheck = minimumSemesterHistoryRequirement(semesterGrades, steps);
-      if (!semCheck.ok) return semCheck.message;
+      if (!deferredSemesterGrades) {
+        const semCheck = minimumSemesterHistoryRequirement(semesterGrades, steps);
+        if (!semCheck.ok) return semCheck.message;
+      }
       if (selectedFocus.length === 0) return 'Choose at least one focus course for your comeback plan.';
     }
     if (current?.type === 'semesterGrades') {
@@ -287,9 +307,16 @@ export default function Onboarding({ setPage }) {
       habitAnswers[s.id] = answers[s.id];
     });
 
+    const studentPath = answers.studentPath?.startsWith('Just') ? 'new' : 'continuing';
+
     const profile = {
       ...habitAnswers,
+      duration: answers.duration || preAccount?.duration,
+      intention: answers.intention || preAccount?.intention,
+      studentPath,
       startedAt: new Date().toISOString(),
+      fastOnboarding: true,
+      deferredSemesterGrades,
       academicProfile,
       focusCourses: selectedFocus,
       improvementPattern: focusAnalysis.pattern,
@@ -318,7 +345,19 @@ export default function Onboarding({ setPage }) {
     setProfile(profile);
     initializeAcademicProfile(academicProfile);
     bumpDataEpoch();
+    clearPreAccountPrefs();
     setPage('dashboard');
+  }
+
+  function skipSemesterGrades() {
+    setDeferredSemesterGrades(true);
+    setValidationError('');
+    const focusIdx = steps.findIndex((s) => s.type === 'courseFocus');
+    if (focusIdx >= 0) {
+      stepIdRef.current = steps[focusIdx].id;
+      setStep(focusIdx);
+      setAnimKey((k) => k + 1);
+    }
   }
 
   function next() {
@@ -607,18 +646,18 @@ export default function Onboarding({ setPage }) {
 
   const phaseLabel =
     current.type === 'semesterGrades'
-      ? 'Academic record'
+      ? 'One semester'
       : current.type === 'courseFocus'
-        ? 'Focus courses'
+        ? 'Focus course'
         : current.type === 'aiLearn'
-        ? 'AI learning'
-        : current.type === 'profileReview'
-          ? 'Profile review'
-          : current.type === 'habit'
-          ? 'Your rhythm'
-          : current.type === 'welcome' || current.type === 'complete'
-            ? 'Welcome'
-            : 'Your programme';
+          ? 'AI learning'
+          : current.type === 'profileReview'
+            ? 'Profile review'
+            : current.type === 'habit'
+              ? 'Your window'
+              : current.type === 'welcome' || current.type === 'complete'
+                ? 'Quick setup'
+                : 'Your programme';
 
   return (
     <main className="page ob-page">
@@ -647,9 +686,16 @@ export default function Onboarding({ setPage }) {
             <button id="btn-ob-back" className="btn btn-ghost" onClick={back} disabled={step === 0}>
               Back
             </button>
-            <button id="btn-ob-continue" className="btn btn-primary" onClick={next} disabled={!canContinue()}>
-              {current.type === 'complete' ? 'Enter Acad' : aiLearning ? 'Learning…' : 'Continue'}
-            </button>
+            <div className="ob-nav-actions">
+              {current.type === 'semesterGrades' && current.deferrable && (
+                <button type="button" className="btn btn-ghost" onClick={skipSemesterGrades}>
+                  Finish later
+                </button>
+              )}
+              <button id="btn-ob-continue" className="btn btn-primary" onClick={next} disabled={!canContinue()}>
+                {current.type === 'complete' ? 'Enter Acad' : aiLearning && current.type === 'aiLearn' ? 'Learning…' : 'Continue'}
+              </button>
+            </div>
           </nav>
         </section>
       </div>

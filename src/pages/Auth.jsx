@@ -6,18 +6,25 @@ import Loader from '../components/Loader.jsx';
 const STAGING_CLOUD_REQUIRED = import.meta.env.VITE_APP_ENV === 'staging' && !isCloudEnabled();
 
 export default function Auth({ setPage, initialMode = 'signup' }) {
-  const { profile, signUp, signIn, setUser } = useAuth();
+  const { profile, signUp, signIn, setUser, resetPassword } = useAuth();
   const [mode, setMode] = useState(initialMode);
   const [form, setForm] = useState({ name: '', email: '', password: '', acceptTerms: false });
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const update = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
   async function submit() {
     setError('');
+    setInfo('');
     if (!form.email || !form.password) {
       setError('Please complete all fields.');
+      return;
+    }
+    if (mode === 'signup' && form.password.length < 8) {
+      setError('Password must be at least 8 characters.');
       return;
     }
     if (mode === 'signup' && !form.name) {
@@ -47,6 +54,25 @@ export default function Auth({ setPage, initialMode = 'signup' }) {
       setError(err.message || 'Authentication failed.');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleForgotPassword() {
+    setError('');
+    setInfo('');
+    if (!form.email) {
+      setError('Enter your email address first, then tap forgot password.');
+      return;
+    }
+    if (!isCloudEnabled()) {
+      setError('Password reset requires cloud mode.');
+      return;
+    }
+    try {
+      await resetPassword(form.email);
+      setInfo('If an account exists for that email, a reset link has been sent.');
+    } catch (err) {
+      setError(err.message || 'Could not send reset email.');
     }
   }
 
@@ -95,8 +121,8 @@ export default function Auth({ setPage, initialMode = 'signup' }) {
           {mode === 'signup' && (
             <>
               <p className="auth-setup-note">
-                After creating your account, you will complete a thorough academic setup — university, programme, and grades.
-                Accurate, properly capitalized names help AI map your curriculum. You can correct anything AI gets wrong.
+                About five minutes after signup — university, one semester of grades, and your first focus course.
+                Everything else unfolds on your dashboard.
               </p>
               <div className="form-group">
                 <label className="form-label" htmlFor="input-auth-name">Full Name</label>
@@ -110,8 +136,29 @@ export default function Auth({ setPage, initialMode = 'signup' }) {
           </div>
           <div className="form-group">
             <label className="form-label" htmlFor="input-auth-password">Password</label>
-            <input id="input-auth-password" className="form-input" type="password" placeholder="Enter password" value={form.password} onChange={(e) => update('password', e.target.value)} />
+            <div className="auth-password-row">
+              <input
+                id="input-auth-password"
+                className="form-input"
+                type={showPassword ? 'text' : 'password'}
+                placeholder={mode === 'signup' ? 'At least 8 characters' : 'Enter password'}
+                value={form.password}
+                onChange={(e) => update('password', e.target.value)}
+              />
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm auth-password-toggle"
+                onClick={() => setShowPassword((v) => !v)}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
+          {mode === 'login' && isCloudEnabled() && (
+            <button type="button" className="auth-forgot-link" onClick={handleForgotPassword}>
+              Forgot password?
+            </button>
+          )}
           {mode === 'signup' && isCloudEnabled() && (
             <label className="auth-terms">
               <input type="checkbox" checked={form.acceptTerms} onChange={(e) => update('acceptTerms', e.target.checked)} />
@@ -124,6 +171,7 @@ export default function Auth({ setPage, initialMode = 'signup' }) {
             </label>
           )}
           {error && <p className="form-error" role="alert">{error}</p>}
+          {info && <p className="auth-info" role="status">{info}</p>}
           <button
             id="btn-auth-submit"
             className="btn btn-primary"

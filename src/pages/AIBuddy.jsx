@@ -3,6 +3,8 @@ import { marked } from 'marked';
 import { useCourses } from '../contexts/CoursesContext.jsx';
 import { useGame } from '../contexts/GameContext.jsx';
 import { chatWithBuddy, TEACHING_METHODS } from '../utils/ai.js';
+import { isCloudEnabled } from '../lib/supabase.js';
+import BetaBadge from '../components/BetaBadge.jsx';
 
 marked.setOptions({ breaks: true, gfm: true });
 
@@ -131,10 +133,11 @@ export default function AIBuddy() {
       <div className="fc-wrap">
         <header className="fc-header">
           <div>
-            <p className="fc-kicker">AI Buddy</p>
+            <p className="fc-kicker">AI Buddy {!isCloudEnabled() && <BetaBadge label="Demo" />}</p>
             <h1 className="fc-title">Study assistant</h1>
             <p className="fc-sub">
               {currentMethod.label} · {subject} · {exchangeCount} exchange{exchangeCount === 1 ? '' : 's'}
+              {!isCloudEnabled() && ' · Simulated responses without cloud AI'}
             </p>
           </div>
           <div className="fc-tabs" role="tablist" aria-label="Teaching method">

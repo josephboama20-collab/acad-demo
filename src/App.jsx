@@ -71,6 +71,14 @@ export default function App() {
       return;
     }
     if (user && next !== 'landing' && next !== 'auth' && next !== 'onboarding' && next !== 'settings' && next !== 'manage-plan' && next !== 'semester-update' && !enabledTools.includes(next)) {
+      try {
+        sessionStorage.setItem(
+          'acad_gate_message',
+          'This tool unlocks with a longer recovery window. Open Manage plan to extend your comeback window.',
+        );
+      } catch {
+        /* ignore */
+      }
       setPage('dashboard');
       window.scrollTo(0, 0);
       return;
@@ -90,6 +98,14 @@ export default function App() {
     if (!user) return;
     const gated = ['dashboard', 'courses', 'flashcards', 'ai-buddy', 'habit-tracker', 'semester-journey', 'reports', 'study-groups', 'study-room', 'projects', 'forge', 'settings', 'manage-plan'];
     if (gated.includes(page) && page !== 'settings' && page !== 'manage-plan' && !enabledTools.includes(page) && page !== 'study-room') {
+      try {
+        sessionStorage.setItem(
+          'acad_gate_message',
+          'This tool unlocks with a longer recovery window. Open Manage plan to extend your comeback window.',
+        );
+      } catch {
+        /* ignore */
+      }
       setPage('dashboard');
     }
   }, [user, page, enabledTools]);

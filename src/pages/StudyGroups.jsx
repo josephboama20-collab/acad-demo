@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link2, Lock, MessageCircle, Plus, Settings, Shield, Trash2, User, UserMinus, Users } from 'lucide-react';
 import { useStudyGroups } from '../contexts/StudyGroupsContext.jsx';
 import ChallengesPanel from './ChallengesPanel.jsx';
+import BetaBadge from '../components/BetaBadge.jsx';
 import {
   DEFAULT_ROOM_SETTINGS,
   genRoomCode,
@@ -62,7 +63,7 @@ function RoomsPane({ setPage }) {
     return (
       <div className="sg-rooms-pane">
         <p className="sg-pane-title">Create study room</p>
-        <p className="sg-pane-desc">Configure an extreme focus session. Navigation locks until you force exit.</p>
+        <p className="sg-pane-desc">Configure a focus session. Room codes work in this browser only during the beta.</p>
 
         <section className="sr-create-section">
           <p className="sg-settings-label">Session type</p>
@@ -277,7 +278,8 @@ function InviteComposer() {
         </button>
       </div>
       {error && <p className="form-error">{error}</p>}
-      <p className="sg-quick-label">Quick add</p>
+      <p className="sg-quick-label">Demo classmates <BetaBadge label="Demo" /></p>
+      <p className="sg-pane-desc">These are sample users for testing — not real accounts.</p>
       <div className="sg-quick-row">
         {suggestedMembers.map((m) => (
           <button key={m.email} type="button" className="btn btn-outline" onClick={() => invite(m.email, m.name)}>
@@ -656,10 +658,11 @@ export default function StudyGroups({ setPage }) {
       <div className="fc-wrap">
         <header className="fc-header">
           <div>
-            <p className="fc-kicker">Groups</p>
+            <p className="fc-kicker">Groups <BetaBadge /></p>
             <h1 className="fc-title">Study groups</h1>
             <p className="fc-sub">
-              Message classmates, share links, run extreme study rooms, and tackle challenges together.
+              Message classmates, share links, run focus rooms, and tackle challenges together.
+              <span className="beta-inline-note"> Beta: collaboration uses local demo data until real-time sync ships.</span>
               {!hasPeers && ' Invite members to unlock group chat and challenges.'}
             </p>
           </div>

@@ -2,10 +2,18 @@
  * Validation for honest, accurate academic setup during onboarding.
  */
 
-export function validateInstitutionName(value) {
+export function validateInstitutionName(value, { strict = false } = {}) {
   const v = (value || '').trim();
   if (v.length < 4) {
     return { ok: false, message: 'Enter your full university name (at least 4 characters).' };
+  }
+  if (!strict) {
+    return {
+      ok: true,
+      warn: v === v.toLowerCase() || !/[A-Z]/.test(v)
+        ? 'Proper capitalization helps AI — e.g. "University of Ghana".'
+        : undefined,
+    };
   }
   if (v === v.toLowerCase()) {
     return {
@@ -19,10 +27,18 @@ export function validateInstitutionName(value) {
   return { ok: true };
 }
 
-export function validateProgramName(value) {
+export function validateProgramName(value, { strict = false } = {}) {
   const v = (value || '').trim();
   if (v.length < 5) {
     return { ok: false, message: 'Enter your full programme or degree name (at least 5 characters).' };
+  }
+  if (!strict) {
+    return {
+      ok: true,
+      warn: v === v.toLowerCase() || !/[A-Z]/.test(v)
+        ? 'Proper capitalization helps AI — e.g. "BSc Information Technology".'
+        : undefined,
+    };
   }
   if (v === v.toLowerCase()) {
     return {
@@ -75,7 +91,7 @@ export function hasMinimumAcademicSetup(answers, learnedProfile, aiLearnDone, pr
   if (!uni.ok || !prog.ok) return false;
 
   if (answers.trackType === 'Combined major' && !(answers.secondaryProgram || '').trim()) {
-    return false;
+    /* deferred — optional for fast onboarding */
   }
 
   return true;
