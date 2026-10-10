@@ -4,7 +4,6 @@ import { useFlashcards } from '../contexts/FlashcardsContext.jsx';
 import { useGame } from '../contexts/GameContext.jsx';
 import { useSemesters } from '../contexts/SemestersContext.jsx';
 import { usePlanCapacity } from '../hooks/usePlanCapacity.js';
-import PlanBanner from '../components/PlanBanner.jsx';
 import { masteryPctColor } from '../utils/themeColors.js';
 import { trendLabel } from '../utils/semesterUtils.js';
 
@@ -225,9 +224,6 @@ function CoursesHome({ courses, weakTopics, allTopics, openCourse, openTopic, se
         </div>
       )}
 
-      <div className="cs-plan-banner-wrap">
-        <PlanBanner />
-      </div>
     </>
   );
 }
