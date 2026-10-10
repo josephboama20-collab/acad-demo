@@ -73,11 +73,13 @@ export function buildOnboardingFlow(ctx) {
 
   const steps = [];
 
+  const compoundNote = 'Every semester you log compounds into richer analytics, deeper insights, and a more personalised experience. Students who started at Level 100 get the most out of Acad.';
+
   steps.push({
     type: 'welcome',
     id: 'welcome',
     q: 'Let us get you started',
-    hint: 'About five minutes - your university, one semester of grades, and your first focus course. Everything else unfolds inside Acad as you use it.',
+    hint: `About five minutes — your university, completed semesters, and your first focus course. ${compoundNote}`,
   });
 
   steps.push({
@@ -139,17 +141,18 @@ export function buildOnboardingFlow(ctx) {
       type: 'yearLevel',
       id: 'currentLevel',
       q: 'Which year level are you in now?',
-      hint: 'Tap your current level.',
+      hint: 'Tap your CURRENT level. Acad only asks for semesters you have COMPLETED - never future terms.',
       opts: ['Level 100', 'Level 200', 'Level 300', 'Level 400'],
     });
   }
 
   if (studentPath === 'continuing' && currentLevel) {
+    const semesterHint = 'We will ask for ONLY your completed terms. Future courses are unknown during breaks - Acad builds from what you have finished.';
     steps.push({
       type: 'semesterPick',
       id: 'currentSemester',
-      q: `Which semester of Level ${currentLevel} are you in?`,
-      hint: 'We will ask for your most recent completed term only - add older terms later from Semester journey.',
+      q: `Which semester of Level ${currentLevel} are you in now?`,
+      hint: semesterHint,
       opts: ['Semester 1', 'Semester 2'],
     });
   }
@@ -194,26 +197,38 @@ export function buildOnboardingFlow(ctx) {
         semester: slot.semester,
         label: slot.label,
         q: 'Your most recent completed semester',
-        hint: 'Enter at least 3 courses from one completed term. Add older semesters anytime from your dashboard.',
+        hint: 'Enter at least 3 courses from one completed term. Add older terms anytime — your data builds over time for deeper insights.',
         courses: [],
         deferrable: true,
       });
     } else {
       const completed = getCompletedSemesterSlots(currentLevel, currentSemester);
-      completed.forEach((slot) => {
-        const courses = getSemesterCoursesFromProfile(learnedProfile, slot.level, slot.semester);
+      if (completed.length === 0) {
         steps.push({
-          type: 'semesterGrades',
-          id: `grades-${slot.level}-${slot.semester}`,
-          level: slot.level,
-          semester: slot.semester,
-          label: slot.label,
-          q: `Grades for ${slot.label}`,
-          hint: 'Edit any course details if needed, then select the grade you earned.',
-          courses,
-          deferrable: false,
+          type: 'info',
+          id: 'noSemesters',
+          q: 'No completed semesters yet',
+          hint: 'Acad works best when it knows your past grades. Return when you have at least one completed semester, or continue with a focus course and log grades later from your dashboard.',
         });
-      });
+      } else {
+        completed.forEach((slot, idx) => {
+          const courses = getSemesterCoursesFromProfile(learnedProfile, slot.level, slot.semester);
+          const isLast = idx === completed.length - 1;
+          steps.push({
+            type: 'semesterGrades',
+            id: `grades-${slot.level}-${slot.semester}`,
+            level: slot.level,
+            semester: slot.semester,
+            label: slot.label,
+            q: `Grades for ${slot.label}${isLast ? ' (most recent)' : ''}`,
+            hint: isLast
+              ? 'These are the semesters you have already completed. Add older terms later from your dashboard. Semester data compounds over time into richer analytics.'
+              : 'Your historical data fuels trend analysis and improvement suggestions.',
+            courses,
+            deferrable: false,
+          });
+        });
+      }
     }
   }
 
@@ -231,7 +246,7 @@ export function buildOnboardingFlow(ctx) {
     type: 'complete',
     id: 'complete',
     q: 'You are ready for your dashboard',
-    hint: 'Your first daily task, flashcards, and AI buddy are waiting. We will help you fill in the rest as you go.',
+    hint: 'Acad grows with you. Every semester you log enriches your reports, trends, and insights. Students who start logging from Level 100 get the most value.',
   });
 
   return steps;

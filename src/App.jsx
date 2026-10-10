@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from './contexts/AuthContext.jsx';
 import { usePlanCapacity } from './hooks/usePlanCapacity.js';
 import Nav from './components/Nav.jsx';
@@ -6,6 +6,7 @@ import AppNotifications from './components/AppNotifications.jsx';
 import StagingBanner from './components/StagingBanner.jsx';
 import Loader from './components/Loader.jsx';
 import Modal from './components/Modal.jsx';
+import TutorialOverlay from './components/TutorialOverlay.jsx';
 import Landing from './pages/Landing.jsx';
 import Auth from './pages/Auth.jsx';
 import Onboarding from './pages/Onboarding.jsx';
@@ -37,6 +38,20 @@ export default function App() {
   const [booting, setBooting] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
   const [signoutConfirm, setSignoutConfirm] = useState(false);
+  const [tutorialPage, setTutorialPage] = useState(null);
+  const [isNewAccount, setIsNewAccount] = useState(false);
+  const tutorialDismissedRef = useRef(false);
+
+  function handleShowTutorial() {
+    tutorialDismissedRef.current = false;
+    setTutorialPage(page);
+  }
+
+  function handleTutorialDismiss() {
+    setTutorialPage(null);
+    setIsNewAccount(false);
+    tutorialDismissedRef.current = true;
+  }
 
   function navigate(next, arg) {
     if (studyRoomLocked && next !== 'study-room') {
@@ -83,6 +98,15 @@ export default function App() {
       window.scrollTo(0, 0);
       return;
     }
+    // Track fresh account tutorial trigger (entry to dashboard after onboarding)
+    if (next === 'dashboard' && page === 'onboarding') {
+      setIsNewAccount(true);
+    }
+    // Dismiss tutorial on page change
+    if (next !== tutorialPage) {
+      setTutorialPage(null);
+      tutorialDismissedRef.current = true;
+    }
     setPage(next);
     window.scrollTo(0, 0);
   }
@@ -110,11 +134,12 @@ export default function App() {
     }
   }, [user, page, enabledTools]);
 
-  if (booting) return <Loader label="Loading" onDone={() => setBooting(false)} />;
+  if (booting) return <Loader label="Loading Acad" onDone={() => setBooting(false)} compoundRotation />;
   if (signingOut) {
     return (
       <Loader
         label="Signing out…"
+        compoundRotation
         onDone={async () => {
           await signOut();
           setSigningOut(false);
@@ -127,7 +152,7 @@ export default function App() {
   return (
     <div className={`app${studyRoomLocked ? ' app--study-locked' : ''}`}>
       <StagingBanner />
-      {!studyRoomLocked && page !== 'study-room' && <Nav page={page} setPage={navigate} authMode={authMode} />}
+      {!studyRoomLocked && page !== 'study-room' && <Nav page={page} setPage={navigate} authMode={authMode} onShowTutorial={handleShowTutorial} />}
       {user && page !== 'onboarding' && page !== 'landing' && page !== 'auth' && page !== 'study-room' && <AppNotifications />}
       {page === 'landing' && <Landing setPage={navigate} />}
       {page === 'auth' && <Auth setPage={navigate} initialMode={authMode} />}
@@ -176,6 +201,14 @@ export default function App() {
             setSigningOut(true);
           }}
           onCancel={() => setSignoutConfirm(false)}
+        />
+      )}
+      {user && tutorialPage && (
+        <TutorialOverlay
+          page={tutorialPage}
+          isNewAccount={isNewAccount}
+          setPage={navigate}
+          onDismiss={handleTutorialDismiss}
         />
       )}
     </div>

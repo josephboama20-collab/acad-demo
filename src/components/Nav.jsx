@@ -15,6 +15,7 @@ import {
   PanelLeftClose,
   Settings,
   Users,
+  HelpCircle,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { usePlanCapacity } from '../hooks/usePlanCapacity.js';
@@ -70,7 +71,7 @@ function DockStreakRow({ streak }) {
   );
 }
 
-export default function Nav({ page, setPage, authMode = 'signup' }) {
+export default function Nav({ page, setPage, authMode = 'signup', onShowTutorial }) {
   const { user, settings, streak } = useAuth();
   const { enabledTools } = usePlanCapacity();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -81,6 +82,26 @@ export default function Nav({ page, setPage, authMode = 'signup' }) {
       return true;
     }
   });
+  const [tutorialMode, setTutorialMode] = useState(() => {
+    try {
+      return localStorage.getItem('acad-tutorial-mode') === '1';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleTutorialMode = () => {
+    setTutorialMode((v) => {
+      const next = !v;
+      try {
+        localStorage.setItem('acad-tutorial-mode', next ? '1' : '0');
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+    onShowTutorial?.();
+  };
 
   if (settings.focusMode) return null;
 
@@ -168,6 +189,20 @@ export default function Nav({ page, setPage, authMode = 'signup' }) {
         </div>
         <div className="dock-bottom">
           <ThemeToggle variant="dock-row" />
+          {onShowTutorial && (
+            <button
+              id="btn-dock-tutorial"
+              className={`dock-btn${tutorialMode ? ' active' : ''}`}
+              onClick={toggleTutorialMode}
+              aria-label={tutorialMode ? 'Tutorial mode on' : 'Page tutorial'}
+              aria-pressed={tutorialMode}
+              data-label="Guide"
+            >
+              <span className="dock-icon" aria-hidden="true"><HelpCircle size={18} strokeWidth={2} /></span>
+              <span className="dock-label" aria-hidden="true">Guide</span>
+              <span className="dock-tooltip" aria-hidden="true">Page tutorial</span>
+            </button>
+          )}
           {settings.showStreak !== false && <DockStreakRow streak={streak.current} />}
           <DockButton item={{ key: 'settings', icon: Settings, label: 'Settings' }} active={page === 'settings'} onClick={() => go('settings')} />
           <DockButton item={{ key: 'signout', icon: LogOut, label: 'Sign out' }} active={false} onClick={() => go('signout-confirm')} danger />
@@ -205,10 +240,13 @@ export default function Nav({ page, setPage, authMode = 'signup' }) {
           <div className="mob-drawer-sheet">
             <div className="mob-drawer-handle" />
             <div className="mob-drawer-grid">
-              {[...visibleNavItems.filter(Boolean), { key: 'settings', icon: Settings, label: 'Settings' }, { key: 'signout', icon: LogOut, label: 'Sign out' }].map((item) => {
+              {[...visibleNavItems.filter(Boolean), { key: 'settings', icon: Settings, label: 'Settings' }, { key: 'tutorial', icon: HelpCircle, label: 'Page guide', action: 'tutorial' }, { key: 'signout', icon: LogOut, label: 'Sign out' }].map((item) => {
                 const Icon = item.icon;
                 return (
-                  <button key={item.key} className={`mob-drawer-item${page === item.key ? ' active' : ''}`} onClick={() => go(item.key === 'signout' ? 'signout-confirm' : item.key)} id={`btn-drawer-${item.key}`}>
+                  <button key={item.key} className={`mob-drawer-item${page === item.key ? ' active' : ''}`} onClick={() => {
+                    if (item.action === 'tutorial') { onShowTutorial?.(); }
+                    else { go(item.key === 'signout' ? 'signout-confirm' : item.key); }
+                  }} id={`btn-drawer-${item.key}`}>
                     <span className="mob-drawer-icon"><Icon size={18} strokeWidth={2} /></span>
                     <span className="mob-drawer-label">{item.label}</span>
                   </button>

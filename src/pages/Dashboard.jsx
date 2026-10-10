@@ -17,6 +17,7 @@ import SetupChecklist from '../components/SetupChecklist.jsx';
 import DeferredSetupPrompt from '../components/DeferredSetupPrompt.jsx';
 import Kpi from '../components/Kpi.jsx';
 import TaskSkeleton from '../components/TaskSkeleton.jsx';
+import FeatureTooltip from '../components/FeatureTooltip.jsx';
 
 function ConsistencyMap({ history }) {
   const cells = useMemo(() => {
@@ -178,7 +179,14 @@ export default function Dashboard({ setPage }) {
       <header className="dash-header">
         <div className="dash-header-inner container">
           <div>
-            <p className="dash-greeting">{greeting}</p>
+            <FeatureTooltip
+              title="Welcome to Acad"
+              description="Every semester you log compounds into richer analytics, deeper insights, and a more personalised experience. Students who start logging from Level 100 get the most value."
+              initiallyOpen
+              featureKey="dashboard-welcome"
+            >
+              <p className="dash-greeting">{greeting}</p>
+            </FeatureTooltip>
             <h1 className="dash-name">{user?.name || 'Member'}</h1>
             <div className="dash-meta" aria-label="Profile summary">
               <span className="dash-meta-chip">{dateStr}</span>

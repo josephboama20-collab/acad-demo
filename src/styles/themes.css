@@ -1146,6 +1146,7 @@ body::before {
   padding: 32px 24px;
   text-align: center;
   border: 1px solid var(--border-dim);
+  border-radius: 12px;
   background: var(--surface);
 }
 
@@ -2832,6 +2833,7 @@ body::before {
   padding: 12px 6px;
   background: var(--void-light);
   border: 1px solid var(--border-dim);
+  border-radius: 8px;
 }
 
 .dash-summary-stat.accent {
@@ -2991,7 +2993,7 @@ body::before {
 .dash-hero-side {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .dash-hero-card {
@@ -3019,6 +3021,7 @@ body::before {
   padding: 10px 8px;
   background: var(--void-light);
   border: 1px solid var(--border-dim);
+  border-radius: 8px;
   text-align: center;
   opacity: 0.45;
 }
@@ -3225,6 +3228,7 @@ body::before {
   padding: 10px 12px;
   background: var(--void-light);
   border: 1px solid var(--border-dim);
+  border-radius: 8px;
 }
 
 .dash-conditioning-row.pending {
@@ -5529,6 +5533,7 @@ body::before {
   text-align: left;
   padding: 12px 14px;
   border: 1px solid var(--border-dim);
+  border-radius: 8px;
   background: var(--void-card);
   cursor: pointer;
 }
@@ -5579,6 +5584,7 @@ body::before {
   padding: 12px 16px;
   margin-bottom: 16px;
   border: 1px solid var(--border-dim);
+  border-radius: 10px;
   background: var(--void-card);
   font-size: 13px;
 }
@@ -5665,3 +5671,253 @@ body::before {
   }
 }
 
+/* ===== LOADER COMPOUND TIPS ===== */
+.lo-tip {
+  max-width: 340px;
+  margin-top: 12px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+}
+
+.lo-tip.tip-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== TUTORIAL OVERLAY ===== */
+.tutorial-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 24px;
+}
+
+.tutorial-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+}
+
+.tutorial-sheet {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: var(--deep-void);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tutorial-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tutorial-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--gold);
+}
+
+.tutorial-step-meta {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tutorial-body {
+  min-height: 60px;
+}
+
+.tutorial-step-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.tutorial-step-body {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.tutorial-progress {
+  height: 3px;
+  background: var(--border-dim);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tutorial-progress-fill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 8px;
+  transition: width 0.3s var(--ease);
+}
+
+.tutorial-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tutorial-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tutorial-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-dim);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s var(--ease);
+}
+
+.tutorial-dot.active {
+  background: var(--gold);
+}
+
+@media (max-width: 600px) {
+  .tutorial-overlay {
+    padding: 12px;
+  }
+  .tutorial-sheet {
+    padding: 20px;
+    border-radius: 16px 16px 0 0;
+  }
+}
+
+/* ===== FEATURE TOOLTIP ===== */
+.ft-popup {
+  position: absolute;
+  z-index: 8500;
+  max-width: 300px;
+  min-width: 220px;
+  pointer-events: auto;
+}
+
+.ft-popup-arrow {
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid var(--border-dim);
+  margin: 0 auto;
+}
+
+.ft-popup-card {
+  background: var(--void-card);
+  border: 1px solid var(--border-dim);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ft-popup-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ft-popup-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--parchment);
+}
+
+.ft-popup-close {
+  background: none;
+  border: none;
+  color: var(--slate);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.ft-popup-close:hover {
+  color: var(--parchment);
+}
+
+.ft-popup-desc {
+  font-size: 0.8rem;
+  color: var(--slate);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ===== UI CLEANUP - LIGHTER CARDS & SPACING ===== */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border-dim);
+  border-radius: 12px;
+  padding: 18px 20px;
+  transition: border-color 0.2s var(--ease);
+}
+
+.card:hover {
+  border-color: var(--border);
+}
+
+.card-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+/* Compact KPI row */
+.kpi-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Smoother section spacing */
+section + section {
+  margin-top: 20px;
+}
+
+/* Cleaner separator appearance */
+hr, .sep, .dock-sep {
+  opacity: 0.35;
+}
+
+@media (max-width: 768px) {
+  .dash-hero-grid {
+    grid-template-columns: 1fr;
+  }
+}
