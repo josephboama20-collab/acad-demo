@@ -66,7 +66,17 @@ export function AuthProvider({ children }) {
       setAuthReady(true);
     }
 
-    supabase.auth.getSession().then(({ data }) => handleSession(data.session));
+    // Race against a timeout so a paused/unreachable Supabase project
+    // does not block the entire app at "Loading your account…"
+    const sessionPromise = supabase.auth.getSession().then(({ data }) => data.session);
+    const timeoutMs = 8000;
+    const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), timeoutMs));
+
+    Promise.race([sessionPromise, timeoutPromise])
+      .then((session) => handleSession(session))
+      .catch(() => {
+        if (mounted) handleSession(null);
+      });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       handleSession(nextSession);
     });
