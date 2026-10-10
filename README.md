@@ -9,33 +9,15 @@ Plan your academic comeback — a React study platform that scales tools to your
 | **Local** | No `VITE_SUPABASE_*` in `.env` | Data in `localStorage`; demo auth |
 | **Cloud** | Supabase URL + anon key set | Real auth, cross-device sync, secure AI proxy |
 
-## Quick start (local)
-
-```bash
-npm install
-cp .env.example .env
-npm run dev            # http://localhost:5173
-```
-
 ## Quick start (cloud / alpha)
 
-1. Follow [`docs/SUPABASE_SETUP.md`](docs/SUPABASE_SETUP.md)
-2. Set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_APP_ENV=staging` in `.env`
-3. `npm run seed:demo` (with service role key) to create demo users
-4. `npm run dev`
+1. Follow [`docs/TIER_2.md`](docs/TIER_2.md) — Supabase project + Netlify env vars
+2. Deploy edge functions for secure AI
+3. `npm run dev` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env`
 
-## Demo accounts
+## Local-only mode (no Supabase)
 
-Password for all: **`demo`**
-
-| Plan | Email |
-|------|-------|
-| 2–3 weeks | `weeks@acad.app` |
-| 1 month | `1month@acad.app` |
-| 2 months | `2months@acad.app` |
-| 3 months | `3months@acad.app` |
-
-Cloud mode: run `npm run seed:demo` first, then use demo buttons on Auth.
+Omit `VITE_SUPABASE_*` — cosmetic auth, data stays in the browser. Not used for staging tests.
 
 ## Scripts
 

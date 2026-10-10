@@ -17,23 +17,9 @@ Staging-ready local-first Acad demo. Netlify deploy connected to GitHub.
 
 ## Demo entry
 
-Password for all: **`demo`**
+Preloaded demo accounts removed in Tier 2. Create a real account via **Sign up** on staging.
 
-| Plan | Email |
-|------|-------|
-| 2–3 weeks | `weeks@acad.app` |
-| 1 month | `1month@acad.app` |
-| 2 months | `2months@acad.app` |
-| 3 months | `3months@acad.app` |
-
-## Netlify env vars (recommended)
-
-```
-VITE_APP_ENV=staging
-VITE_DEEPSEEK_API_KEY=<your-key>   # local-mode AI on staging builds
-```
-
-Omit `VITE_DEEPSEEK_API_KEY` once Tier 2 Supabase + edge functions are live.
+Optional admin seed (not linked in UI): `npm run seed:demo` with service role key — see `scripts/seed-demo-users.mjs`.
 
 ## Repo
 
