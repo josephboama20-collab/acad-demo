@@ -20,8 +20,7 @@ export default function ThemeToggle({ variant = 'dock' }) {
       aria-label={`${meta.label}. Click to switch theme.`}
       title={meta.label}
     >
-      <Icon size={variant === 'dock' ? 16 : 15} strokeWidth={2} aria-hidden="true" />
-      {variant === 'dock' && <span className="theme-toggle-label">{theme}</span>}
+      <Icon size={variant === 'dock' ? 18 : 16} strokeWidth={2} aria-hidden="true" />
     </button>
   );
 }
