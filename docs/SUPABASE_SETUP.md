@@ -48,7 +48,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 VITE_APP_ENV=staging
 ```
 
-Do **not** set `VITE_ANTHROPIC_API_KEY` or `VITE_DEEPSEEK_API_KEY` when cloud mode is on — AI runs through edge functions.
+Do **not** set `VITE_LLM_API_KEY` when cloud mode is on — AI runs through edge functions.
 
 ## 6. Seed demo users
 
@@ -63,7 +63,7 @@ Creates all plan demo accounts with password `demo`.
 ## 7. Verify
 
 1. Sign up with a new email → onboarding → add course → refresh → data persists after sign-out/sign-in
-2. AI Buddy sends a message (requires deployed `buddy-chat` + Anthropic secret)
+2. AI Buddy sends a message (requires deployed `buddy-chat` + LLM secret)
 3. Settings → Delete account removes user
 
 ## Local dev without Supabase

@@ -129,7 +129,7 @@ user_forge (user_id, workspaces jsonb, updated_at)
 
 **Files to change:**
 
-- `src/utils/ai.js` — point `callAnthropic` to your API route
+- `src/utils/ai.js` — point `callLLM` to your API route
 - New: `api/buddy/chat.ts` (Vercel serverless) or Supabase Edge Function
 
 ### 2.3 Replace cosmetic auth
@@ -161,7 +161,7 @@ Steps:
 
 Pick one:
 
-- [ ] **Option A:** Implement real generation in edge function (Claude + structured JSON output).
+- [ ] **Option A:** Implement real generation in edge function (LLM + structured JSON output).
 - [ ] **Option B:** Remove “AI generate” button until ready; keep manual add only.
 
 ### 2.6 Legal minimum (alpha)

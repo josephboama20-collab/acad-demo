@@ -1,7 +1,7 @@
 import CurriculumPreview from './CurriculumPreview.jsx';
 
 /**
- * Lets users review and correct AI-generated academic profile before continuing.
+ * Lets users review and correct programme-generated academic profile before continuing.
  */
 export default function AcademicProfileReview({ profile, meta, edits, onChange, onConfirm, confirmed }) {
   const institutionName = edits.institutionName ?? profile?.institutionName ?? '';

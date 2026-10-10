@@ -1,5 +1,5 @@
 /**
- * Helpers for user-specific AI-generated academic profiles (not hardcoded institutions).
+ * Helpers for user-specific programme-generated academic profiles (not hardcoded institutions).
  */
 
 export function getCompletedSemesterSlots(currentLevel, currentSemester) {

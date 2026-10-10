@@ -36,7 +36,7 @@ supabase functions deploy academic-profile
 supabase functions deploy delete-account
 ```
 
-Edge functions use OpenAI (`gpt-4.1-nano` for Buddy, `gpt-4.1-mini` for programme learning).
+Edge functions use a hosted LLM for Buddy and programme learning.
 
 ### 2.4 Seed demo users
 
