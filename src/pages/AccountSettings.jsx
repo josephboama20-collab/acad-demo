@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { useSemesters } from '../contexts/SemestersContext.jsx';
 import { usePlanCapacity } from '../hooks/usePlanCapacity.js';
 import { useTheme } from '../contexts/ThemeContext.jsx';
 import ThemeToggle from '../components/ThemeToggle.jsx';
 import PlanBanner from '../components/PlanBanner.jsx';
 import DeleteAccountModal from '../components/DeleteAccountModal.jsx';
+import AiLearnProgress from '../components/AiLearnProgress.jsx';
+import { buildLearnParamsFromProfile, learnAcademicProfile } from '../utils/academicProfileAI.js';
 
 function SettingRow({ label, desc, children }) {
   return (
@@ -34,13 +37,56 @@ function Toggle({ checked, onChange, id }) {
 }
 
 export default function AccountSettings({ setPage }) {
-  const { user, profile, streak, settings, updateUser, updateSettings, setFocusMode, isCloudMode, deleteAccount, deleteAllLocalData } = useAuth();
+  const { user, profile, streak, settings, updateUser, updateSettings, setFocusMode, isCloudMode, deleteAccount, deleteAllLocalData, setProfile } = useAuth();
+  const { academicProfile, relearnAcademicProfile } = useSemesters();
   const { plan } = usePlanCapacity();
   const { theme } = useTheme();
   const [name, setName] = useState(user?.name || '');
   const [saved, setSaved] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const [relearnBusy, setRelearnBusy] = useState(false);
+  const [relearnElapsed, setRelearnElapsed] = useState(0);
+  const [relearnError, setRelearnError] = useState('');
+  const [relearnSuccess, setRelearnSuccess] = useState('');
+
+  const ap = academicProfile || profile?.academicProfile;
+
+  async function handleRelearnProgramme() {
+    const params = buildLearnParamsFromProfile(ap);
+    if (!params?.universityName || !params?.programName) {
+      setRelearnError('Add your university and programme during onboarding before re-learning.');
+      return;
+    }
+    setRelearnBusy(true);
+    setRelearnError('');
+    setRelearnSuccess('');
+    setRelearnElapsed(0);
+    const timer = setInterval(() => setRelearnElapsed((s) => s + 1), 1000);
+    try {
+      const { profile: nextProfile, source, error } = await learnAcademicProfile(params);
+      relearnAcademicProfile(nextProfile);
+      if (profile?.academicProfile) {
+        setProfile({
+          ...profile,
+          academicProfile: {
+            ...nextProfile,
+            semesterHistory: ap?.semesterHistory ?? [],
+          },
+        });
+      }
+      if (source === 'ai') {
+        setRelearnSuccess('Programme map updated with AI. Your grade history was kept.');
+      } else {
+        setRelearnError(error || 'AI was unavailable — only an estimated profile was saved.');
+      }
+    } catch (err) {
+      setRelearnError(err?.message || 'Could not re-learn your programme. Try again later.');
+    } finally {
+      clearInterval(timer);
+      setRelearnBusy(false);
+    }
+  }
 
   function saveProfile() {
     if (name.trim()) {
@@ -126,6 +172,54 @@ export default function AccountSettings({ setPage }) {
             <button type="button" className="btn btn-outline" style={{ marginTop: 16 }} onClick={() => setPage('manage-plan')}>
               Manage plan
             </button>
+          </section>
+
+          <section className="card as-section">
+            <p className="card-label">Academic programme</p>
+            {ap ? (
+              <>
+                <p className="as-row-desc">
+                  <strong>{ap.institutionName}</strong> · {ap.programName}
+                  {ap.source === 'fallback' && (
+                    <span className="as-badge-warn"> Estimated (offline)</span>
+                  )}
+                </p>
+                <p className="as-row-desc">
+                  {ap.gradingScale?.label || 'Grading scale'}
+                  {ap.learnedAt && (
+                    <span> · Last learned {new Date(ap.learnedAt).toLocaleDateString()}</span>
+                  )}
+                </p>
+                {relearnBusy ? (
+                  <AiLearnProgress loading elapsedSeconds={relearnElapsed} />
+                ) : (
+                  <button type="button" className="btn btn-outline" style={{ marginTop: 12 }} onClick={handleRelearnProgramme}>
+                    Re-learn programme with AI
+                  </button>
+                )}
+                <p className="as-field-hint" style={{ marginTop: 8 }}>
+                  Re-runs AI curriculum mapping from your university and programme. Grade history and semester records are kept.
+                </p>
+                {relearnSuccess && <p className="as-success" role="status">{relearnSuccess}</p>}
+                {(relearnError || (!relearnBusy && ap.source === 'fallback')) && (
+                  <div className="ai-learn-error" style={{ marginTop: 8 }}>
+                    {relearnError && <p className="form-error" role="alert">{relearnError}</p>}
+                    {!relearnBusy && ap.source === 'fallback' && !relearnSuccess && (
+                      <p className="form-error" role="alert">
+                        Your profile was created offline. Use re-learn above once AI is connected for real course codes.
+                      </p>
+                    )}
+                    {relearnError && !relearnBusy && (
+                      <button type="button" className="btn btn-outline btn-sm" onClick={handleRelearnProgramme}>
+                        Retry
+                      </button>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="as-row-desc">Complete onboarding to set your university and programme.</p>
+            )}
           </section>
 
           <section className="card as-section">

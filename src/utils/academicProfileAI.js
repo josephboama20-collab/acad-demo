@@ -68,6 +68,36 @@ function parseJsonFromText(text) {
   }
 }
 
+function formatEdgeError(status, message, error) {
+  if (status === 503) {
+    return 'AI is not configured on the server (missing OpenAI key in Supabase secrets).';
+  }
+  if (status === 401) return 'Your session expired — sign in again and retry.';
+  if (status === 502) return 'AI could not generate a valid programme profile. Try again in a moment.';
+  const detail = error?.context?.body;
+  if (typeof detail === 'string' && detail.includes('AI not configured')) {
+    return 'AI is not configured on the server (missing OpenAI key in Supabase secrets).';
+  }
+  return message || 'Could not reach the AI service.';
+}
+
+/** Build learn params from a stored academic profile (Settings re-learn). */
+export function buildLearnParamsFromProfile(academicProfile) {
+  if (!academicProfile) return null;
+  const trackType = academicProfile.trackType === 'combined' ? 'Combined major' : 'Single major';
+  return {
+    universityName: academicProfile.institutionName || '',
+    programName: academicProfile.programName || '',
+    departmentName: academicProfile.departmentName || null,
+    country: academicProfile.country || '',
+    trackType,
+    secondaryProgram: academicProfile.secondaryProgram || null,
+    studentPath: academicProfile.studentPath || 'continuing',
+    currentLevel: academicProfile.currentLevel || 100,
+    currentSemester: academicProfile.currentSemester || 1,
+  };
+}
+
 /** Offline fallback when AI is unavailable — still personalized to entered names. */
 export function buildFallbackAcademicProfile(params) {
   const levels = [100, 200, 300, 400];
@@ -127,12 +157,24 @@ export function buildFallbackAcademicProfile(params) {
 }
 
 async function callAcademicProfileEdge(params) {
-  if (!isCloudEnabled() || !supabase) return null;
+  if (!isCloudEnabled() || !supabase) {
+    return { profile: null, error: 'Cloud AI is not enabled in this build.', status: null };
+  }
+
   const { data, error } = await supabase.functions.invoke('academic-profile', {
     body: { params },
   });
-  if (error) return null;
-  return data?.profile ?? null;
+
+  if (error) {
+    const status = error.context?.status ?? null;
+    return { profile: null, error: formatEdgeError(status, error.message, error), status };
+  }
+
+  if (!data?.profile) {
+    return { profile: null, error: data?.error || 'AI returned an empty profile.', status: 502 };
+  }
+
+  return { profile: data.profile, error: null, status: 200 };
 }
 
 async function callAcademicProfileDeepSeek(params) {
@@ -177,20 +219,57 @@ async function callAcademicProfileDirect(params) {
   }
 }
 
+function fallbackErrorMessage(edgeError, edgeStatus) {
+  if (edgeStatus === 503 || edgeError?.includes('not configured')) {
+    return `${edgeError} A basic estimated profile was created — review it, or re-learn from Settings once AI is connected.`;
+  }
+  if (edgeError) {
+    return `${edgeError} A basic estimated profile was created — review and edit it on the next step.`;
+  }
+  return 'Could not reach AI. A basic profile was created — review and edit it on the next step.';
+}
+
 /**
  * AI learns university/programme structure from key parameters entered by the user.
+ * @returns {{ profile, source: 'ai'|'fallback', error: string|null, status: number|null }}
  */
-export async function learnAcademicProfile(params) {
-  const edgeProfile = await callAcademicProfileEdge(params);
-  if (edgeProfile) {
-    return normalizeAcademicProfile(edgeProfile, params);
+export async function learnAcademicProfile(params, { allowFallback = true } = {}) {
+  const edge = await callAcademicProfileEdge(params);
+  if (edge.profile) {
+    return {
+      profile: normalizeAcademicProfile(edge.profile, params),
+      source: 'ai',
+      error: null,
+      status: edge.status,
+    };
   }
 
   const deepseekProfile = await callAcademicProfileDeepSeek(params);
-  if (deepseekProfile) return deepseekProfile;
+  if (deepseekProfile) {
+    return { profile: deepseekProfile, source: 'ai', error: null, status: 200 };
+  }
 
   const directProfile = await callAcademicProfileDirect(params);
-  if (directProfile) return directProfile;
+  if (directProfile) {
+    return { profile: directProfile, source: 'ai', error: null, status: 200 };
+  }
 
-  return buildFallbackAcademicProfile(params);
+  if (!allowFallback) {
+    throw new Error(edge.error || 'AI is unavailable right now.');
+  }
+
+  return {
+    profile: buildFallbackAcademicProfile(params),
+    source: 'fallback',
+    error: fallbackErrorMessage(edge.error, edge.status),
+    status: edge.status,
+  };
+}
+
+/** Human-readable progress hint for the onboarding AI step. */
+export function getAiLearnProgressMessage(elapsedSeconds) {
+  if (elapsedSeconds < 15) return 'Mapping your grading scale and programme structure…';
+  if (elapsedSeconds < 45) return 'Still learning — this usually takes 30–60 seconds.';
+  if (elapsedSeconds < 90) return 'Large programmes can take up to 90 seconds. Please wait…';
+  return 'Taking longer than expected. You can keep waiting or tap Retry.';
 }

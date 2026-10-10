@@ -1000,6 +1000,58 @@ body::before {
   width: 100%;
 }
 
+.ai-learn-status {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 28rem;
+}
+
+.ai-learn-elapsed {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.ai-learn-progress {
+  width: min(100%, 280px);
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border-dim);
+  overflow: hidden;
+}
+
+.ai-learn-progress-bar {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 999px;
+  transition: width 1s linear;
+}
+
+.ai-learn-error {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  width: 100%;
+  text-align: center;
+}
+
+.ai-learn-success {
+  color: var(--success, #2d8a4e);
+}
+
+.as-badge-warn {
+  color: var(--warning, #b45309);
+  font-weight: 600;
+}
+
+.as-success {
+  margin: 8px 0 0;
+  color: var(--success, #2d8a4e);
+  font-size: 0.9rem;
+}
+
 /* Loader spinner */
 .lo-spinner {
   width: 28px;

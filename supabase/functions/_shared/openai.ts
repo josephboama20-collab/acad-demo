@@ -1,4 +1,9 @@
 /** OpenAI Chat Completions helper for Supabase edge functions. */
+
+export function getOpenAIApiKey(): string | undefined {
+  return Deno.env.get('OPENAI_API_KEY') ?? Deno.env.get('OPENAI_API_KEY_FOR_ACAD') ?? undefined;
+}
+
 export async function callOpenAI(options: {
   apiKey: string;
   model: string;

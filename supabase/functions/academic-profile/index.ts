@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { callOpenAI } from '../_shared/openai.ts';
+import { callOpenAI, getOpenAIApiKey } from '../_shared/openai.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
     }
 
-    const openaiKey = Deno.env.get('OPENAI_API_KEY');
+    const openaiKey = getOpenAIApiKey();
     if (!openaiKey) {
       return new Response(JSON.stringify({ error: 'AI not configured' }), { status: 503, headers: corsHeaders });
     }
