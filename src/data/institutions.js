@@ -62,3 +62,43 @@ export const COMMON_PROGRAMMES = [
   'Doctor of Pharmacy (PharmD)',
   'Bachelor of Medicine, Bachelor of Surgery (MBChB)',
 ];
+
+const UG_PROGRAMMES = [
+  'BSc Computer Science',
+  'BSc Information Technology',
+  'BSc Mathematics',
+  'BSc Statistics',
+  'BSc Economics',
+  'BSc Business Administration',
+  'BSc Accounting',
+  'LLB Law',
+  'Bachelor of Medicine, Bachelor of Surgery (MBChB)',
+];
+
+const KNUST_PROGRAMMES = [
+  'BSc Computer Science',
+  'BSc Computer Engineering',
+  'BSc Electrical and Electronic Engineering',
+  'BSc Mechanical Engineering',
+  'BSc Civil Engineering',
+  'BSc Architecture',
+  'BSc Biomedical Engineering',
+  'BSc Agriculture',
+];
+
+function normalizeUni(name) {
+  return (name || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+/** Programme list tailored to the selected university when known. */
+export function getProgrammeSuggestions(universityName) {
+  const uni = normalizeUni(universityName);
+  if (uni.includes('university of ghana') || uni === 'ug') return UG_PROGRAMMES;
+  if (uni.includes('kwame nkrumah') || uni.includes('knust')) return KNUST_PROGRAMMES;
+  return COMMON_PROGRAMMES;
+}
+
+/** Top quick-pick chips shown before the user types. */
+export function getProgrammeQuickPicks(universityName, max = 4) {
+  return getProgrammeSuggestions(universityName).slice(0, max);
+}

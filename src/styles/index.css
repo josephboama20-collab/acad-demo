@@ -83,6 +83,10 @@
 .ob-combo-menu::-webkit-scrollbar{width:8px}
 .ob-combo-menu::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 .ob-combo-menu::-webkit-scrollbar-track{background:transparent}
+.ob-combo-quick{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:8px;margin-bottom:14px}
+.ob-combo-chip.ob-opt{margin:0;width:100%;text-align:left;font-size:12px;line-height:1.35;padding:10px 12px;white-space:normal}
+.ob-question-wrap,.ob-panel{overflow:visible}
+.ob-combo-menu{z-index:60}
 
 @media (width<=900px){
   .plan-banner-grid,.dash-grid-redesign,.as-grid{grid-template-columns:1fr}

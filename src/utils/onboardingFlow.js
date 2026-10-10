@@ -1,5 +1,5 @@
 import { ONBOARDING_QUESTIONS } from '../data/constants.js';
-import { COMMON_PROGRAMMES, KNOWN_UNIVERSITIES } from '../data/institutions.js';
+import { COMMON_PROGRAMMES, getProgrammeQuickPicks, getProgrammeSuggestions, KNOWN_UNIVERSITIES } from '../data/institutions.js';
 import { getCompletedSemesterSlots, getSemesterCoursesFromProfile } from './academicProfileUtils.js';
 
 const CALMING_HABIT_OVERRIDES = {
@@ -86,6 +86,7 @@ export function buildOnboardingFlow(ctx) {
     hint: 'Start typing and pick from the list, or enter your own. Official name helps AI map your programme.',
     placeholder: 'e.g. University of Ghana',
     suggestions: KNOWN_UNIVERSITIES,
+    quickPicks: KNOWN_UNIVERSITIES.slice(0, 4),
   });
 
   if (universityName?.trim()) {
@@ -96,7 +97,8 @@ export function buildOnboardingFlow(ctx) {
       q: 'Which programme are you studying?',
       hint: 'Start typing and pick from the list, or enter your own. Edit or add courses later if AI misses any.',
       placeholder: 'e.g. BSc Information Technology',
-      suggestions: COMMON_PROGRAMMES,
+      suggestions: getProgrammeSuggestions(universityName),
+      quickPicks: getProgrammeQuickPicks(universityName),
     });
   }
 

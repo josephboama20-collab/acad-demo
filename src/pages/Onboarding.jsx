@@ -419,6 +419,7 @@ export default function Onboarding({ setPage }) {
               value={answers[current.field] || ''}
               placeholder={current.placeholder}
               suggestions={current.suggestions}
+              quickPicks={current.quickPicks}
               autoFocus
               onChange={(val) => {
                 setAnswers((a) => ({ ...a, [current.field]: val }));
