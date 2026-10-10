@@ -88,7 +88,7 @@ export function mergeCatalogueWithAi(catalogueProfile, aiProfile) {
 
 export const PROMPT_RULES_UG = `University of Ghana rules (when applicable):
 - BSc Computer Science core courses use the CSCD prefix (e.g. CSCD 101, CSCD 216). Do NOT use CPS, CSCI, COMPSCI, or DCIT for Computer Science.
-- BSc Information Technology uses CSIT; do not mix CSIT with CSCD unless the student is in a combined programme.
+- BSc Information Technology uses DCIT; do not mix DCIT with CSCD unless the student is in a combined programme.
 - General university requirements use UGRC (e.g. UGRC 150, UGRC 110, UGRC 210). Do NOT substitute GESS, GNS, or GES codes for UGRC.
 - Use only course codes and titles from the official UG handbook when you know them. Do not invent codes.
 - If unsure about a course, omit it rather than guessing.`;

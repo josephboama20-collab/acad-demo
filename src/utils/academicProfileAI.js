@@ -77,13 +77,13 @@ function parseJsonFromText(text) {
 
 function formatEdgeError(status, message, error) {
   if (status === 503) {
-    return 'AI is not configured on the server (missing OpenAI key in Supabase secrets).';
+    return 'AI is not configured on the server (missing DeepSeek/OpenAI key in Supabase secrets).';
   }
   if (status === 401) return 'Your session expired — sign in again and retry.';
   if (status === 502) return 'AI could not generate a valid programme profile. Try again in a moment.';
   const detail = error?.context?.body;
   if (typeof detail === 'string' && detail.includes('AI not configured')) {
-    return 'AI is not configured on the server (missing OpenAI key in Supabase secrets).';
+    return 'AI is not configured on the server (missing DeepSeek/OpenAI key in Supabase secrets).';
   }
   return message || 'Could not reach the AI service.';
 }
@@ -269,6 +269,17 @@ export async function learnAcademicProfile(params, { allowFallback = true } = {}
         source: 'catalogue',
         error: null,
         status: 200,
+        meta: {
+          search: {
+            searchUsed: false,
+            resultCount: 0,
+            query: '',
+            sites: [],
+            contextChars: 0,
+            estimatedContextTokens: 0,
+            estimatedTokensSaved: 0,
+          },
+        },
       };
     }
 
@@ -280,6 +291,7 @@ export async function learnAcademicProfile(params, { allowFallback = true } = {}
         source: 'catalogue',
         error: null,
         status: edge.status,
+        meta: edge.meta ?? null,
       };
     }
 
@@ -288,6 +300,7 @@ export async function learnAcademicProfile(params, { allowFallback = true } = {}
       source: 'catalogue',
       error: null,
       status: 200,
+      meta: edge.meta ?? null,
     };
   }
 
@@ -298,17 +311,18 @@ export async function learnAcademicProfile(params, { allowFallback = true } = {}
       source: 'ai',
       error: null,
       status: edge.status,
+      meta: edge.meta ?? null,
     };
   }
 
   const deepseekProfile = await callAcademicProfileDeepSeek(params);
   if (deepseekProfile) {
-    return { profile: deepseekProfile, source: 'ai', error: null, status: 200 };
+    return { profile: deepseekProfile, source: 'ai', error: null, status: 200, meta: null };
   }
 
   const directProfile = await callAcademicProfileDirect(params);
   if (directProfile) {
-    return { profile: directProfile, source: 'ai', error: null, status: 200 };
+    return { profile: directProfile, source: 'ai', error: null, status: 200, meta: null };
   }
 
   if (!allowFallback) {
@@ -320,6 +334,7 @@ export async function learnAcademicProfile(params, { allowFallback = true } = {}
     source: 'fallback',
     error: fallbackErrorMessage(edge.error, edge.status),
     status: edge.status,
+    meta: edge.meta ?? null,
   };
 }
 

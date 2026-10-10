@@ -89,6 +89,76 @@
           ]
         }
       }
+    },
+    "bsc-information-technology": {
+      "matchPatterns": ["information technology", "info tech", "it"],
+      "excludePatterns": ["computer science", "software engineering"],
+      "programName": "BSc Information Technology",
+      "departmentName": "Department of Computer Science, School of Physical and Mathematical Sciences",
+      "adaptationNotes": "Curriculum aligned to UG IT single-major pathway. DCIT and UGRC core courses are prioritized; edit electives where your department differs.",
+      "curriculum": {
+        "100": {
+          "1": [
+            { "code": "UGRC 150", "name": "Critical Thinking and Practical Reasoning", "credits": 3, "type": "ugrc" },
+            { "code": "MATH 121", "name": "Algebra and Trigonometry", "credits": 3, "type": "core" },
+            { "code": "STAT 101", "name": "Introduction to Statistics", "credits": 3, "type": "core" },
+            { "code": "DCIT 101", "name": "Introduction to Information Technology", "credits": 3, "type": "core" }
+          ],
+          "2": [
+            { "code": "UGRC 110", "name": "Academic Writing I", "credits": 3, "type": "ugrc" },
+            { "code": "UGRC 131", "name": "Understanding Human Society", "credits": 3, "type": "ugrc" },
+            { "code": "MATH 122", "name": "Calculus I", "credits": 3, "type": "core" },
+            { "code": "STAT 102", "name": "Elementary Probability", "credits": 3, "type": "core" },
+            { "code": "DCIT 102", "name": "Introduction to Programming", "credits": 3, "type": "core" }
+          ]
+        },
+        "200": {
+          "1": [
+            { "code": "UGRC 210", "name": "Academic Writing II", "credits": 3, "type": "ugrc" },
+            { "code": "DCIT 201", "name": "Data Structures and Algorithms", "credits": 3, "type": "core" },
+            { "code": "DCIT 203", "name": "Database Fundamentals", "credits": 3, "type": "core" },
+            { "code": "DCIT 205", "name": "Computer Architecture", "credits": 3, "type": "core" },
+            { "code": "MATH 223", "name": "Calculus II", "credits": 3, "type": "core" }
+          ],
+          "2": [
+            { "code": "UGRC 220", "name": "Introduction to African Studies", "credits": 3, "type": "ugrc" },
+            { "code": "DCIT 202", "name": "Object Oriented Programming", "credits": 3, "type": "core" },
+            { "code": "DCIT 204", "name": "Networking Fundamentals", "credits": 3, "type": "core" },
+            { "code": "DCIT 206", "name": "Operating Systems", "credits": 3, "type": "core" },
+            { "code": "DCIT 208", "name": "Web Technologies", "credits": 3, "type": "core" }
+          ]
+        },
+        "300": {
+          "1": [
+            { "code": "DCIT 301", "name": "Systems Analysis and Design", "credits": 3, "type": "core" },
+            { "code": "DCIT 303", "name": "Software Engineering", "credits": 3, "type": "core" },
+            { "code": "DCIT 305", "name": "Information Security", "credits": 3, "type": "core" },
+            { "code": "DCIT 307", "name": "Cloud Computing", "credits": 3, "type": "core" },
+            { "code": "DCIT 309", "name": "Human Computer Interaction", "credits": 3, "type": "core" }
+          ],
+          "2": [
+            { "code": "DCIT 302", "name": "Mobile Application Development", "credits": 3, "type": "core" },
+            { "code": "DCIT 304", "name": "Data Communications", "credits": 3, "type": "core" },
+            { "code": "DCIT 306", "name": "Enterprise Systems", "credits": 3, "type": "core" },
+            { "code": "DCIT 308", "name": "Research Methods in IT", "credits": 3, "type": "core" },
+            { "code": "DCIT 310", "name": "Project Management", "credits": 3, "type": "core" }
+          ]
+        },
+        "400": {
+          "1": [
+            { "code": "DCIT 401", "name": "Capstone Project I", "credits": 3, "type": "core" },
+            { "code": "DCIT 403", "name": "Advanced Networking", "credits": 3, "type": "core" },
+            { "code": "DCIT 405", "name": "IT Governance", "credits": 3, "type": "core" },
+            { "code": "DCIT 407", "name": "Business Intelligence", "credits": 3, "type": "core" }
+          ],
+          "2": [
+            { "code": "DCIT 402", "name": "Capstone Project II", "credits": 3, "type": "core" },
+            { "code": "DCIT 404", "name": "Distributed Systems", "credits": 3, "type": "core" },
+            { "code": "DCIT 406", "name": "IT Strategy and Policy", "credits": 3, "type": "core" },
+            { "code": "DCIT 408", "name": "Emerging Technologies", "credits": 3, "type": "core" }
+          ]
+        }
+      }
     }
   }
 }

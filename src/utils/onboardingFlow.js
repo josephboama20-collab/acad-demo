@@ -177,22 +177,36 @@ export function buildOnboardingFlow(ctx) {
   }
 
   if (aiLearnDone && learnedProfile && studentPath) {
-    const slot = getFastPathSemesterSlot(studentPath, currentLevel, currentSemester);
-    const courses =
-      studentPath === 'new'
-        ? []
-        : getSemesterCoursesFromProfile(learnedProfile, slot.level, slot.semester);
-    steps.push({
-      type: 'semesterGrades',
-      id: `grades-${slot.level}-${slot.semester}`,
-      level: slot.level,
-      semester: slot.semester,
-      label: slot.label,
-      q: studentPath === 'new' ? 'Your most recent completed semester' : `Grades for ${slot.label}`,
-      hint: 'Enter at least 3 courses from one completed term. Add older semesters anytime from your dashboard.',
-      courses,
-      deferrable: true,
-    });
+    if (studentPath === 'new') {
+      const slot = getFastPathSemesterSlot(studentPath, currentLevel, currentSemester);
+      steps.push({
+        type: 'semesterGrades',
+        id: `grades-${slot.level}-${slot.semester}`,
+        level: slot.level,
+        semester: slot.semester,
+        label: slot.label,
+        q: 'Your most recent completed semester',
+        hint: 'Enter at least 3 courses from one completed term. Add older semesters anytime from your dashboard.',
+        courses: [],
+        deferrable: true,
+      });
+    } else {
+      const completed = getCompletedSemesterSlots(currentLevel, currentSemester);
+      completed.forEach((slot) => {
+        const courses = getSemesterCoursesFromProfile(learnedProfile, slot.level, slot.semester);
+        steps.push({
+          type: 'semesterGrades',
+          id: `grades-${slot.level}-${slot.semester}`,
+          level: slot.level,
+          semester: slot.semester,
+          label: slot.label,
+          q: `Grades for ${slot.label}`,
+          hint: 'Edit any course details if needed, then select the grade you earned.',
+          courses,
+          deferrable: false,
+        });
+      });
+    }
   }
 
   const hasSemesterStep = steps.some((s) => s.type === 'semesterGrades');

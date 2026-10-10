@@ -17,6 +17,35 @@ export function getCompletedSemesterSlots(currentLevel, currentSemester) {
   return slots;
 }
 
+function getMaxAllowedSemester(currentLevel, currentSemester, studentPath) {
+  if (studentPath === 'new') return { level: 100, semester: 2 };
+  if (!currentLevel || !currentSemester) return { level: 100, semester: 2 };
+  if (currentSemester === 1) return { level: currentLevel, semester: 2 };
+  if (currentLevel >= 400) return { level: 400, semester: 2 };
+  return { level: currentLevel + 100, semester: 1 };
+}
+
+function semesterIndex(level, semester) {
+  return (Number(level) - 100) * 2 + Number(semester);
+}
+
+/** Keep all prior work, current term, and immediate next term only. */
+export function trimCurriculumToLearningWindow(curriculum, params) {
+  if (!curriculum || typeof curriculum !== 'object') return {};
+  const max = getMaxAllowedSemester(params.currentLevel, params.currentSemester, params.studentPath);
+  const maxIdx = semesterIndex(max.level, max.semester);
+  const out = {};
+  Object.entries(curriculum).forEach(([level, sems]) => {
+    Object.entries(sems || {}).forEach(([sem, courses]) => {
+      if (semesterIndex(level, sem) <= maxIdx) {
+        if (!out[level]) out[level] = {};
+        out[level][sem] = courses;
+      }
+    });
+  });
+  return out;
+}
+
 export function getSemesterCoursesFromProfile(academicProfile, level, semester) {
   const curriculum = academicProfile?.curriculum;
   if (!curriculum) return [];
@@ -102,7 +131,7 @@ export function normalizeAcademicProfile(raw, params) {
       levels: [100, 200, 300, 400],
       semestersPerYear: 2,
     },
-    curriculum: normalizedCurriculum,
+    curriculum: trimCurriculumToLearningWindow(normalizedCurriculum, params),
     adaptationNotes: raw.adaptationNotes || '',
     semesterHistory: [],
   };

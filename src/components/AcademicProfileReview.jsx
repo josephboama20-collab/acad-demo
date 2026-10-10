@@ -3,7 +3,7 @@ import CurriculumPreview from './CurriculumPreview.jsx';
 /**
  * Lets users review and correct AI-generated academic profile before continuing.
  */
-export default function AcademicProfileReview({ profile, edits, onChange, onConfirm, confirmed }) {
+export default function AcademicProfileReview({ profile, meta, edits, onChange, onConfirm, confirmed }) {
   const institutionName = edits.institutionName ?? profile?.institutionName ?? '';
   const programName = edits.programName ?? profile?.programName ?? '';
   const gradingLabel = edits.gradingLabel ?? profile?.gradingScale?.label ?? '';
@@ -21,6 +21,14 @@ export default function AcademicProfileReview({ profile, edits, onChange, onConf
       {profile?.source === 'catalogue' && (
         <p className="ai-learn-success">Matched the official University of Ghana course catalogue for this programme.</p>
       )}
+      {meta?.search?.searchUsed && (
+        <p className="ob-hint">
+          Courses were grounded with {meta.search.resultCount} official-source snippets from {meta.search.sites.join(', ')}.
+        </p>
+      )}
+      <p className="ob-hint">
+        This profile drives your recovery path: historical performance → current level context → next-semester preparation and focus recommendations.
+      </p>
       <div className="profile-review-fields">
         <div className="form-group">
           <label className="form-label" htmlFor="pr-institution">University</label>
@@ -66,7 +74,12 @@ export default function AcademicProfileReview({ profile, edits, onChange, onConf
           />
         </div>
       </div>
-      <CurriculumPreview profile={profile} />
+      <CurriculumPreview
+        profile={profile}
+        editable
+        value={edits.curriculum || profile?.curriculum}
+        onChange={(curriculum) => update('curriculum', curriculum)}
+      />
       <button
         type="button"
         className={`btn btn-outline${confirmed ? ' btn-confirmed' : ''}`}

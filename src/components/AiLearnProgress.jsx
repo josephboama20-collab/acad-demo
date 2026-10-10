@@ -3,6 +3,13 @@ import { getAiLearnProgressMessage } from '../utils/academicProfileAI.js';
 export default function AiLearnProgress({ loading, elapsedSeconds = 0, error, onRetry, summary }) {
   const progressPct = loading ? Math.min(95, Math.round((elapsedSeconds / 90) * 100)) : 100;
   const showLoadingRetry = loading && onRetry && elapsedSeconds >= 20;
+  const contextStages = [
+    'Validating your university + programme context...',
+    'Checking official curriculum references...',
+    'Building your level-by-level course map...',
+    'Calculating grading scale + adaptation notes...',
+  ];
+  const stage = contextStages[Math.min(contextStages.length - 1, Math.floor(elapsedSeconds / 6))];
 
   return (
     <div className="ai-learn-panel">
@@ -10,6 +17,7 @@ export default function AiLearnProgress({ loading, elapsedSeconds = 0, error, on
         <>
           <div className="lo-spinner" aria-hidden="true" />
           <p className="ai-learn-status">{getAiLearnProgressMessage(elapsedSeconds)}</p>
+          <p className="ob-hint ai-learn-context">{stage}</p>
           <div className="ai-learn-progress" role="progressbar" aria-valuenow={progressPct} aria-valuemin={0} aria-valuemax={100}>
             <div className="ai-learn-progress-bar" style={{ width: `${progressPct}%` }} />
           </div>

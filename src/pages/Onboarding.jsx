@@ -57,6 +57,7 @@ export default function Onboarding({ setPage }) {
   const [aiLearnDone, setAiLearnDone] = useState(false);
   const [aiLearning, setAiLearning] = useState(false);
   const [aiError, setAiError] = useState('');
+  const [aiMeta, setAiMeta] = useState(null);
   const [aiLearnAttempt, setAiLearnAttempt] = useState(0);
   const [aiLearnElapsed, setAiLearnElapsed] = useState(0);
   const [deferredSemesterGrades, setDeferredSemesterGrades] = useState(false);
@@ -169,6 +170,7 @@ export default function Onboarding({ setPage }) {
     setAiLearnDone(false);
     setLearnedProfile(null);
     setAiError('');
+    setAiMeta(null);
     setAiLearnElapsed(0);
     setAiLearnAttempt((n) => n + 1);
     aiFetchStartedRef.current = false;
@@ -178,12 +180,20 @@ export default function Onboarding({ setPage }) {
     if (!learnParamsReady || aiLearnDone || aiFetchStartedRef.current) return;
     aiFetchStartedRef.current = true;
     let cancelled = false;
+    const startedAt = Date.now();
     setAiLearning(true);
     setAiError('');
     learnAcademicProfile(learnParams)
-      .then(({ profile, source, error }) => {
+      .then(async ({ profile, source, error, meta }) => {
+        if (cancelled) return;
+        const elapsed = Date.now() - startedAt;
+        const minVisualMs = 4500;
+        if (elapsed < minVisualMs) {
+          await new Promise((resolve) => setTimeout(resolve, minVisualMs - elapsed));
+        }
         if (cancelled) return;
         setLearnedProfile(profile);
+        setAiMeta(meta || null);
         setAiLearnDone(true);
         if (source === 'fallback' && error) setAiError(error);
       })
@@ -300,6 +310,7 @@ export default function Onboarding({ setPage }) {
         ...learnedProfile?.gradingScale,
         label: profileEdits.gradingLabel?.trim() || learnedProfile?.gradingScale?.label,
       },
+      curriculum: profileEdits.curriculum || learnedProfile?.curriculum,
       adaptationNotes: profileEdits.adaptationNotes?.trim() || learnedProfile?.adaptationNotes,
       semesterHistory,
     };
@@ -503,6 +514,11 @@ export default function Onboarding({ setPage }) {
               {learnedProfile.source === 'ai' && (
                 <p className="ob-hint ai-learn-success">Mapped with AI from your university and programme names.</p>
               )}
+              {aiMeta?.search?.searchUsed && (
+                <p className="ob-hint">
+                  Grounded with {aiMeta.search.resultCount} official search snippets from {aiMeta.search.sites.join(', ')}.
+                </p>
+              )}
               <p className="ob-accuracy-note">AI can make mistakes — you will review and edit everything on the next step.</p>
             </div>
           ) : null}
@@ -514,6 +530,7 @@ export default function Onboarding({ setPage }) {
       return (
         <AcademicProfileReview
           profile={learnedProfile}
+          meta={aiMeta}
           edits={profileEdits}
           onChange={(edits) => {
             setProfileEdits(edits);
