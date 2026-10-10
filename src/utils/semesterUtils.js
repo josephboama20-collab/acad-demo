@@ -113,10 +113,17 @@ export const GRADE_POINTS = {
 export const GRADE_OPTIONS = Object.keys(GRADE_POINTS);
 
 export function computeGpaFromGrades(courses, gradePoints = GRADE_POINTS) {
-  const valid = (courses || []).filter((c) => gradePoints[c.grade] !== undefined);
-  if (valid.length === 0) return null;
-  const total = valid.reduce((sum, c) => sum + gradePoints[c.grade], 0);
-  return Number((total / valid.length).toFixed(2));
+  let totalPoints = 0;
+  let totalCredits = 0;
+  for (const course of courses || []) {
+    const points = gradePoints[course.grade];
+    // Legacy records without credits retain equal weighting until edited.
+    const credits = course.credits == null ? 1 : Number(course.credits);
+    if (!Number.isFinite(points) || !Number.isFinite(credits) || credits <= 0) continue;
+    totalPoints += points * credits;
+    totalCredits += credits;
+  }
+  return totalCredits > 0 ? Number((totalPoints / totalCredits).toFixed(2)) : null;
 }
 
 export function compareSemesterGrades(previousCourses, nextCourses, gradePoints = GRADE_POINTS) {
