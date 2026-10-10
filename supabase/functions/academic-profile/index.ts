@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { callOpenAI, getOpenAIApiKey } from '../_shared/openai.ts';
+import { searchForAcademicProfile } from '../_shared/searxng.ts';
 import {
   buildProfileFromCatalogue,
   findCatalogueMatch,
@@ -30,7 +31,7 @@ const PROFILE_SCHEMA_HINT = `Return ONLY valid JSON (no markdown fences) matchin
   "adaptationNotes": "string"
 }`;
 
-function buildLearnPrompt(params: Record<string, unknown>) {
+function buildLearnPrompt(params: Record<string, unknown>, searchContext = '') {
   const universityName = params.universityName ?? '';
   const programName = params.programName ?? '';
   const country = params.country ?? 'not specified';
@@ -39,8 +40,11 @@ function buildLearnPrompt(params: Record<string, unknown>) {
   const studentPath = params.studentPath === 'new' ? 'Just starting Level 100 Semester 1' : `Continuing at Level ${params.currentLevel} Semester ${params.currentSemester}`;
   const departmentName = params.departmentName ?? '';
   const ghanaRules = String(country).toLowerCase().includes('ghana') ? `\n\n${PROMPT_RULES_UG}` : '';
+  const groundedBlock = searchContext
+    ? `\n\n${searchContext}\n\nUse ONLY the snippets above for course codes and titles. If a detail is missing, omit it rather than guessing.`
+    : '\n\nNo web snippets available — infer from well-established public programme knowledge only. Do not invent course codes.';
 
-  return `You are Acad's academic intelligence engine. Infer the academic structure for this student from public programme knowledge.
+  return `You are Acad's academic intelligence engine. Build a structured academic profile from the student parameters and any provided web snippets.
 
 Student parameters:
 - University: ${universityName}
@@ -49,8 +53,9 @@ ${departmentName ? `- Department/Faculty: ${departmentName}` : ''}
 - Country/region: ${country}
 - Structure: ${trackType}${secondaryProgram ? ` (combined with ${secondaryProgram})` : ''}
 - Journey: ${studentPath}
+${groundedBlock}
 
-Infer grading scale, semester structure, and core courses per level/semester. Be accurate to known public curricula. Do not invent course codes.${ghanaRules}
+Infer grading scale, semester structure, and core courses per level/semester.${ghanaRules}
 
 ${PROFILE_SCHEMA_HINT}`;
 }
@@ -117,7 +122,12 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'AI not configured' }), { status: 503, headers: corsHeaders });
     }
 
-    const prompt = buildLearnPrompt(learnParams);
+    const needsWebGrounding = !catalogueMatch;
+    const { context: searchContext, meta: searchMeta } = needsWebGrounding
+      ? await searchForAcademicProfile(learnParams)
+      : { context: '', meta: { searchUsed: false, resultCount: 0, query: '', sites: [], contextChars: 0, estimatedContextTokens: 0, estimatedTokensSaved: 0 } };
+
+    const prompt = buildLearnPrompt(learnParams, searchContext);
     const system = 'You output only valid JSON academic profile data. No markdown fences or prose.';
 
     const { text, error } = await callOpenAI({
@@ -133,11 +143,11 @@ Deno.serve(async (req) => {
     if (!text) {
       if (catalogueMatch) {
         const catalogueBase = buildProfileFromCatalogue(learnParams, catalogueMatch);
-        return new Response(JSON.stringify({ profile: catalogueBase }), {
+        return new Response(JSON.stringify({ profile: catalogueBase, meta: { search: searchMeta } }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      return new Response(JSON.stringify({ error: 'AI request failed', detail: error }), {
+      return new Response(JSON.stringify({ error: 'AI request failed', detail: error, meta: { search: searchMeta } }), {
         status: 502,
         headers: corsHeaders,
       });
@@ -147,22 +157,22 @@ Deno.serve(async (req) => {
     if (!aiProfile) {
       if (catalogueMatch) {
         const catalogueBase = buildProfileFromCatalogue(learnParams, catalogueMatch);
-        return new Response(JSON.stringify({ profile: catalogueBase }), {
+        return new Response(JSON.stringify({ profile: catalogueBase, meta: { search: searchMeta } }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      return new Response(JSON.stringify({ error: 'Could not parse AI profile' }), { status: 502, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: 'Could not parse AI profile', meta: { search: searchMeta } }), { status: 502, headers: corsHeaders });
     }
 
     if (catalogueMatch) {
       const catalogueBase = buildProfileFromCatalogue(learnParams, catalogueMatch);
       const merged = mergeCatalogueWithAi(catalogueBase, { ...aiProfile, source: 'catalogue' });
-      return new Response(JSON.stringify({ profile: merged }), {
+      return new Response(JSON.stringify({ profile: merged, meta: { search: searchMeta } }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    return new Response(JSON.stringify({ profile: { ...aiProfile, source: 'ai' } }), {
+    return new Response(JSON.stringify({ profile: { ...aiProfile, source: 'ai' }, meta: { search: searchMeta } }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e) {

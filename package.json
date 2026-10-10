@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test:plan": "node scripts/test-planCapacity.js",
+    "test:searxng": "node scripts/test-searxng.mjs",
     "seed:demo": "node scripts/seed-demo-users.mjs"
   },
   "dependencies": {

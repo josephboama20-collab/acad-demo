@@ -5,6 +5,26 @@ import Loader from '../components/Loader.jsx';
 
 const STAGING_CLOUD_REQUIRED = import.meta.env.VITE_APP_ENV === 'staging' && !isCloudEnabled();
 
+/** Turn a Supabase/auth error into a readable message (never a bare "{}"). */
+function readAuthError(err, fallback) {
+  const raw = typeof err === 'string' ? err : err?.message;
+  const msg = raw && String(raw).trim() !== '{}' ? String(raw).trim() : '';
+
+  if (!msg || /failed to fetch|networkerror|network request failed|load failed|503/i.test(msg)) {
+    return 'Can’t reach the server right now — it may be waking up or offline. Check your connection and try again in a moment.';
+  }
+  if (/user already registered/i.test(msg)) {
+    return 'An account with this email already exists — try signing in instead.';
+  }
+  if (/invalid login credentials/i.test(msg)) {
+    return 'Incorrect email or password.';
+  }
+  if (/email not confirmed/i.test(msg)) {
+    return 'Please confirm your email address before signing in.';
+  }
+  return msg || fallback;
+}
+
 export default function Auth({ setPage, initialMode = 'signup' }) {
   const { profile, signUp, signIn, setUser, resetPassword } = useAuth();
   const [mode, setMode] = useState(initialMode);
@@ -51,7 +71,7 @@ export default function Auth({ setPage, initialMode = 'signup' }) {
         setPage(profile ? 'dashboard' : 'onboarding');
       }
     } catch (err) {
-      setError(err.message || 'Authentication failed.');
+      setError(readAuthError(err, 'Authentication failed.'));
     } finally {
       setLoading(false);
     }
@@ -72,7 +92,7 @@ export default function Auth({ setPage, initialMode = 'signup' }) {
       await resetPassword(form.email);
       setInfo('If an account exists for that email, a reset link has been sent.');
     } catch (err) {
-      setError(err.message || 'Could not send reset email.');
+      setError(readAuthError(err, 'Could not send reset email.'));
     }
   }
 

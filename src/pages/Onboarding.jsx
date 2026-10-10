@@ -168,6 +168,7 @@ export default function Onboarding({ setPage }) {
     setAiLearnDone(false);
     setLearnedProfile(null);
     setAiError('');
+    setAiLearnElapsed(0);
     setAiLearnAttempt((n) => n + 1);
     aiFetchStartedRef.current = false;
   }
@@ -415,12 +416,21 @@ export default function Onboarding({ setPage }) {
             className="form-input"
             placeholder={current.placeholder}
             value={answers[current.field] || ''}
+            list={current.suggestions ? `${current.id}-suggestions` : undefined}
+            autoComplete="off"
             onChange={(e) => {
               setAnswers((a) => ({ ...a, [current.field]: e.target.value }));
               setValidationError('');
             }}
             autoFocus
           />
+          {current.suggestions && (
+            <datalist id={`${current.id}-suggestions`}>
+              {current.suggestions.map((opt) => (
+                <option key={opt} value={opt} />
+              ))}
+            </datalist>
+          )}
         </>
       );
     }
@@ -473,7 +483,7 @@ export default function Onboarding({ setPage }) {
           loading={aiLearning}
           elapsedSeconds={aiLearnElapsed}
           error={aiError}
-          onRetry={!aiLearning && !aiLearnDone && aiError ? retryAiLearn : null}
+          onRetry={!aiLearnDone ? retryAiLearn : null}
           summary={aiLearnDone && learnedProfile ? (
             <div className="ai-learn-summary">
               <p><strong>{learnedProfile.institutionName}</strong> · {learnedProfile.programName}</p>

@@ -38,7 +38,7 @@ function buildLearnPrompt(params) {
     departmentName,
   } = params;
 
-  return `You are Acad's academic intelligence engine. Research and infer the academic structure for this student.
+  return `You are Acad's academic intelligence engine. Build a structured academic profile from the student parameters.
 
 Student parameters:
 - University: ${universityName}
@@ -53,7 +53,7 @@ Tasks:
 2. Map the programme's year-by-year, semester-by-semester core course list as accurately as public curriculum data allows.
 3. For combined majors, reflect both programmes' requirements where known.
 4. Include realistic course codes and titles for each level/semester up to the student's current position (and one semester ahead if continuing).
-5. Do NOT ask for transcript data. Use well-established public programme structures.
+5. Do NOT ask for transcript data. Do not invent course codes — omit unknown courses rather than guessing.
 ${(params.country || '').toLowerCase().includes('ghana') ? `\n\n${PROMPT_RULES_UG}` : ''}
 
 ${PROFILE_SCHEMA_HINT}`;
@@ -163,14 +163,31 @@ export function buildFallbackAcademicProfile(params) {
   );
 }
 
+const EDGE_TIMEOUT_MS = 75000;
+
 async function callAcademicProfileEdge(params) {
   if (!isCloudEnabled() || !supabase) {
     return { profile: null, error: 'Cloud AI is not enabled in this build.', status: null };
   }
 
-  const { data, error } = await supabase.functions.invoke('academic-profile', {
-    body: { params },
+  const timeout = new Promise((resolve) => {
+    setTimeout(() => resolve({ __timedOut: true }), EDGE_TIMEOUT_MS);
   });
+
+  const result = await Promise.race([
+    supabase.functions.invoke('academic-profile', { body: { params } }),
+    timeout,
+  ]);
+
+  if (result?.__timedOut) {
+    return {
+      profile: null,
+      error: 'AI is taking too long to respond. Tap Retry, or continue with an estimated profile you can edit.',
+      status: 504,
+    };
+  }
+
+  const { data, error } = result;
 
   if (error) {
     const status = error.context?.status ?? null;
@@ -181,7 +198,7 @@ async function callAcademicProfileEdge(params) {
     return { profile: null, error: data?.error || 'AI returned an empty profile.', status: 502 };
   }
 
-  return { profile: data.profile, error: null, status: 200 };
+  return { profile: data.profile, error: null, status: 200, meta: data.meta ?? null };
 }
 
 async function callAcademicProfileDeepSeek(params) {

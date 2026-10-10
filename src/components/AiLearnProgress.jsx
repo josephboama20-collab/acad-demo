@@ -2,6 +2,7 @@ import { getAiLearnProgressMessage } from '../utils/academicProfileAI.js';
 
 export default function AiLearnProgress({ loading, elapsedSeconds = 0, error, onRetry, summary }) {
   const progressPct = loading ? Math.min(95, Math.round((elapsedSeconds / 90) * 100)) : 100;
+  const showLoadingRetry = loading && onRetry && elapsedSeconds >= 20;
 
   return (
     <div className="ai-learn-panel">
@@ -13,6 +14,11 @@ export default function AiLearnProgress({ loading, elapsedSeconds = 0, error, on
             <div className="ai-learn-progress-bar" style={{ width: `${progressPct}%` }} />
           </div>
           <p className="ob-hint ai-learn-elapsed">{elapsedSeconds > 0 ? `${elapsedSeconds}s elapsed` : 'Starting…'}</p>
+          {showLoadingRetry && (
+            <button type="button" className="btn btn-outline btn-sm" onClick={onRetry}>
+              Retry now
+            </button>
+          )}
         </>
       )}
       {summary}
