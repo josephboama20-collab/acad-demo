@@ -4,6 +4,7 @@ import { useGame } from '../contexts/GameContext.jsx';
 import { useTheme } from '../contexts/ThemeContext.jsx';
 import { generateFlashcardsFromText } from '../utils/ai.js';
 import { RATING_LABELS } from '../data/constants.js';
+import BetaBadge from '../components/BetaBadge.jsx';
 import { readCssVar } from '../utils/themeColors.js';
 
 function FlashcardsDashboard({ cards, dueCards, subjects, masteryMap, setTab }) {
@@ -344,8 +345,8 @@ function ManageCards({ cards, subjects, addCard, addCards, deleteCard }) {
         </div>
 
         <div className="fc-add-box">
-          <p className="fc-add-title">Generate from Text</p>
-          <div className="fc-gen-info">Paste study material to create cards for a logged course. Full AI generation ships in a later release.</div>
+          <p className="fc-add-title">Generate from Text <BetaBadge label="Template" /></p>
+          <div className="fc-gen-info">Uses a fixed card bank for now — not live AI. Paste material to pick a subject deck; full generation ships later.</div>
           {subjectOptions.length > 0 ? (
             <div className="form-group">
               <label className="form-label">Subject</label>

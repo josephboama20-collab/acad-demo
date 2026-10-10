@@ -104,8 +104,9 @@ export default function Reports({ setPage }) {
           </button>
         </div>
 
-        <section className="rep-ai-summary card" aria-label="AI performance summary">
-          <p className="card-label">AI summary</p>
+        <section className="rep-ai-summary card" aria-label="Acad performance insights">
+          <p className="card-label">Acad insights</p>
+          <p className="rep-summary-hint">Rule-based summary from your courses, recall, and wellness data — not a live LLM.</p>
           <p className="rep-summary-text">{summary}</p>
         </section>
 

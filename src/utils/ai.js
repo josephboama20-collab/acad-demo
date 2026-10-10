@@ -143,7 +143,7 @@ export async function chatWithBuddy(messages, subject, _mastery = {}, method = '
   const last = messages[messages.length - 1]?.content?.toLowerCase() || '';
   if (last.includes('quiz')) {
     await delay(1400);
-    return quizPrompt(subject);
+    return { reply: quizPrompt(subject), source: 'template' };
   }
 
   const apiMessages = messages
@@ -152,15 +152,18 @@ export async function chatWithBuddy(messages, subject, _mastery = {}, method = '
 
   const systemFn = METHOD_PROMPTS[method] || METHOD_PROMPTS.socratic;
   const edgeReply = await callBuddyViaEdge(apiMessages, subject, method);
-  if (edgeReply) return edgeReply;
+  if (edgeReply) return { reply: edgeReply, source: 'cloud' };
 
   const deepseekReply = await callDeepSeek(apiMessages, systemFn(subject));
-  if (deepseekReply) return deepseekReply;
+  if (deepseekReply) return { reply: deepseekReply, source: 'cloud' };
 
   const apiReply = await callAnthropic(apiMessages, systemFn(subject));
-  if (apiReply) return apiReply;
+  if (apiReply) return { reply: apiReply, source: 'cloud' };
 
   await delay(1400);
   const pool = FALLBACK_REPLIES[method] || FALLBACK_REPLIES.socratic;
-  return pool[Math.floor(Math.random() * pool.length)];
+  return {
+    reply: pool[Math.floor(Math.random() * pool.length)],
+    source: 'fallback',
+  };
 }

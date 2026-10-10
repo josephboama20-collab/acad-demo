@@ -40,6 +40,7 @@ export default function AIBuddy() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [showMethodInfo, setShowMethodInfo] = useState(true);
+  const [replySource, setReplySource] = useState(null);
   const bottomRef = useRef(null);
 
   const subjects = useMemo(() => {
@@ -91,8 +92,9 @@ export default function AIBuddy() {
         const history = [...(chats[subject] || []), userMsg]
           .filter((m) => m.role !== 'assistant' || m.id !== 'welcome')
           .map(({ role, content }) => ({ role, content }));
-        const replyText = await chatWithBuddy(history, subject, mastery, method);
-        const assistantMsg = { role: 'assistant', content: replyText, id: crypto.randomUUID() };
+        const { reply: replyText, source } = await chatWithBuddy(history, subject, mastery, method);
+        setReplySource(source);
+        const assistantMsg = { role: 'assistant', content: replyText, id: crypto.randomUUID(), source };
         setChats((prev) => ({ ...prev, [subject]: [...(prev[subject] || []), assistantMsg] }));
         earnXP(10);
         advanceChallenge('chat_10', 1);
@@ -161,6 +163,12 @@ export default function AIBuddy() {
           <div className="ab-method-banner card">
             <p><strong>{currentMethod.label}</strong>: {currentMethod.why}</p>
             <p className="ab-method-banner-detail">{currentMethod.detail}</p>
+          </div>
+        )}
+
+        {replySource === 'fallback' && (
+          <div className="ab-trust-banner card" role="status">
+            <p><strong>Demo response</strong> — cloud AI was unavailable. Connect Supabase edge functions for live tutoring.</p>
           </div>
         )}
 

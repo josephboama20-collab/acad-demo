@@ -54,7 +54,7 @@ export function exportReportPdf({ userName, report, courses, streak }) {
   <h1>Acad Learning Report</h1>
   <p class="meta">${userName || 'Member'} · ${date} · ${streak?.current ?? 0}-day streak · Performance since you started</p>
 
-  <h2>AI summary</h2>
+  <h2>Acad insights</h2>
   <p class="summary">${summary || 'No summary available yet.'}</p>
 
   <h2>Snapshot</h2>

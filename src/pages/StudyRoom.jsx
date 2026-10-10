@@ -491,6 +491,9 @@ function ActiveRoom({
         {settings.enableChat ? (
           <div className="sr-chat">
             <div className="sr-chat-head">Room chat · {participants.length} participant{participants.length === 1 ? '' : 's'}</div>
+            {mode === 'friends' && (
+              <p className="sr-chat-demo-note">Beta: friend replies are simulated — not real classmates.</p>
+            )}
             <div className="sr-msgs" role="log" aria-live="polite">
               {messages.map((m) => (
                 <div key={m.id} className={`sr-msg${m.pid === 'you' ? ' own' : ''}`}>

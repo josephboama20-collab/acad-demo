@@ -23,12 +23,12 @@ export default function Privacy({ setPage }) {
 
         <section className="legal-section">
           <h2>AI processing</h2>
-          <p>Messages you send to AI Buddy may be processed by our AI provider to generate responses. Do not submit sensitive personal information in chat.</p>
+          <p>Messages you send to AI Buddy may be processed by our AI provider when cloud mode is enabled. When offline or unavailable, Acad may show template or demo responses — labelled clearly in the app. Do not submit sensitive personal information in chat.</p>
         </section>
 
         <section className="legal-section">
           <h2>Your rights</h2>
-          <p>You may export or delete your account from Settings. Deletion removes your cloud data permanently.</p>
+          <p>You may download a JSON export of your study data or delete your account from Settings. Deletion removes your cloud data permanently.</p>
         </section>
 
         <section className="legal-section">

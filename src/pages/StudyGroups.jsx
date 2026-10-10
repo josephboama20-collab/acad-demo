@@ -249,6 +249,7 @@ function InviteComposer() {
   const { members, suggestedMembers, addMember } = useStudyGroups();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const [showDemoUsers, setShowDemoUsers] = useState(false);
 
   function invite(addr, name) {
     if (addMember(addr, name)) {
@@ -263,7 +264,8 @@ function InviteComposer() {
     <div className="sg-invite-pane">
       <p className="sg-pane-title">Invite to your workspace</p>
       <p className="sg-pane-desc">
-        Add at least one other Acad user to unlock group chat, study rooms, and challenges.
+        Invites are stored on this device only — there is no real user directory yet.
+        Add a demo classmate below to explore group chat, rooms, and challenges.
       </p>
       <div className="sg-compose-row">
         <input
@@ -278,15 +280,25 @@ function InviteComposer() {
         </button>
       </div>
       {error && <p className="form-error">{error}</p>}
-      <p className="sg-quick-label">Demo classmates <BetaBadge label="Demo" /></p>
-      <p className="sg-pane-desc">These are sample users for testing — not real accounts.</p>
-      <div className="sg-quick-row">
-        {suggestedMembers.map((m) => (
-          <button key={m.email} type="button" className="btn btn-outline" onClick={() => invite(m.email, m.name)}>
-            {m.name}
-          </button>
-        ))}
-      </div>
+      <button
+        type="button"
+        className="btn btn-ghost btn-sm sg-demo-toggle"
+        onClick={() => setShowDemoUsers((v) => !v)}
+      >
+        {showDemoUsers ? 'Hide demo classmates' : 'Show demo classmates (testing only)'}
+      </button>
+      {showDemoUsers && (
+        <>
+          <p className="sg-pane-desc">Sample users for local testing — not real Acad accounts.</p>
+          <div className="sg-quick-row">
+            {suggestedMembers.map((m) => (
+              <button key={m.email} type="button" className="btn btn-outline" onClick={() => invite(m.email, m.name)}>
+                {m.name}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
       {members.length > 0 && (
         <ul className="sg-roster">
           {members.map((m) => (
@@ -590,7 +602,7 @@ function GroupSettingsPane() {
       {admin && (
         <section className="sg-settings-section">
           <p className="sg-settings-label">Invite to this group</p>
-          <p className="sg-pane-desc">Add Acad users to your workspace and this group.</p>
+          <p className="sg-pane-desc">Local-only invites — use demo classmates from the workspace tab to test group features.</p>
           <div className="sg-compose-row">
             <input
               className="form-input"
@@ -604,15 +616,6 @@ function GroupSettingsPane() {
             </button>
           </div>
           {inviteError && <p className="form-error">{inviteError}</p>}
-          {!hasPeers && (
-            <div className="sg-quick-row" style={{ marginTop: 12 }}>
-              {suggestedMembers.map((m) => (
-                <button key={m.email} type="button" className="btn btn-outline" onClick={() => invite(m.email, m.name)}>
-                  {m.name}
-                </button>
-              ))}
-            </div>
-          )}
         </section>
       )}
 

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useGame } from '../contexts/GameContext.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useStudyGroups } from '../contexts/StudyGroupsContext.jsx';
+import BetaBadge from '../components/BetaBadge.jsx';
 
 function ProgressRing({ pct, size = 48, stroke = 4, color = 'var(--gold)' }) {
   const r = (size - stroke) / 2;
@@ -77,8 +78,14 @@ export default function ChallengesPanel() {
       .map((row, i) => ({ ...row, rank: i + 1 }));
   }, [activeGroup, getGroupRoster, user?.name, streak.current, xp, level]);
 
+  const hasDemoStats = board.some((row) => !row.isUser);
+
   return (
     <div className="sg-challenges">
+      <p className="sg-trust-banner">
+        <BetaBadge label="Beta" />
+        Group challenges run locally. Leaderboard stats for other members are estimated until live sync ships.
+      </p>
       <section aria-labelledby="ch-challenges-hd">
         <p id="ch-challenges-hd" className="ch-section-hd">Weekly challenges</p>
         <div className="ch-cards">
@@ -110,6 +117,9 @@ export default function ChallengesPanel() {
 
       <section aria-labelledby="ch-lb-hd" style={{ marginTop: 28 }}>
         <p id="ch-lb-hd" className="ch-section-hd">Group leaderboard</p>
+        {hasDemoStats && (
+          <p className="ch-lb-demo-note">Stats for members other than you are simulated for demo purposes.</p>
+        )}
         {board.length === 0 ? (
           <p className="ch-lb-empty">Add members to your study group to see the leaderboard.</p>
         ) : (
@@ -120,7 +130,10 @@ export default function ChallengesPanel() {
                   {row.rank <= 3 ? ['🥇', '🥈', '🥉'][row.rank - 1] : row.rank}
                 </span>
                 <span className="ch-lb-badge">{row.badge}</span>
-                <span className="ch-lb-name">{row.name}{row.isUser ? ' (You)' : ''}</span>
+                <span className="ch-lb-name">
+                  {row.name}
+                  {row.isUser ? ' (You)' : ' (demo stats)'}
+                </span>
                 <span className="ch-lb-streak font-mono">{row.streak} day streak</span>
               </div>
             ))}
