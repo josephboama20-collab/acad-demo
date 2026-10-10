@@ -8,6 +8,7 @@ export const TOOL_KEYS = {
   courses: 'courses',
   flashcards: 'flashcards',
   aiBuddy: 'ai-buddy',
+  semesterJourney: 'semester-journey',
   wellness: 'habit-tracker',
   reports: 'reports',
   challenges: 'challenges',
@@ -18,11 +19,15 @@ export const TOOL_KEYS = {
 };
 
 /** Tools always reachable before any course is added */
-export const PRE_COURSE_TOOLS = [TOOL_KEYS.dashboard, TOOL_KEYS.courses];
+export const PRE_COURSE_TOOLS = [
+  TOOL_KEYS.dashboard,
+  TOOL_KEYS.courses,
+  TOOL_KEYS.semesterJourney,
+];
 
 /** Tier definitions, ordered from most to least essential */
 export const TOOL_TIERS = {
-  essential: [TOOL_KEYS.dashboard, TOOL_KEYS.courses, TOOL_KEYS.flashcards, TOOL_KEYS.aiBuddy],
+  essential: [TOOL_KEYS.dashboard, TOOL_KEYS.courses, TOOL_KEYS.flashcards, TOOL_KEYS.aiBuddy, TOOL_KEYS.semesterJourney],
   core: [TOOL_KEYS.wellness, TOOL_KEYS.reports],
   extended: [TOOL_KEYS.projects, TOOL_KEYS.forge, TOOL_KEYS.studyGroups],
   optional: [],

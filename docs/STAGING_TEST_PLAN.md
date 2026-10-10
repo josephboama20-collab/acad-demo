@@ -44,6 +44,15 @@ Per account:
 - [ ] Begin Task starts/pauses timer (mobile: button not hidden behind tab bar)
 - [ ] Mark Complete updates streak/metrics
 - [ ] Course insights and radar render
+- [ ] Semester journey card appears (not hidden in Reports) and links to Semester hub
+
+### Semester hub (new fully fledged flow)
+
+- [ ] Open **Semester** from nav (or dashboard card)
+- [ ] Confirm status shows **Continuing student on Acad** for seeded/demo users
+- [ ] Enter a new semester outcome (course-by-course grades) and save
+- [ ] Confirm adaptation message updates to Improved / Regressed / Stable
+- [ ] Confirm semester history entry appears with GPA and grade breakdown
 
 ### Courses
 
@@ -73,6 +82,7 @@ Per account:
 
 - [ ] Lifetime performance summary renders
 - [ ] Export PDF downloads
+- [ ] Semester section points users to Semester hub (not primary workflow anymore)
 
 ### Projects & Forge
 
@@ -92,8 +102,13 @@ Per account:
 ## Fresh signup path
 
 - [ ] Sign up with new email + password → onboarding → dashboard
+- [ ] Onboarding includes **Previous semester baseline** step with course-by-course grades
+- [ ] Save at least 2 baseline course grades and complete onboarding
+- [ ] Dashboard shows semester adaptation card immediately after onboarding
 - [ ] Add one course manually
 - [ ] Complete one flashcard review
+- [ ] Open Semester hub and log current semester outcome after "return from school" scenario
+- [ ] Confirm system marks Improved/Regressed and adapts messaging
 - [ ] Sign out → sign in same browser → data still present
 - [ ] **Document:** new browser/device does **not** restore data (expected until Phase 2)
 

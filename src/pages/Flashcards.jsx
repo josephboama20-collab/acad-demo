@@ -2,60 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFlashcards } from '../contexts/FlashcardsContext.jsx';
 import { useGame } from '../contexts/GameContext.jsx';
 import { useTheme } from '../contexts/ThemeContext.jsx';
-import PreviewBadge from '../components/PreviewBadge.jsx';
 import { generateFlashcardsFromText } from '../utils/ai.js';
 import { RATING_LABELS } from '../data/constants.js';
 import { readCssVar } from '../utils/themeColors.js';
-
-function MasteryDonut({ masteryMap, total }) {
-  const { theme } = useTheme();
-  const colors = useMemo(
-    () => ({
-      learning: readCssVar('--mastery-learning'),
-      reviewing: readCssVar('--mastery-reviewing'),
-      mastered: readCssVar('--mastery-mastered'),
-    }),
-    [theme],
-  );
-  const circumference = 2 * Math.PI * 44;
-  let offset = 0;
-  const segments = [
-    { key: 'learning', color: colors.learning },
-    { key: 'reviewing', color: colors.reviewing },
-    { key: 'mastered', color: colors.mastered },
-  ].map(({ key, color }) => {
-    const dash = (total > 0 ? masteryMap[key] / total : 0) * circumference;
-    const seg = { color, dash, offset };
-    offset += dash;
-    return seg;
-  });
-
-  return (
-    <svg viewBox="0 0 120 120" className="fc-donut-svg">
-      <circle cx={60} cy={60} r={44} fill="none" stroke="var(--border-dim)" strokeWidth="12" />
-      {segments.map((seg, i) => (
-        <circle
-          key={i}
-          cx={60}
-          cy={60}
-          r={44}
-          fill="none"
-          stroke={seg.color}
-          strokeWidth="12"
-          strokeDasharray={`${seg.dash} ${circumference - seg.dash}`}
-          strokeDashoffset={-seg.offset + circumference * 0.25}
-          style={{ transform: 'rotate(-90deg)', transformOrigin: '60px 60px' }}
-        />
-      ))}
-      <text x={60} y={55} textAnchor="middle" fill="var(--parchment)" fontSize="18" fontFamily="JetBrains Mono, monospace">
-        {total}
-      </text>
-      <text x={60} y={72} textAnchor="middle" fill="var(--slate)" fontSize="8" fontFamily="Inter, sans-serif">
-        CARDS
-      </text>
-    </svg>
-  );
-}
 
 function FlashcardsDashboard({ cards, dueCards, subjects, masteryMap, setTab }) {
   const { theme } = useTheme();
@@ -110,22 +59,30 @@ function FlashcardsDashboard({ cards, dueCards, subjects, masteryMap, setTab }) 
       </div>
 
       <div className="fc-charts-row">
-        <div className="fc-donut-wrap">
-          <p className="fc-donut-title">Mastery Distribution</p>
-          <MasteryDonut masteryMap={masteryMap} total={total} />
-          <div className="fc-donut-legend">
+        <div className="fc-mastery-card">
+          <div className="fc-mastery-head">
+            <p className="fc-mastery-title">Mastery distribution</p>
+            <span className="fc-mastery-rate font-mono">{masteryRate}% mastered · {total} cards</span>
+          </div>
+          <div className="fc-mastery-breakdown fc-mastery-breakdown-full">
             {[
               ['learning', 'Learning', masteryColors.learning],
               ['reviewing', 'Reviewing', masteryColors.reviewing],
               ['mastered', 'Mastered', masteryColors.mastered],
-            ].map(([key, label, color]) => (
-              <div key={key} className="fc-legend-item">
-                <div className="fc-legend-dot" style={{ background: color }} />
-                <span>
-                  {label}: {masteryMap[key]}
-                </span>
-              </div>
-            ))}
+            ].map(([key, label, color]) => {
+              const count = masteryMap[key];
+              const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+              return (
+                <div key={key} className="fc-mastery-row">
+                  <span className="fc-mastery-dot" style={{ background: color }} aria-hidden="true" />
+                  <span className="fc-mastery-label">{label}</span>
+                  <div className="fc-mastery-bar" role="presentation">
+                    <div className="fc-mastery-fill" style={{ width: `${pct}%`, background: color }} />
+                  </div>
+                  <span className="fc-mastery-count font-mono">{count}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -293,20 +250,27 @@ function StudySession({ dueCards, reviewCard, earnXP, advanceChallenge, unlockAc
 }
 
 function ManageCards({ cards, subjects, addCard, addCards, deleteCard }) {
+  const subjectOptions = useMemo(() => [...new Set(subjects)].sort(), [subjects]);
+  const defaultSubject = subjectOptions[0] || '';
+
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
-  const [subject, setSubject] = useState('General');
+  const [subject, setSubject] = useState(defaultSubject);
   const [customSubject, setCustomSubject] = useState('');
   const [genText, setGenText] = useState('');
-  const [genSubject, setGenSubject] = useState('General');
+  const [genSubject, setGenSubject] = useState(defaultSubject);
   const [generating, setGenerating] = useState(false);
   const [genMsg, setGenMsg] = useState('');
 
-  const subjectOptions = [...new Set([...subjects, 'General', 'Mathematics', 'Biology', 'Physics'])].sort();
+  useEffect(() => {
+    if (subjectOptions.length === 0) return;
+    if (!subjectOptions.includes(subject)) setSubject(subjectOptions[0]);
+    if (!subjectOptions.includes(genSubject)) setGenSubject(subjectOptions[0]);
+  }, [subjectOptions, subject, genSubject]);
 
   function handleAdd() {
-    const sub = customSubject.trim() || subject;
-    if (!front.trim() || !back.trim()) return;
+    const sub = (subjectOptions.length > 0 ? subject : customSubject).trim();
+    if (!front.trim() || !back.trim() || !sub) return;
     addCard(front.trim(), back.trim(), sub);
     setFront('');
     setBack('');
@@ -336,13 +300,23 @@ function ManageCards({ cards, subjects, addCard, addCards, deleteCard }) {
           <p className="fc-add-title">Add New Card</p>
           <div className="form-group">
             <label className="form-label">Subject</label>
-            <select className="form-input" value={subject} onChange={(e) => setSubject(e.target.value)} id="fc-select-subject">
-              {subjectOptions.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+            {subjectOptions.length > 0 ? (
+              <select className="form-input" value={subject} onChange={(e) => setSubject(e.target.value)} id="fc-select-subject">
+                {subjectOptions.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                className="form-input"
+                value={customSubject}
+                onChange={(e) => setCustomSubject(e.target.value)}
+                placeholder="Course code from a logged semester"
+                id="fc-input-custom-subject"
+              />
+            )}
           </div>
           <div className="form-group">
             <label className="form-label">Front (Question)</label>
@@ -370,23 +344,27 @@ function ManageCards({ cards, subjects, addCard, addCards, deleteCard }) {
         </div>
 
         <div className="fc-add-box">
-          <p className="fc-add-title">Generate from Text <PreviewBadge label="Sample cards" /></p>
-          <div className="fc-gen-info">Paste study material to add sample cards by subject. Full AI generation ships in a later release.</div>
-          <div className="form-group">
-            <label className="form-label">Subject</label>
-            <select
-              className="form-input"
-              value={genSubject}
-              onChange={(e) => setGenSubject(e.target.value)}
-              id="fc-select-gen-subject"
-            >
-              {subjectOptions.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </div>
+          <p className="fc-add-title">Generate from Text</p>
+          <div className="fc-gen-info">Paste study material to create cards for a logged course. Full AI generation ships in a later release.</div>
+          {subjectOptions.length > 0 ? (
+            <div className="form-group">
+              <label className="form-label">Subject</label>
+              <select
+                className="form-input"
+                value={genSubject}
+                onChange={(e) => setGenSubject(e.target.value)}
+                id="fc-select-gen-subject"
+              >
+                {subjectOptions.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <p className="fc-gen-info" style={{ marginBottom: 12 }}>Log a semester with courses first — subjects come from your course list.</p>
+          )}
           <div className="form-group">
             <label className="form-label">Study Material</label>
             <textarea
@@ -406,7 +384,7 @@ function ManageCards({ cards, subjects, addCard, addCards, deleteCard }) {
           <button
             className="btn btn-outline"
             onClick={handleGenerate}
-            disabled={generating || !genText.trim()}
+            disabled={generating || !genText.trim() || subjectOptions.length === 0}
             id="btn-fc-generate"
           >
             {generating ? 'Generating…' : 'Generate Cards'}

@@ -5,6 +5,7 @@ export const STORAGE_KEYS = {
   courses: 'acad_courses_v1',
   habits: 'acad_habits_v1',
   forgeWork: 'acad_forge_v1',
+  semesters: 'acad_semesters_v1',
 };
 
 export function loadJSON(key) {

@@ -4,6 +4,7 @@ import {
   BookOpen,
   Bot,
   ChartLine,
+  GraduationCap,
   Ellipsis,
   FolderGit2,
   House,
@@ -19,6 +20,7 @@ import ThemeToggle from './ThemeToggle.jsx';
 const NAV_ITEMS = [
   { key: 'dashboard', icon: House, label: 'Dashboard' },
   { key: 'courses', icon: BookOpen, label: 'Courses' },
+  { key: 'semester-journey', icon: GraduationCap, label: 'Semester' },
   { key: 'flashcards', icon: Layers, label: 'Flashcards' },
   { key: 'ai-buddy', icon: Bot, label: 'AI Buddy' },
   { key: 'habit-tracker', icon: Activity, label: 'Wellness' },
@@ -61,11 +63,11 @@ function StreakBadge({ streak }) {
   );
 }
 
-export default function Nav({ page, setPage }) {
+export default function Nav({ page, setPage, authMode = 'signup' }) {
   const { user, settings, streak } = useAuth();
   const { enabledTools } = usePlanCapacity();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [expanded, setExpanded] = useState(() => {
+  const [expanded] = useState(() => {
     try {
       return localStorage.getItem('acad-nav-expanded') !== 'false';
     } catch {
@@ -78,18 +80,6 @@ export default function Nav({ page, setPage }) {
   const go = (key, arg) => {
     setPage(key, arg);
     setDrawerOpen(false);
-  };
-
-  const toggleExpanded = () => {
-    setExpanded((v) => {
-      const next = !v;
-      try {
-        localStorage.setItem('acad-nav-expanded', String(next));
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
   };
 
   if (page === 'onboarding') {
@@ -115,8 +105,8 @@ export default function Nav({ page, setPage }) {
         <div className="nav-top-links">
           <ThemeToggle variant="top" />
           <button id="btn-nav-platform" className={`nav-top-link${page === 'landing' ? ' active' : ''}`} onClick={() => go('landing')}>Platform</button>
-          <button id="btn-nav-signin" className="nav-top-link" onClick={() => go('auth', 'login')}>Sign in</button>
-          <button id="btn-nav-begin" className="btn btn-primary" style={{ padding: '7px 18px', fontSize: '10px' }} onClick={() => go('auth', 'signup')}>Begin</button>
+          <button id="btn-nav-signin" className={`nav-top-link${page === 'auth' && authMode === 'login' ? ' active' : ''}`} onClick={() => go('auth', 'login')}>Sign in</button>
+          <button id="btn-nav-begin" className={`btn btn-primary${page === 'auth' && authMode === 'signup' ? ' nav-cta-active' : ''}`} style={{ padding: '7px 18px', fontSize: '10px' }} onClick={() => go('auth', 'signup')}>Begin</button>
         </div>
       </nav>
     );
@@ -135,9 +125,6 @@ export default function Nav({ page, setPage }) {
             <span className="nav-demo-badge" title="Demo environment — sample data and features for evaluation. Progress is saved locally on this device.">
               Demo
             </span>
-          </button>
-          <button className="dock-toggle" onClick={toggleExpanded} aria-label={expanded ? 'Collapse navigation' : 'Expand navigation'}>
-            <span className="dock-toggle-icon" aria-hidden="true">{expanded ? '‹' : '›'}</span>
           </button>
         </div>
         <div className="dock-items">

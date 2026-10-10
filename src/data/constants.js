@@ -1,6 +1,3 @@
-import { uid } from '../utils/storage.js';
-import { createCard } from '../utils/sm2.js';
-
 export const DEFAULT_SCHOLAR = {
   user: null,
   profile: null,
@@ -20,39 +17,9 @@ export const DEFAULT_SCHOLAR = {
   settings: { focusMode: false, emailNotifications: true, dailyReminders: true, showStreak: true },
 };
 
-export const SAMPLE_FLASHCARDS = [
-  createCard('Key term 1', '[Add the definition from your notes]', 'General'),
-  createCard('Key term 2', '[Add the definition from your notes]', 'General'),
-  createCard('Core concept', '[Summarise the main idea in your own words]', 'General'),
-  createCard('Application', '[Describe one way this concept applies in your course]', 'General'),
-  createCard('Connection', '[Link this topic to another concept you are studying]', 'General'),
-];
+export const SAMPLE_FLASHCARDS = [];
 
-export const SAMPLE_COURSES = [
-  {
-    courseId: uid(),
-    code: 'BIO',
-    name: 'Cell & Genetics',
-    topics: [
-      { topicId: uid(), name: 'Cell Biology', importance: 'high', masteryLevel: 45, lastStudied: null },
-      { topicId: uid(), name: 'Genetics', importance: 'high', masteryLevel: 62, lastStudied: null },
-      { topicId: uid(), name: 'Evolution', importance: 'medium', masteryLevel: 38, lastStudied: null },
-      { topicId: uid(), name: 'Ecology', importance: 'medium', masteryLevel: 78, lastStudied: null },
-      { topicId: uid(), name: 'Molecular Biology', importance: 'high', masteryLevel: 70, lastStudied: null },
-    ],
-  },
-  {
-    courseId: uid(),
-    code: 'CALC',
-    name: 'Calculus Foundations',
-    topics: [
-      { topicId: uid(), name: 'Derivatives', importance: 'high', masteryLevel: 75, lastStudied: null },
-      { topicId: uid(), name: 'Integrals', importance: 'high', masteryLevel: 42, lastStudied: null },
-      { topicId: uid(), name: 'Series & Sequences', importance: 'medium', masteryLevel: 60, lastStudied: null },
-      { topicId: uid(), name: 'Applications', importance: 'medium', masteryLevel: 55, lastStudied: null },
-    ],
-  },
-];
+export const SAMPLE_COURSES = [];
 
 export const CHALLENGES = [
   { id: 'fc_review', title: 'Recall Marathon', desc: 'Review 25 flashcards this week', icon: '📚', xpReward: 200, target: 25, unit: 'cards' },

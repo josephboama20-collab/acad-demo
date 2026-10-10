@@ -9,6 +9,7 @@ export const DATA_BUCKETS = {
   game: STORAGE_KEYS.game,
   habits: STORAGE_KEYS.habits,
   forge: STORAGE_KEYS.forgeWork,
+  semesters: STORAGE_KEYS.semesters,
 };
 
 const debounceTimers = new Map();
@@ -90,6 +91,7 @@ export async function initializeEmptyUserData(userId) {
     game: { xp: 0, achievements: [], challengeProgress: {} },
     habits: [],
     forge: {},
+    semesters: { currentSemesterId: null, semesters: [], snapshots: {} },
   };
   await pushAllBucketsToCloud(userId, empty);
 }

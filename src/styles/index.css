@@ -21,13 +21,13 @@
 
 /* Dashboard redesign */
 .dash-top-row{margin-bottom:16px}
-.dash-grid-redesign{grid-template-columns:1.6fr 1fr;gap:20px}
+.dash-grid-redesign{grid-template-columns:1.6fr 1fr;gap:16px;align-items:start;margin-bottom:16px}
 .dash-plan-card{padding:18px 20px}
 .dash-plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .dash-plan-item{background:var(--void-light);border:1px solid var(--border-dim);padding:10px 12px}
 .dash-plan-key{letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-size:10px;display:block;margin-bottom:4px}
 .dash-plan-val{color:var(--parchment);font-size:13px;font-weight:300;line-height:1.4;display:block}
-.dash-consistency-card{padding:18px 20px}
+.dash-consistency-card{padding:18px 20px;align-self:start}
 .card-sublabel{color:var(--slate);font-size:12px;font-weight:300;margin:-6px 0 12px;line-height:1.5}
 .kpi-row .kpi{min-width:0;padding:14px 12px}
 .kpi-row .kpi-val{font-size:24px}

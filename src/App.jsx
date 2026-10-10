@@ -19,13 +19,15 @@ import HabitTracker from './pages/HabitTracker.jsx';
 import StudyGroups from './pages/StudyGroups.jsx';
 import StudyRoom from './pages/StudyRoom.jsx';
 import Courses from './pages/Courses.jsx';
+import SemesterJourney from './pages/SemesterJourney.jsx';
+import SemesterUpdate from './pages/SemesterUpdate.jsx';
 import AccountSettings from './pages/AccountSettings.jsx';
 import ManagePlan from './pages/ManagePlan.jsx';
 import Privacy from './pages/Privacy.jsx';
 import Terms from './pages/Terms.jsx';
 
 export default function App() {
-  const { user, signOut, isCloudMode } = useAuth();
+  const { user, profile, signOut, isCloudMode } = useAuth();
   const { enabledTools } = usePlanCapacity();
   const [page, setPage] = useState(() => (user ? 'dashboard' : 'landing'));
   const [authMode, setAuthMode] = useState('signup');
@@ -68,7 +70,7 @@ export default function App() {
       window.scrollTo(0, 0);
       return;
     }
-    if (user && next !== 'landing' && next !== 'auth' && next !== 'onboarding' && next !== 'settings' && next !== 'manage-plan' && !enabledTools.includes(next)) {
+    if (user && next !== 'landing' && next !== 'auth' && next !== 'onboarding' && next !== 'settings' && next !== 'manage-plan' && next !== 'semester-update' && !enabledTools.includes(next)) {
       setPage('dashboard');
       window.scrollTo(0, 0);
       return;
@@ -79,7 +81,14 @@ export default function App() {
 
   useEffect(() => {
     if (!user) return;
-    const gated = ['dashboard', 'courses', 'flashcards', 'ai-buddy', 'habit-tracker', 'reports', 'study-groups', 'study-room', 'projects', 'forge', 'settings', 'manage-plan'];
+    if (!profile && page !== 'onboarding' && page !== 'auth' && page !== 'landing' && page !== 'privacy' && page !== 'terms') {
+      setPage('onboarding');
+    }
+  }, [user, profile, page]);
+
+  useEffect(() => {
+    if (!user) return;
+    const gated = ['dashboard', 'courses', 'flashcards', 'ai-buddy', 'habit-tracker', 'semester-journey', 'reports', 'study-groups', 'study-room', 'projects', 'forge', 'settings', 'manage-plan'];
     if (gated.includes(page) && page !== 'settings' && page !== 'manage-plan' && !enabledTools.includes(page) && page !== 'study-room') {
       setPage('dashboard');
     }
@@ -102,7 +111,7 @@ export default function App() {
   return (
     <div className={`app${studyRoomLocked ? ' app--study-locked' : ''}`}>
       <StagingBanner />
-      {!studyRoomLocked && page !== 'study-room' && <Nav page={page} setPage={navigate} />}
+      {!studyRoomLocked && page !== 'study-room' && <Nav page={page} setPage={navigate} authMode={authMode} />}
       {user && page !== 'onboarding' && page !== 'landing' && page !== 'auth' && page !== 'study-room' && <AppNotifications />}
       {page === 'landing' && <Landing setPage={navigate} />}
       {page === 'auth' && <Auth setPage={navigate} initialMode={authMode} />}
@@ -130,6 +139,8 @@ export default function App() {
         />
       )}
       {page === 'courses' && enabledTools.includes('courses') && <Courses setPage={navigate} />}
+      {page === 'semester-journey' && enabledTools.includes('semester-journey') && <SemesterJourney setPage={navigate} />}
+      {page === 'semester-update' && user && <SemesterUpdate setPage={navigate} />}
       {page === 'settings' && user && <AccountSettings setPage={navigate} />}
       {page === 'manage-plan' && user && <ManagePlan setPage={navigate} />}
       {page === 'privacy' && <Privacy setPage={navigate} />}

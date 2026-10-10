@@ -177,6 +177,9 @@ Pick one:
 - [ ] AI Buddy works without client API key.
 - [ ] Rate limit returns friendly error.
 - [ ] Alpha cohort onboarded with written privacy notice.
+- [ ] Onboarding captures baseline semester course grades (per course, per grade).
+- [ ] Returning user logs next-semester outcomes and is classified as improved/regressed/stable.
+- [ ] Semester lifecycle is surfaced as a dedicated product feature (not only in Reports).
 
 **Readiness after Phase 2:** ~55% production (functional alpha, not hardened).
 
@@ -231,6 +234,7 @@ Pick one:
 - [ ] < 1% error rate in Sentry over 7 days.
 - [ ] Beta feedback loop (form or Discord) documented.
 - [ ] No P0 bugs open > 7 days.
+- [ ] Adaptive workload behavior validated across at least 2 consecutive semester outcome submissions per tester.
 
 **Readiness after Phase 3:** ~80% production.
 

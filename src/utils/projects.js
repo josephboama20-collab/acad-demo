@@ -1,10 +1,36 @@
+import { getLearningResources } from './learningResources.js';
+
 export const MILESTONE_TEMPLATE = [
-  { title: 'Scope & Research', desc: 'Define the problem space, gather references, and establish success criteria.' },
-  { title: 'Framework Design', desc: 'Build the structural backbone: architecture, outline, or methodology.' },
-  { title: 'Core Build', desc: 'Execute the primary deliverable. Focus on substance over polish.' },
-  { title: 'Iteration & Testing', desc: 'Stress-test your output. Identify weaknesses and refine.' },
-  { title: 'Documentation', desc: 'Write the narrative that makes your work legible to others.' },
-  { title: 'Portfolio Packaging', desc: 'Format, present, and prepare your output for external review.' },
+  {
+    title: 'Scope & Research',
+    desc: 'Define the problem space, gather references, and establish success criteria.',
+    tasks: ['Write a one-paragraph problem statement', 'Collect at least three credible sources', 'List what “done” looks like for this piece'],
+  },
+  {
+    title: 'Framework Design',
+    desc: 'Build the structural backbone: architecture, outline, or methodology.',
+    tasks: ['Draft a section outline or diagram', 'Identify the core argument or model', 'Note gaps you still need to research'],
+  },
+  {
+    title: 'Core Build',
+    desc: 'Execute the primary deliverable. Focus on substance over polish.',
+    tasks: ['Complete the main analysis, build, or write-up', 'Work in focused blocks outside Acad', 'Capture screenshots or notes as you go'],
+  },
+  {
+    title: 'Iteration & Testing',
+    desc: 'Stress-test your output. Identify weaknesses and refine.',
+    tasks: ['Review against your success criteria', 'Fix weak sections or calculations', 'Ask a peer or rubric to stress-test it'],
+  },
+  {
+    title: 'Documentation',
+    desc: 'Write the narrative that makes your work legible to others.',
+    tasks: ['Write a short process log', 'Explain decisions and trade-offs', 'Link or attach your sources'],
+  },
+  {
+    title: 'Portfolio Packaging',
+    desc: 'Format, present, and prepare your output for external review.',
+    tasks: ['Export to PDF or slide deck', 'Write a 3-sentence summary', 'Store the final artifact where you keep portfolio work'],
+  },
 ];
 
 const PROJECT_TEMPLATES = {
@@ -40,14 +66,26 @@ function weeksForMastery(mastery) {
   return 2;
 }
 
+function attachStepResources(milestones, topicName, courseCode) {
+  const pool = getLearningResources(topicName, courseCode);
+  return milestones.map((m, i) => ({
+    ...m,
+    resources: [pool[i % pool.length], pool[(i + 1) % pool.length]].filter(Boolean),
+  }));
+}
+
 function buildProject(course, topic, templateKey, index) {
   const template = PROJECT_TEMPLATES[templateKey];
   const mastery = topic.masteryLevel ?? 0;
   const weeks = weeksForMastery(mastery);
-  const milestones = MILESTONE_TEMPLATE.map((m, i) => ({
-    ...m,
-    week: i === MILESTONE_TEMPLATE.length - 1 ? `Week ${weeks}` : `Week ${Math.ceil(((i + 1) * weeks) / MILESTONE_TEMPLATE.length)}`,
-  }));
+  const milestones = attachStepResources(
+    MILESTONE_TEMPLATE.map((m, i) => ({
+      ...m,
+      week: i === MILESTONE_TEMPLATE.length - 1 ? `Week ${weeks}` : `Week ${Math.ceil(((i + 1) * weeks) / MILESTONE_TEMPLATE.length)}`,
+    })),
+    topic.name,
+    course.code,
+  );
 
   return {
     id: `${course.courseId}-${topic.topicId || topic.name}-${index}`,
@@ -70,13 +108,35 @@ function buildProject(course, topic, templateKey, index) {
 }
 
 /**
- * Generate up to 3 course-tailored projects focused on weak topics the user wants to improve.
+ * Generate up to 3 course-tailored projects focused on weak topics.
+ * If semesterDeltas are provided (array of delta objects from semesterUtils.computeDeltas),
+ * regressed topics are boosted to the front so projects target historical weak points.
  */
-export function generateCourseProjects(courses, weakTopics) {
+export function generateCourseProjects(courses, weakTopics, semesterDeltas = []) {
   if (!courses.length) return [];
 
-  const focusTopics = (weakTopics.length > 0 ? weakTopics : courses.flatMap((c) => c.topics.map((t) => ({ ...t, courseId: c.courseId, courseCode: c.code, courseName: c.name }))))
-    .sort((a, b) => (a.masteryLevel ?? 0) - (b.masteryLevel ?? 0))
+  // Build a regression boost map: topicId → absolute regression magnitude
+  const regressionBoost = new Map();
+  semesterDeltas.forEach((d) => {
+    if (d.delta < -3) {
+      regressionBoost.set(`${d.courseId}:${d.topicId}`, Math.abs(d.delta));
+    }
+  });
+
+  const pool = (weakTopics.length > 0
+    ? weakTopics
+    : courses.flatMap((c) => c.topics.map((t) => ({ ...t, courseId: c.courseId, courseCode: c.code, courseName: c.name })))
+  ).map((t) => ({
+    ...t,
+    _regressionBoost: regressionBoost.get(`${t.courseId}:${t.topicId}`) ?? 0,
+  }));
+
+  // Sort: regressed first (by boost desc), then by mastery asc
+  const focusTopics = pool
+    .sort((a, b) => {
+      if (b._regressionBoost !== a._regressionBoost) return b._regressionBoost - a._regressionBoost;
+      return (a.masteryLevel ?? 0) - (b.masteryLevel ?? 0);
+    })
     .slice(0, 3);
 
   const templateKeys = ['analysis', 'portfolio', 'synthesis'];
@@ -92,6 +152,7 @@ export function defaultMilestones(timeline = '4 weeks') {
   return MILESTONE_TEMPLATE.map((m, i) => ({
     ...m,
     week: i === MILESTONE_TEMPLATE.length - 1 ? `Week ${weeks}` : `Week ${Math.ceil(((i + 1) * weeks) / MILESTONE_TEMPLATE.length)}`,
+    resources: [],
   }));
 }
 
@@ -100,6 +161,35 @@ export function resolveProjectMilestones(project) {
     return project.milestones;
   }
   return defaultMilestones(project?.timeline);
+}
+
+/** Map guide steps across the student's comeback plan timeline. */
+export function buildProjectGuideSchedule(project, planTimeline) {
+  const milestones = resolveProjectMilestones(project);
+  const totalWeeks = Math.max(1, Math.round(planTimeline.totalDays / 7));
+  const currentWeek = Math.min(totalWeeks, Math.max(1, Math.floor(planTimeline.daysElapsed / 7) + 1));
+  const startWeek = planTimeline.isEnded ? 1 : currentWeek;
+  const spanWeeks = planTimeline.isEnded ? totalWeeks : Math.max(1, totalWeeks - startWeek + 1);
+
+  return milestones.map((m, i) => {
+    const planWeekStart = Math.min(totalWeeks, startWeek + Math.floor((i * spanWeeks) / milestones.length));
+    const planWeekEnd = Math.min(
+      totalWeeks,
+      Math.max(planWeekStart, startWeek + Math.floor(((i + 1) * spanWeeks) / milestones.length) - 1),
+    );
+    const phase = planWeekEnd < currentWeek ? 'past' : planWeekStart <= currentWeek ? 'current' : 'upcoming';
+    const planWeekLabel =
+      planWeekStart === planWeekEnd ? `Plan week ${planWeekStart}` : `Plan weeks ${planWeekStart}–${planWeekEnd}`;
+
+    return {
+      ...m,
+      stepIndex: i,
+      planWeekStart,
+      planWeekEnd,
+      planWeekLabel,
+      phase,
+    };
+  });
 }
 
 export function fetchCourseProjects(courses, weakTopics) {

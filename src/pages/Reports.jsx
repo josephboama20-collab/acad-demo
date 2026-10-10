@@ -227,6 +227,19 @@ export default function Reports({ setPage }) {
           </section>
         )}
 
+        {/* Semester progression is managed in Semester Journey */}
+        <section className="rep-section sem-section" aria-label="Semester progression">
+          <div className="rep-section-header">
+            <h2 className="rep-section-title">Semester progression</h2>
+            <button className="btn btn-ghost btn-sm" type="button" onClick={() => setPage('semester-journey')}>
+              Open semester hub
+            </button>
+          </div>
+          <p className="sem-empty">
+            Semester baseline, outcomes, and adaptation are now managed in the Semester hub. Reports still show mastery analytics here.
+          </p>
+        </section>
+
         <div className="rep-footer-actions">
           <button id="btn-reports-courses" className="btn btn-primary" type="button" onClick={() => setPage('courses')}>
             Study weak topics
