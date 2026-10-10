@@ -25,8 +25,8 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Plan tier tests
-        run: npm run test:plan
+      - name: Functional and reliability regression tests
+        run: npm test
 
       - name: Production build
         run: npm run build

@@ -1,5 +1,5 @@
 import { SAMPLE_COURSES } from './constants.js';
-import { STORAGE_KEYS, uid } from '../utils/storage.js';
+import { STORAGE_KEYS, uid, saveJSON } from '../utils/storage.js';
 
 /** Shared password for every plan demo account. */
 export const PLAN_DEMO_PASSWORD = 'demo';
@@ -313,14 +313,14 @@ export function buildPlanSeed(planIdOrEmail) {
 }
 
 export function writePlanSeedToLocal(seed) {
-  localStorage.setItem(STORAGE_KEYS.scholar, JSON.stringify(seed.scholar));
-  localStorage.setItem(STORAGE_KEYS.game, JSON.stringify(seed.game));
-  localStorage.setItem(STORAGE_KEYS.courses, JSON.stringify(seed.courses));
-  localStorage.setItem(STORAGE_KEYS.flashcards, JSON.stringify(seed.flashcards));
-  localStorage.setItem(STORAGE_KEYS.habits, JSON.stringify(seed.habits));
-  localStorage.setItem(STORAGE_KEYS.forgeWork, JSON.stringify(seed.forge));
+  saveJSON(STORAGE_KEYS.scholar, seed.scholar);
+  saveJSON(STORAGE_KEYS.game, seed.game);
+  saveJSON(STORAGE_KEYS.courses, seed.courses);
+  saveJSON(STORAGE_KEYS.flashcards, seed.flashcards);
+  saveJSON(STORAGE_KEYS.habits, seed.habits);
+  saveJSON(STORAGE_KEYS.forgeWork, seed.forge);
   if (seed.semesters) {
-    localStorage.setItem(STORAGE_KEYS.semesters, JSON.stringify(seed.semesters));
+    saveJSON(STORAGE_KEYS.semesters, seed.semesters);
   }
 }
 

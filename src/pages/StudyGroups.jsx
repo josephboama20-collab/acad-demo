@@ -412,7 +412,7 @@ function GroupChatPane({ onOpenSettings }) {
 }
 
 function DmPane() {
-  const { hasPeers, members, dms, sendDm, activeDmId, setActiveDmId } = useStudyGroups();
+  const { hasPeers, members, dms, sendDm, activeDmId } = useStudyGroups();
   const [text, setText] = useState('');
   const active = members.find((m) => m.id === activeDmId) || members[0];
   const list = active ? dms[active.id] || [] : [];
@@ -463,18 +463,19 @@ function GroupSettingsPane() {
     isGroupAdmin,
     getGroupRoster,
     addMember,
-    suggestedMembers,
-    hasPeers,
   } = useStudyGroups();
   const [nameDraft, setNameDraft] = useState(activeGroup?.name || '');
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteError, setInviteError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  useEffect(() => {
+  const groupIdentity = `${activeGroup?.id || ''}:${activeGroup?.name || ''}`;
+  const [previousGroup, setPreviousGroup] = useState(groupIdentity);
+  if (previousGroup !== groupIdentity) {
+    setPreviousGroup(groupIdentity);
     setNameDraft(activeGroup?.name || '');
     setConfirmDelete(false);
-  }, [activeGroup?.id, activeGroup?.name]);
+  }
 
   if (!activeGroup && groups.length === 0) {
     return (

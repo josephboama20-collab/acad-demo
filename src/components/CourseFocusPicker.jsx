@@ -38,7 +38,7 @@ export default function CourseFocusPicker({
 
       {suggestions.length > 0 && (
         <div className="course-focus-list" role="group" aria-label="Suggested courses">
-          <p className="form-label">Suggested from your grade pattern</p>
+          <p className="form-label">{suggestions.some((s) => s.grade) ? 'Suggested from your grade pattern' : 'Courses from your reviewed programme'}</p>
           {suggestions.map((s) => {
             const isOn = selected.some((c) => c.code === s.code);
             const disabled = !isOn && selectedCount >= maxCourses;
@@ -53,7 +53,7 @@ export default function CourseFocusPicker({
               >
                 <span className="course-focus-code font-mono">{s.code}</span>
                 <span className="course-focus-name">{s.name}</span>
-                <span className="course-focus-meta">Grade {s.grade} · {s.semesterLabel}</span>
+                <span className="course-focus-meta">{s.grade ? `Grade ${s.grade}` : 'No past grade'} · {s.semesterLabel}</span>
                 <span className="course-focus-reason">{s.reason}</span>
               </button>
             );

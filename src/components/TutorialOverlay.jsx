@@ -1,15 +1,6 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import {
-  BookOpen,
-  Bot,
-  GraduationCap,
-  Activity,
-  Layers,
-  FolderGit2,
-  ChartLine,
-  Users,
-  House,
-  Flame,
+
   X,
   ChevronLeft,
   ChevronRight,
@@ -85,7 +76,7 @@ const PAGE_GUIDES = {
   },
 };
 
-export default function TutorialOverlay({ page, isNewAccount, onDismiss, setPage }) {
+export default function TutorialOverlay({ page, isNewAccount, onDismiss }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [active, setActive] = useState(isNewAccount);
   const guide = PAGE_GUIDES[page];

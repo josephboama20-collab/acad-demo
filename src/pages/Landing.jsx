@@ -3,7 +3,6 @@ import {
   Activity,
   ArrowRight,
   BookOpen,
-  Bot,
   ChartLine,
   Check,
   FolderGit2,

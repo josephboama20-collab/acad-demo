@@ -34,7 +34,7 @@ function ChatMessage({ msg }) {
 export default function AIBuddy() {
   const { courses, weakTopics } = useCourses();
   const { earnXP, advanceChallenge, unlockAchievement } = useGame();
-  const [subject, setSubject] = useState('General');
+  const [requestedSubject, setSubject] = useState('General');
   const [method, setMethod] = useState('socratic');
   const [chats, setChats] = useState({ General: [{ role: 'assistant', content: WELCOME_BY_METHOD.socratic, id: 'welcome' }] });
   const [input, setInput] = useState('');
@@ -48,8 +48,9 @@ export default function AIBuddy() {
     return ['General', ...new Set(fromCourses)];
   }, [courses]);
 
+  const subject = subjects.includes(requestedSubject) ? requestedSubject : 'General';
   const currentMethod = TEACHING_METHODS.find((m) => m.id === method) || TEACHING_METHODS[0];
-  const messages = chats[subject] || [{ role: 'assistant', content: WELCOME_BY_METHOD[method], id: 'welcome' }];
+  const messages = useMemo(() => chats[subject] || [{ role: 'assistant', content: WELCOME_BY_METHOD[method], id: 'welcome' }], [chats, subject, method]);
   const exchangeCount = Math.max(0, messages.length - 1);
 
   const mastery = useMemo(() => {
@@ -59,10 +60,6 @@ export default function AIBuddy() {
     });
     return map;
   }, [weakTopics]);
-
-  useEffect(() => {
-    if (!subjects.includes(subject)) setSubject('General');
-  }, [subjects, subject]);
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

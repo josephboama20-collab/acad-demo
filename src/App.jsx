@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef } from 'react';
+import { useState, useRef } from 'react';
+import { resolvePageAccess } from './utils/pageAccess.js';
 import { useAuth } from './contexts/AuthContext.jsx';
 import { usePlanCapacity } from './hooks/usePlanCapacity.js';
 import Nav from './components/Nav.jsx';
@@ -30,7 +31,8 @@ import Terms from './pages/Terms.jsx';
 export default function App() {
   const { user, profile, signOut, isCloudMode } = useAuth();
   const { enabledTools } = usePlanCapacity();
-  const [page, setPage] = useState(() => (user ? 'dashboard' : 'landing'));
+  const [requestedPage, setPage] = useState(() => (user ? 'dashboard' : 'landing'));
+  const page = resolvePageAccess({ user, profile, enabledTools, requestedPage });
   const [authMode, setAuthMode] = useState('signup');
   const [forgeProject, setForgeProject] = useState(null);
   const [studyRoomEntry, setStudyRoomEntry] = useState(null);
@@ -111,37 +113,6 @@ export default function App() {
     window.scrollTo(0, 0);
   }
 
-  useEffect(() => {
-    if (!user) return;
-    if (!profile && page !== 'onboarding' && page !== 'auth' && page !== 'landing' && page !== 'privacy' && page !== 'terms') {
-      setPage('onboarding');
-    }
-  }, [user, profile, page]);
-
-  // Authenticated users who hit the public landing (e.g. logo misclick) go back into the app
-  useEffect(() => {
-    if (!user) return;
-    if (page === 'landing' || page === 'auth') {
-      setPage(profile ? 'dashboard' : 'onboarding');
-    }
-  }, [user, profile, page]);
-
-  useEffect(() => {
-    if (!user) return;
-    const gated = ['dashboard', 'courses', 'flashcards', 'habit-tracker', 'semester-journey', 'reports', 'study-groups', 'study-room', 'projects', 'forge', 'settings', 'manage-plan'];
-    if (gated.includes(page) && page !== 'settings' && page !== 'manage-plan' && !enabledTools.includes(page) && page !== 'study-room') {
-      try {
-        sessionStorage.setItem(
-          'acad_gate_message',
-          'This tool unlocks with a longer recovery window. Open Manage plan to extend your comeback window.',
-        );
-      } catch {
-        /* ignore */
-      }
-      setPage('dashboard');
-    }
-  }, [user, page, enabledTools]);
-
   if (booting) return <Loader label="Loading Acad" onDone={() => setBooting(false)} compoundRotation />;
   if (signingOut) {
     return (
@@ -177,6 +148,7 @@ export default function App() {
       {page === 'study-groups' && enabledTools.includes('study-groups') && <StudyGroups setPage={navigate} />}
       {page === 'study-room' && enabledTools.includes('study-groups') && (
         <StudyRoom
+          key={studyRoomEntry?.code || 'new-session'}
           setPage={navigate}
           initialCode={studyRoomEntry?.code || null}
           initialConfig={studyRoomEntry?.config || null}

@@ -1,5 +1,5 @@
 import { ONBOARDING_QUESTIONS } from '../data/constants.js';
-import { COMMON_PROGRAMMES, getProgrammeQuickPicks, getProgrammeSuggestions, KNOWN_UNIVERSITIES } from '../data/institutions.js';
+import {  getProgrammeQuickPicks, getProgrammeSuggestions, KNOWN_UNIVERSITIES } from '../data/institutions.js';
 import { getCompletedSemesterSlots, getSemesterCoursesFromProfile } from './academicProfileUtils.js';
 
 const CALMING_HABIT_OVERRIDES = {
@@ -29,8 +29,8 @@ export function getFastPathSemesterSlot(studentPath, currentLevel, currentSemest
   if (studentPath === 'new') {
     return {
       level: 100,
-      semester: 0,
-      label: 'Most recent completed term',
+      semester: 1,
+      label: 'First university term',
     };
   }
   if (!currentLevel || !currentSemester) {
@@ -68,7 +68,6 @@ export function buildOnboardingFlow(ctx) {
     aiLearnDone,
     postAiLearnUnlocked,
     profileReviewConfirmed,
-    prefillDuration,
   } = ctx;
 
   const steps = [];
@@ -189,17 +188,11 @@ export function buildOnboardingFlow(ctx) {
 
   if (aiLearnDone && learnedProfile && profileReviewConfirmed && studentPath) {
     if (studentPath === 'new') {
-      const slot = getFastPathSemesterSlot(studentPath, currentLevel, currentSemester);
       steps.push({
-        type: 'semesterGrades',
-        id: `grades-${slot.level}-${slot.semester}`,
-        level: slot.level,
-        semester: slot.semester,
-        label: slot.label,
-        q: 'Your most recent completed semester',
-        hint: 'Enter at least 3 courses from one completed term. Add older terms anytime — your data builds over time for deeper insights.',
-        courses: [],
-        deferrable: true,
+        type: 'info',
+        id: 'firstTermPreparation',
+        q: 'Prepare for your first university term',
+        hint: 'You do not need university grades yet. Choose courses from your reviewed programme, or add a course yourself. Log real grades after completing a term.',
       });
     } else {
       const completed = getCompletedSemesterSlots(currentLevel, currentSemester);
@@ -232,8 +225,7 @@ export function buildOnboardingFlow(ctx) {
     }
   }
 
-  const hasSemesterStep = steps.some((s) => s.type === 'semesterGrades');
-  if (aiLearnDone && learnedProfile && hasSemesterStep) {
+  if (aiLearnDone && learnedProfile && profileReviewConfirmed && studentPath) {
     steps.push({
       type: 'courseFocus',
       id: 'courseFocus',

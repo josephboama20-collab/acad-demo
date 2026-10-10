@@ -56,6 +56,10 @@ export function countGradedCoursesInStep(semesterGrades, stepId) {
   return Object.keys(semesterGrades?.[stepId] || {}).length;
 }
 
+export function requiresSemesterHistory(studentPath, steps) {
+  return studentPath !== 'new' && (steps || []).some((step) => step.type === 'semesterGrades');
+}
+
 /**
  * Acad conditions you between semesters - at least one completed semester of graded work is required.
  * A "semester of work" means at least 3 courses graded in a single term.

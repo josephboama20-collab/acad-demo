@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useStoredState } from '../hooks/useStoredState.js';
+import { createContext, useCallback, useContext, useEffect, useMemo } from 'react';
 import { useAuth } from './AuthContext.jsx';
 import { syncFlashcardsFromLoggedCourses } from '../utils/flashcardsFromCourses.js';
 import { applySM2, createCard, isDue } from '../utils/sm2.js';
@@ -9,7 +10,7 @@ const FlashcardsContext = createContext(null);
 
 export function FlashcardsProvider({ children, onCardReviewed }) {
   const { userId, dataEpoch } = useAuth();
-  const [cards, setCards] = useState(() => loadJSON(STORAGE_KEYS.flashcards) ?? []);
+  const [cards, setCards] = useStoredState(STORAGE_KEYS.flashcards, () => loadJSON(STORAGE_KEYS.flashcards) ?? []);
 
   useEffect(() => {
     const semesters = loadJSON(STORAGE_KEYS.semesters);
@@ -23,8 +24,7 @@ export function FlashcardsProvider({ children, onCardReviewed }) {
       setCards(synced);
       return;
     }
-    setCards(existing);
-  }, [dataEpoch, userId]);
+  }, [dataEpoch, userId, setCards]);
 
   const persist = useCallback(
     (updater) => {
@@ -34,7 +34,7 @@ export function FlashcardsProvider({ children, onCardReviewed }) {
         return next;
       });
     },
-    [userId],
+    [userId, setCards],
   );
 
   const addCard = useCallback(
@@ -51,18 +51,14 @@ export function FlashcardsProvider({ children, onCardReviewed }) {
   );
 
   const reviewCard = useCallback(
-    (cardId, rating, onReviewed) => {
-      let reviewed = null;
-      persist((list) =>
-        list.map((card) => {
-          if (card.cardId !== cardId) return card;
-          reviewed = applySM2(card, rating);
-          return reviewed;
-        }),
-      );
-      if (reviewed) onCardReviewed?.(reviewed, rating);
+    (cardId, rating) => {
+      const card = cards.find((item) => item.cardId === cardId);
+      if (!card) return;
+      const reviewed = applySM2(card, rating);
+      persist((list) => list.map((item) => item.cardId === cardId ? reviewed : item));
+      onCardReviewed?.(reviewed, rating);
     },
-    [persist, onCardReviewed],
+    [persist, onCardReviewed, cards],
   );
 
   const deleteCard = useCallback((cardId) => persist((list) => list.filter((c) => c.cardId !== cardId)), [persist]);

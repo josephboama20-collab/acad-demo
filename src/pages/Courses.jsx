@@ -388,22 +388,15 @@ function TopicStudy({ course, topic, updateTopicMastery, earnXP, addCards, cards
 
   useEffect(() => {
     if (mode !== 'quiz' || quizDone || answerRevealed || !timerRunning) return undefined;
-    if (timeLeft <= 0) {
-      setAnswerRevealed(true);
-      setTimerRunning(false);
-      return undefined;
-    }
-    const id = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    const id = setInterval(() => {
+      if (timeLeft <= 1) {
+        setTimeLeft(0);
+        setAnswerRevealed(true);
+        setTimerRunning(false);
+      } else setTimeLeft(timeLeft - 1);
+    }, 1000);
     return () => clearInterval(id);
   }, [mode, quizDone, answerRevealed, timeLeft, timerRunning]);
-
-  useEffect(() => {
-    if (mode === 'quiz' && !quizDone) {
-      setAnswerRevealed(false);
-      setTimeLeft(QUIZ_TIME_SEC);
-      setTimerRunning(false);
-    }
-  }, [qIndex, mode, quizDone]);
 
   function answer(val) {
     if (!answerRevealed) return;
@@ -411,6 +404,9 @@ function TopicStudy({ course, topic, updateTopicMastery, earnXP, addCards, cards
     if (qIndex < questions.length - 1) {
       setScores(next);
       setQIndex((i) => i + 1);
+      setAnswerRevealed(false);
+      setTimeLeft(QUIZ_TIME_SEC);
+      setTimerRunning(false);
     } else {
       const avg = next.reduce((a, b) => a + b, 0) / next.length;
       const newMastery = Math.round(topic.masteryLevel * 0.4 + avg * 0.6);

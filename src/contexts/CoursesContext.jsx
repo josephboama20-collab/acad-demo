@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useStoredState } from '../hooks/useStoredState.js';
+import { createContext, useCallback, useContext, useMemo } from 'react';
 import { useAuth } from './AuthContext.jsx';
 import { canAddCourse } from '../utils/planCapacity.js';
 import { persistWithCloud } from '../utils/cloudSync.js';
@@ -8,12 +9,10 @@ import { loadJSON, STORAGE_KEYS, uid } from '../utils/storage.js';
 const CoursesContext = createContext(null);
 
 export function CoursesProvider({ children }) {
-  const { profile, userId, dataEpoch } = useAuth();
-  const [courses, setCourses] = useState(() => loadJSON(STORAGE_KEYS.courses) ?? []);
+  const { profile, userId } = useAuth();
+  const [courses, setCourses] = useStoredState(STORAGE_KEYS.courses, () => loadJSON(STORAGE_KEYS.courses) ?? []);
 
-  useEffect(() => {
-    setCourses(loadJSON(STORAGE_KEYS.courses) ?? []);
-  }, [dataEpoch]);
+
 
   const persist = useCallback(
     (updater) => {
@@ -23,7 +22,7 @@ export function CoursesProvider({ children }) {
         return next;
       });
     },
-    [userId],
+    [userId, setCourses],
   );
 
   const addCourse = useCallback(

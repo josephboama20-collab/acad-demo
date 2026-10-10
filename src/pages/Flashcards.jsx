@@ -1,22 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFlashcards } from '../contexts/FlashcardsContext.jsx';
 import { useGame } from '../contexts/GameContext.jsx';
-import { useTheme } from '../contexts/ThemeContext.jsx';
 import { generateFlashcardsFromText } from '../utils/ai.js';
 import { RATING_LABELS } from '../data/constants.js';
 import BetaBadge from '../components/BetaBadge.jsx';
-import { readCssVar } from '../utils/themeColors.js';
 
-function FlashcardsDashboard({ cards, dueCards, subjects, masteryMap, setTab }) {
-  const { theme } = useTheme();
-  const masteryColors = useMemo(
-    () => ({
-      learning: readCssVar('--mastery-learning'),
-      reviewing: readCssVar('--mastery-reviewing'),
-      mastered: readCssVar('--mastery-mastered'),
-    }),
-    [theme],
-  );
+function FlashcardsDashboard({ cards, dueCards, masteryMap, setTab }) {
+  const masteryColors = { learning: 'var(--mastery-learning)', reviewing: 'var(--mastery-reviewing)', mastered: 'var(--mastery-mastered)' };
   const total = cards.length;
   const masteryRate = total > 0 ? Math.round((masteryMap.mastered / total) * 100) : 0;
   const subjectCounts = useMemo(() => {
@@ -256,18 +246,14 @@ function ManageCards({ cards, subjects, addCard, addCards, deleteCard }) {
 
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
-  const [subject, setSubject] = useState(defaultSubject);
+  const [requestedSubject, setSubject] = useState(defaultSubject);
+  const subject = subjectOptions.includes(requestedSubject) ? requestedSubject : defaultSubject;
   const [customSubject, setCustomSubject] = useState('');
   const [genText, setGenText] = useState('');
-  const [genSubject, setGenSubject] = useState(defaultSubject);
+  const [requestedGenSubject, setGenSubject] = useState(defaultSubject);
+  const genSubject = subjectOptions.includes(requestedGenSubject) ? requestedGenSubject : defaultSubject;
   const [generating, setGenerating] = useState(false);
   const [genMsg, setGenMsg] = useState('');
-
-  useEffect(() => {
-    if (subjectOptions.length === 0) return;
-    if (!subjectOptions.includes(subject)) setSubject(subjectOptions[0]);
-    if (!subjectOptions.includes(genSubject)) setGenSubject(subjectOptions[0]);
-  }, [subjectOptions, subject, genSubject]);
 
   function handleAdd() {
     const sub = (subjectOptions.length > 0 ? subject : customSubject).trim();
@@ -423,7 +409,7 @@ function ManageCards({ cards, subjects, addCard, addCards, deleteCard }) {
   );
 }
 
-export default function Flashcards({ setPage }) {
+export default function Flashcards() {
   const { cards, dueCards, subjects, masteryMap, addCard, addCards, reviewCard, deleteCard } = useFlashcards();
   const { earnXP, advanceChallenge, unlockAchievement } = useGame();
   const [tab, setTab] = useState('dashboard');

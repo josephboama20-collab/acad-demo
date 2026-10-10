@@ -35,6 +35,7 @@ export default function Reports({ setPage }) {
   const { logs } = useHabits();
   const { plan } = usePlanCapacity();
   const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState('');
 
   const report = useMemo(
     () =>
@@ -56,10 +57,16 @@ export default function Reports({ setPage }) {
 
   const showData = hasReportData(metrics, streak) || allTopics.length > 0 || logs.length > 0;
 
-  function handleExportPdf() {
+  async function handleExportPdf() {
     setExporting(true);
-    exportReportPdf({ userName: user?.name, report, courses, streak });
-    setTimeout(() => setExporting(false), 800);
+    setExportError('');
+    try {
+      await exportReportPdf({ userName: user?.name, report, streak });
+    } catch (error) {
+      setExportError(error.message || 'The PDF could not be created. Please try again.');
+    } finally {
+      setExporting(false);
+    }
   }
 
   if (!showData) {
@@ -103,6 +110,7 @@ export default function Reports({ setPage }) {
             {exporting ? 'Preparing…' : 'Export PDF'}
           </button>
         </div>
+        {exportError && <p role="alert">{exportError}</p>}
 
         <section className="rep-ai-summary card" aria-label="Acad performance insights">
           <p className="card-label">Acad insights</p>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { getSemesterCoursesFromProfile } from '../utils/academicProfileUtils.js';
 
 /**
@@ -10,37 +10,19 @@ export function useSemesterEditor({ academicProfile, level, semester, historyEnt
     [academicProfile, level, semester],
   );
 
-  const [grades, setGrades] = useState({});
-  const [customCourses, setCustomCourses] = useState([]);
+  const [grades, setGrades] = useState(() => Object.fromEntries((historyEntry?.courses || []).map((c) => [c.code, c.grade])));
+  const [customCourses, setCustomCourses] = useState(() => (historyEntry?.courses || []).filter((c) => !aiCourses.some((a) => a.code === c.code)).map((c) => ({ ...c, credits: c.credits ?? 3, type: 'custom' })));
   const [courseEdits, setCourseEdits] = useState({});
   const [removedCodes, setRemovedCodes] = useState(new Set());
 
-  useEffect(() => {
-    if (historyEntry) return;
-    setGrades({});
-    setCustomCourses([]);
+  const [previousInputs, setPreviousInputs] = useState({ historyEntry, level, semester, aiCourses });
+  if (previousInputs.historyEntry !== historyEntry || previousInputs.level !== level || previousInputs.semester !== semester || previousInputs.aiCourses !== aiCourses) {
+    setPreviousInputs({ historyEntry, level, semester, aiCourses });
+    setGrades(Object.fromEntries((historyEntry?.courses || []).map((c) => [c.code, c.grade])));
+    setCustomCourses((historyEntry?.courses || []).filter((c) => !aiCourses.some((a) => a.code === c.code)).map((c) => ({ ...c, credits: c.credits ?? 3, type: 'custom' })));
     setCourseEdits({});
     setRemovedCodes(new Set());
-  }, [level, semester, historyEntry]);
-
-  useEffect(() => {
-    if (!historyEntry) return;
-    const g = {};
-    const customs = [];
-    const aiCodes = new Set(aiCourses.map((c) => c.code));
-
-    historyEntry.courses.forEach((c) => {
-      g[c.code] = c.grade;
-      if (!aiCodes.has(c.code)) {
-        customs.push({ code: c.code, name: c.name, credits: c.credits ?? 3, type: 'custom' });
-      }
-    });
-
-    setGrades(g);
-    setCustomCourses(customs);
-    setCourseEdits({});
-    setRemovedCodes(new Set());
-  }, [historyEntry, level, semester, aiCourses]);
+  }
 
   const getVisibleAiCourses = useCallback(() => {
     const removed = removedCodes;

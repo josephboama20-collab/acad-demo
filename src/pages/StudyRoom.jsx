@@ -22,7 +22,6 @@ import BetaBadge from '../components/BetaBadge.jsx';
 import {
   DEFAULT_ROOM_SETTINGS,
   getRoom,
-  registerRoom,
   unregisterRoom,
   validateRoomCode,
 } from '../utils/studyRoomRegistry.js';
@@ -350,12 +349,9 @@ function ActiveRoom({
   const [forceExitOpen, setForceExitOpen] = useState(false);
   const [forceExitText, setForceExitText] = useState('');
   const bottomRef = useRef(null);
-  const startedAt = useRef(Date.now());
+  const [initialStartedAt] = useState(Date.now);
+  const startedAt = useRef(initialStartedAt);
   const userMessageCount = useRef(0);
-
-  useEffect(() => {
-    setSeconds(settings.focusMinutes * 60);
-  }, [settings.focusMinutes]);
 
   useEffect(() => {
     if (pomoState === 'idle' || !settings.showPomodoro) return;
@@ -531,7 +527,7 @@ function ActiveRoom({
       {showSettings && (
         <RoomSettingsPanel
           settings={settings}
-          onChange={onSettingsChange}
+          onChange={(next) => { setSeconds(next.focusMinutes * 60); onSettingsChange(next); }}
           onClose={() => setShowSettings(false)}
         />
       )}
@@ -601,10 +597,11 @@ export default function StudyRoom({
   onLockChange,
 }) {
   const { earnXP, unlockAchievement } = useGame();
-  const [phase, setPhase] = useState(initialCode ? 'loading' : 'lobby');
+  const [initialRoom] = useState(() => initialConfig || (initialCode ? getRoom(initialCode) : null));
+  const [phase, setPhase] = useState(initialCode && (initialRoom || validateRoomCode(initialCode)) ? 'loading' : 'lobby');
   const [roomCode, setRoomCode] = useState(initialCode || '');
-  const [roomMeta, setRoomMeta] = useState(null);
-  const [settings, setSettings] = useState({ ...DEFAULT_ROOM_SETTINGS });
+  const [roomMeta, setRoomMeta] = useState(initialRoom);
+  const [settings, setSettings] = useState({ ...DEFAULT_ROOM_SETTINGS, ...initialRoom?.settings });
   const [loadingStep, setLoadingStep] = useState(0);
   const [sessionStats, setSessionStats] = useState(null);
 
@@ -624,29 +621,6 @@ export default function StudyRoom({
       clearTimeout(enter);
     };
   }, [phase, earnXP, onLockChange, unlockAchievement]);
-
-  useEffect(() => {
-    if (initialCode && initialConfig) {
-      setRoomCode(initialCode);
-      setRoomMeta(initialConfig);
-      setSettings({ ...DEFAULT_ROOM_SETTINGS, ...initialConfig.settings });
-      setPhase('loading');
-    } else if (initialCode) {
-      const room = getRoom(initialCode);
-      if (room) {
-        setRoomCode(initialCode);
-        setRoomMeta(room);
-        setSettings({ ...DEFAULT_ROOM_SETTINGS, ...room.settings });
-        setPhase('loading');
-      } else if (validateRoomCode(initialCode)) {
-        setRoomCode(initialCode);
-        setRoomMeta(getRoom(initialCode));
-        setPhase('loading');
-      } else {
-        setPhase('lobby');
-      }
-    }
-  }, [initialCode, initialConfig]);
 
   useEffect(() => {
     if (phase !== 'room') return;

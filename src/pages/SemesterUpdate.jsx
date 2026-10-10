@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useSemesters } from '../contexts/SemestersContext.jsx';
 import { usePlanCapacity } from '../hooks/usePlanCapacity.js';
@@ -86,8 +86,7 @@ export default function SemesterUpdate({ setPage }) {
   const focusStepIndex = steps.indexOf('focus');
   const gradesStepIndex = steps.indexOf('grades');
 
-  useEffect(() => {
-    if (step !== focusStepIndex || focusInitialized) return;
+  if (step === focusStepIndex && !focusInitialized) {
     setSelectedFocus(
       focusAnalysis.suggestions.slice(0, maxFocusCourses).map((s) => ({
         code: s.code,
@@ -97,7 +96,7 @@ export default function SemesterUpdate({ setPage }) {
       })),
     );
     setFocusInitialized(true);
-  }, [step, focusStepIndex, focusAnalysis, maxFocusCourses, focusInitialized]);
+  }
 
   if (!ap) {
     return (

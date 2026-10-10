@@ -139,7 +139,7 @@ export function quizPrompt(subject) {
 Take your time. Write your answers before reviewing. Retrieval practice is the point.`;
 }
 
-export async function chatWithBuddy(messages, subject, _mastery = {}, method = 'socratic') {
+export async function chatWithBuddy(messages, subject, method = 'socratic') {
   const last = messages[messages.length - 1]?.content?.toLowerCase() || '';
   if (last.includes('quiz')) {
     await delay(1400);

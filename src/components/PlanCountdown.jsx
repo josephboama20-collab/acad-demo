@@ -16,7 +16,7 @@ export default function PlanCountdown({
   variant = 'default',
   showEndDate = false,
 }) {
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(Date.now);
   const compact = variant === 'compact';
 
   useEffect(() => {

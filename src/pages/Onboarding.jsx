@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { buildOnboardingFocus } from '../utils/onboardingFocus.js';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useSemesters } from '../contexts/SemestersContext.jsx';
 import SemesterCourseEditor from '../components/SemesterCourseEditor.jsx';
@@ -11,12 +12,12 @@ import AutocompleteInput from '../components/AutocompleteInput.jsx';
 import {
   hasMinimumAcademicSetup,
   minimumSemesterHistoryRequirement,
+  requiresSemesterHistory,
   validateInstitutionName,
   validateProgramName,
 } from '../utils/onboardingValidation.js';
 import {
   buildSemesterHistoryFromOnboarding,
-  deriveImprovementSuggestions,
 } from '../utils/improvementSuggestions.js';
 import { getMaxCourses } from '../utils/planCapacity.js';
 import { persistWithCloud } from '../utils/cloudSync.js';
@@ -86,6 +87,7 @@ export default function Onboarding({ setPage }) {
   }, [answers, learnedProfile, aiLearnDone, postAiLearnUnlocked, profileReviewConfirmed, preAccount]);
 
   const steps = useMemo(() => buildOnboardingFlow(ctx), [ctx]);
+  const historyRequired = requiresSemesterHistory(ctx.studentPath, steps);
   const total = steps.length;
   const current = steps[step] ?? steps[0];
   const rawProgress = total > 0 ? ((step + 1) / total) * 100 : 0;
@@ -106,13 +108,13 @@ export default function Onboarding({ setPage }) {
     return true;
   }, [answers]);
 
-  function getStepCourses(step) {
+  const getStepCourses = useCallback((step) => {
     const removed = new Set(removedCoursesByStep[step.id] || []);
     const edits = courseEditsByStep[step.id] || {};
     return (step.courses || [])
       .filter((c) => !removed.has(c.code))
       .map((c) => edits[c.code] || c);
-  }
+  }, [removedCoursesByStep, courseEditsByStep]);
 
   const draftSemesterHistory = useMemo(
     () =>
@@ -124,12 +126,12 @@ export default function Onboarding({ setPage }) {
         gradePoints,
         computeGpa: computeGpaFromGrades,
       }),
-    [steps, semesterGrades, customCoursesByStep, removedCoursesByStep, courseEditsByStep, gradePoints],
+    [steps, semesterGrades, customCoursesByStep, getStepCourses, gradePoints],
   );
 
   const focusAnalysis = useMemo(
-    () => deriveImprovementSuggestions(draftSemesterHistory, gradePoints, maxFocusCourses),
-    [draftSemesterHistory, gradePoints, maxFocusCourses],
+    () => buildOnboardingFocus({ history: draftSemesterHistory, gradePoints, limit: maxFocusCourses, academicProfile: learnedProfile, level: ctx.currentLevel || 100, semester: ctx.currentSemester || 1 }),
+    [draftSemesterHistory, gradePoints, maxFocusCourses, learnedProfile, ctx.currentLevel, ctx.currentSemester],
   );
 
   useEffect(() => {
@@ -153,21 +155,14 @@ export default function Onboarding({ setPage }) {
     prevTotalRef.current = total;
   }, [rawProgress, total]);
 
-  useEffect(() => {
-    if (current?.type !== 'courseFocus' || focusInitialized) return;
-    const defaults = focusAnalysis.suggestions.slice(0, maxFocusCourses).map((s) => ({
-      code: s.code,
-      name: s.name,
-      reason: s.reason,
-      grade: s.grade,
-    }));
+  if (current?.type === 'courseFocus' && !focusInitialized) {
+    const defaults = focusAnalysis.suggestions.slice(0, maxFocusCourses).map((s) => ({ code: s.code, name: s.name, reason: s.reason, grade: s.grade }));
     setSelectedFocus(defaults);
     setFocusInitialized(true);
-  }, [current?.type, focusAnalysis, maxFocusCourses, focusInitialized]);
+  }
 
   useEffect(() => {
     if (!aiLearning) {
-      setAiLearnElapsed(0);
       return undefined;
     }
     const timer = setInterval(() => setAiLearnElapsed((s) => s + 1), 1000);
@@ -191,6 +186,7 @@ export default function Onboarding({ setPage }) {
     aiFetchStartedRef.current = true;
     let cancelled = false;
     const startedAt = Date.now();
+    setAiLearnElapsed(0);
     setAiLearning(true);
     setAiError('');
     learnAcademicProfile(learnParams)
@@ -236,7 +232,7 @@ export default function Onboarding({ setPage }) {
     if (current.type === 'welcome' || current.type === 'info') return true;
     if (current.type === 'complete') {
       if (!hasMinimumAcademicSetup(answers, learnedProfile, aiLearnDone, profileReviewConfirmed)) return false;
-      if (!deferredSemesterGrades) {
+      if (historyRequired && !deferredSemesterGrades) {
         const semCheck = minimumSemesterHistoryRequirement(semesterGrades, steps);
         if (!semCheck.ok) return false;
       }
@@ -279,7 +275,7 @@ export default function Onboarding({ setPage }) {
       if (!hasMinimumAcademicSetup(answers, learnedProfile, aiLearnDone, profileReviewConfirmed)) {
         return 'Confirm your academic profile before entering Acad.';
       }
-      if (!deferredSemesterGrades) {
+      if (historyRequired && !deferredSemesterGrades) {
         const semCheck = minimumSemesterHistoryRequirement(semesterGrades, steps);
         if (!semCheck.ok) return semCheck.message;
       }
@@ -431,10 +427,7 @@ export default function Onboarding({ setPage }) {
     if (!current) return null;
 
     if (current.type === 'text') {
-      const fieldHint =
-        current.field === 'universityName' || current.field === 'programName'
-          ? 'ob-accuracy-note'
-          : '';
+
       return (
         <>
           {(current.field === 'universityName' || current.field === 'programName') && (
@@ -578,7 +571,7 @@ export default function Onboarding({ setPage }) {
     if (current.type === 'semesterGrades') {
       const stepGrades = semesterGrades[current.id] || {};
       const stepCustom = customCoursesByStep[current.id] || [];
-      const stepCourses = getStepCourses(current);
+
       const stepEdits = courseEditsByStep[current.id] || {};
       const stepRemoved = new Set(removedCoursesByStep[current.id] || []);
 

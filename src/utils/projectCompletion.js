@@ -1,4 +1,4 @@
-import { getMilestoneProgress, loadForgeWorkspace } from './forgeStorage.js';
+import { getMilestoneProgress } from './forgeStorage.js';
 import { resolveProjectMilestones } from './projects.js';
 
 export function getProjectCompletion(project) {

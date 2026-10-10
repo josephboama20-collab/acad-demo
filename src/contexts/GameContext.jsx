@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useStoredState } from '../hooks/useStoredState.js';
+import { createContext, useCallback, useContext, useMemo } from 'react';
 import { useAuth } from './AuthContext.jsx';
 import { ACHIEVEMENTS, CHALLENGES, LEADERBOARD } from '../data/constants.js';
 import { persistWithCloud } from '../utils/cloudSync.js';
@@ -9,8 +10,8 @@ const DEFAULT_GAME = { xp: 340, achievements: [], challengeProgress: {} };
 const GameContext = createContext(null);
 
 export function GameProvider({ children }) {
-  const { userId, dataEpoch } = useAuth();
-  const [state, setState] = useState(() => {
+  const { userId } = useAuth();
+  const [state, setState] = useStoredState(STORAGE_KEYS.game, () => {
     const saved = loadJSON(STORAGE_KEYS.game);
     return saved
       ? {
@@ -21,18 +22,7 @@ export function GameProvider({ children }) {
       : DEFAULT_GAME;
   });
 
-  useEffect(() => {
-    const saved = loadJSON(STORAGE_KEYS.game);
-    setState(
-      saved
-        ? {
-            xp: saved.xp ?? DEFAULT_GAME.xp,
-            achievements: saved.achievements ?? [],
-            challengeProgress: saved.challengeProgress ?? {},
-          }
-        : DEFAULT_GAME,
-    );
-  }, [dataEpoch]);
+
 
   const persist = useCallback(
     (updater) => {
@@ -47,7 +37,7 @@ export function GameProvider({ children }) {
         return next;
       });
     },
-    [userId],
+    [userId, setState],
   );
 
   const level = useMemo(() => Math.floor(state.xp / 1000) + 1, [state.xp]);

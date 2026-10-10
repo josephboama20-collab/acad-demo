@@ -1,8 +1,8 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { DEFAULT_SCHOLAR } from '../data/constants.js';
 import { isCloudEnabled, supabase } from '../lib/supabase.js';
-import { deleteAllUserData, hydrateLocalFromCloud, persistWithCloud } from '../utils/cloudSync.js';
-import { loadJSON, saveJSON, STORAGE_KEYS } from '../utils/storage.js';
+import { deleteAllUserData, hydrateLocalFromCloud, persistWithCloud, flushCloudSaves, subscribeSyncStatus, getSyncStatus } from '../utils/cloudSync.js';
+import { loadJSON, saveJSON, STORAGE_KEYS, activateStorageUser, clearStudyData, getStorageUser } from '../utils/storage.js';
 
 function mergeScholar(data) {
   if (!data) return { ...DEFAULT_SCHOLAR };
@@ -22,6 +22,8 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [authReady, setAuthReady] = useState(!isCloudEnabled());
   const [dataEpoch, setDataEpoch] = useState(0);
+  const sessionVersion = useRef(0);
+  const syncStatus = useSyncExternalStore(subscribeSyncStatus, getSyncStatus, () => null);
 
   const userId = session?.user?.id ?? null;
 
@@ -41,13 +43,18 @@ export function AuthProvider({ children }) {
 
     async function handleSession(nextSession) {
       if (!mounted) return;
+      const version = ++sessionVersion.current;
+      const nextUserId = nextSession?.user?.id ?? null;
+      if (nextUserId !== getStorageUser()) setAuthReady(false);
+      activateStorageUser(nextUserId, nextSession?.user?.email);
       setSession(nextSession);
       if (nextSession?.user) {
         try {
           await hydrateLocalFromCloud(nextSession.user.id);
         } catch {
-          /* use local cache if cloud fetch fails */
+          /* Only this account's namespaced cache is available offline. */
         }
+        if (!mounted || version !== sessionVersion.current) return;
         const scholar = loadJSON(STORAGE_KEYS.scholar);
         const merged = mergeScholar({
           ...scholar,
@@ -60,7 +67,7 @@ export function AuthProvider({ children }) {
         setState(merged);
         setDataEpoch((n) => n + 1);
       } else if (isCloudEnabled()) {
-        setState((prev) => mergeScholar({ ...prev, user: null }));
+        setState(mergeScholar(null));
         setDataEpoch((n) => n + 1);
       }
       setAuthReady(true);
@@ -72,13 +79,17 @@ export function AuthProvider({ children }) {
     const timeoutMs = 8000;
     const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), timeoutMs));
 
+    const initialVersion = sessionVersion.current;
     Promise.race([sessionPromise, timeoutPromise])
-      .then((session) => handleSession(session))
+      .then((session) => {
+        if (sessionVersion.current === initialVersion) handleSession(session);
+      })
       .catch(() => {
         if (mounted) handleSession(null);
       });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      handleSession(nextSession);
+      // Run database work outside Supabase's synchronous auth callback lock.
+      setTimeout(() => { if (mounted) handleSession(nextSession); }, 0);
     });
 
     return () => {
@@ -156,11 +167,17 @@ export function AuthProvider({ children }) {
 
   const signOut = useCallback(async () => {
     if (isCloudEnabled() && supabase) {
-      await supabase.auth.signOut();
+      await flushCloudSaves(userId).catch(() => {});
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
       setSession(null);
+      activateStorageUser(null);
+      setState(mergeScholar(null));
+      setDataEpoch((n) => n + 1);
+      return;
     }
     persist((s) => ({ ...s, user: null }));
-  }, [persist]);
+  }, [persist, userId]);
 
   const signUp = useCallback(async ({ email, password, name }) => {
     if (!supabase) throw new Error('Cloud auth is not configured.');
@@ -178,6 +195,7 @@ export function AuthProvider({ children }) {
       );
     }
     if (data.user) {
+      activateStorageUser(data.user.id, email);
       const scholar = mergeScholar({
         user: { name, email },
       });
@@ -207,14 +225,16 @@ export function AuthProvider({ children }) {
     const { error } = await supabase.functions.invoke('delete-account');
     if (error) throw error;
     await deleteAllUserData(userId);
-    Object.values(STORAGE_KEYS).forEach((key) => localStorage.removeItem(key));
+    clearStudyData(userId);
+    activateStorageUser(null);
     setSession(null);
     setState(mergeScholar(null));
     setDataEpoch((n) => n + 1);
   }, [userId]);
 
   const deleteAllLocalData = useCallback(async () => {
-    Object.values(STORAGE_KEYS).forEach((key) => localStorage.removeItem(key));
+    clearStudyData();
+    activateStorageUser(null);
     setSession(null);
     setState(mergeScholar(null));
     setDataEpoch((n) => n + 1);
@@ -288,7 +308,12 @@ export function AuthProvider({ children }) {
     );
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {syncStatus && <div role="status" className="sync-status">{syncStatus}</div>}
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

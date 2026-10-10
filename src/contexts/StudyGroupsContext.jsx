@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { useStoredState } from '../hooks/useStoredState.js';
+import { createContext, useCallback, useContext, useMemo } from 'react';
 import { loadJSON, saveJSON, uid } from '../utils/storage.js';
 
 const STORAGE_KEY = 'acad_study_groups_v1';
@@ -42,7 +43,7 @@ function normalizeState(raw) {
 const StudyGroupsContext = createContext(null);
 
 export function StudyGroupsProvider({ children }) {
-  const [state, setState] = useState(() => normalizeState(loadJSON(STORAGE_KEY)));
+  const [state, setState] = useStoredState(STORAGE_KEY, () => normalizeState(loadJSON(STORAGE_KEY)));
 
   const persist = useCallback((updater) => {
     setState((prev) => {
@@ -50,7 +51,7 @@ export function StudyGroupsProvider({ children }) {
       saveJSON(STORAGE_KEY, next);
       return next;
     });
-  }, []);
+  }, [setState]);
 
   const hasPeers = state.members.length > 0;
   const activeGroup = state.groups.find((g) => g.id === state.activeGroupId) || state.groups[0] || null;

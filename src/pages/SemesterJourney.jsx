@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useSemesters } from '../contexts/SemestersContext.jsx';
 import SemesterCourseEditor from '../components/SemesterCourseEditor.jsx';
@@ -40,8 +40,11 @@ export default function SemesterJourney({ setPage }) {
     [currentLevel, currentSemester, gradeHistory],
   );
 
-  const [level, setLevel] = useState(defaultSel.level);
-  const [semester, setSemester] = useState(defaultSel.semester);
+  const [requestedLevel, setLevel] = useState(defaultSel.level);
+  const [requestedSemester, setSemester] = useState(defaultSel.semester);
+  const validSelection = canSelectSemester(requestedLevel, requestedSemester, currentLevel, currentSemester, gradeHistory);
+  const level = validSelection ? requestedLevel : defaultSel.level;
+  const semester = validSelection ? requestedSemester : defaultSel.semester;
   const [msg, setMsg] = useState('');
 
   const selectable = useMemo(
@@ -63,13 +66,6 @@ export default function SemesterJourney({ setPage }) {
     () => new Set((historyEntry?.courses || []).map((c) => c.code)),
     [historyEntry],
   );
-
-  useEffect(() => {
-    if (!canSelectSemester(level, semester, currentLevel, currentSemester, gradeHistory)) {
-      setLevel(defaultSel.level);
-      setSemester(defaultSel.semester);
-    }
-  }, [level, semester, currentLevel, currentSemester, gradeHistory, defaultSel]);
 
   function pickLevel(lv) {
     if (!canSelectSemester(lv, semester, currentLevel, currentSemester, gradeHistory)) return;

@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useStoredState } from '../hooks/useStoredState.js';
+import { createContext, useCallback, useContext, useMemo } from 'react';
 import { useAuth } from './AuthContext.jsx';
 import { persistWithCloud } from '../utils/cloudSync.js';
 import { loadJSON, STORAGE_KEYS } from '../utils/storage.js';
@@ -30,20 +31,13 @@ const DEFAULT_SEMESTERS = {
 const SemestersContext = createContext(null);
 
 export function SemestersProvider({ children }) {
-  const { userId, dataEpoch } = useAuth();
+  const { userId } = useAuth();
 
-  const [state, setState] = useState(() => {
+  const [state, setState] = useStoredState(STORAGE_KEYS.semesters, () => {
     return loadJSON(STORAGE_KEYS.semesters) ?? DEFAULT_SEMESTERS;
   });
 
-  useEffect(() => {
-    const loaded = loadJSON(STORAGE_KEYS.semesters);
-    if (loaded) {
-      setState(loaded);
-      return;
-    }
-    setState(DEFAULT_SEMESTERS);
-  }, [dataEpoch]);
+
 
   const persist = useCallback(
     (updater) => {
@@ -53,7 +47,7 @@ export function SemestersProvider({ children }) {
         return next;
       });
     },
-    [userId],
+    [userId, setState],
   );
 
   /** Create and activate a new semester. */

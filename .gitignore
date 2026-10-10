@@ -30,3 +30,6 @@ dist-ssr
 # Local Netlify folder
 .netlify
 deno.lock
+
+# Generated verification artifacts
+test-output/

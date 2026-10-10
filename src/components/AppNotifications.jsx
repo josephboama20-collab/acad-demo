@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Bell, X } from 'lucide-react';
 import { useAppNotifications } from '../utils/notifications.js';
 
@@ -69,14 +69,14 @@ export default function AppNotifications() {
     }
   });
 
-  const visible = notifications.filter((n) => !dismissed.includes(n.id));
+  const visible = useMemo(() => notifications.filter((n) => !dismissed.includes(n.id)), [notifications, dismissed]);
 
   useEffect(() => {
     if (!visible.length) return;
-    setToasts(visible.slice(0, 1));
+    const show = setTimeout(() => setToasts(visible.slice(0, 1)), 0);
     const timer = setTimeout(() => setToasts([]), 7000);
-    return () => clearTimeout(timer);
-  }, [visible.length]);
+    return () => { clearTimeout(show); clearTimeout(timer); };
+  }, [visible]);
 
   function dismissToast(id) {
     setToasts((t) => t.filter((x) => x.id !== id));

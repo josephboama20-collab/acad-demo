@@ -1,3 +1,4 @@
+import { useNow } from '../hooks/useNow.js';
 import { useMemo, useState } from 'react';
 import { Lock, Star, Zap } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -62,7 +63,7 @@ function studyCellColor(hours) {
 }
 
 function StudyCalendar({ logs, isLogLocked }) {
-  const today = new Date().toISOString().split('T')[0];
+
   const cells = useMemo(() => {
     const byDate = {};
     logs.forEach((l) => {
@@ -127,12 +128,14 @@ export default function HabitTracker() {
   const daysLogged = logs.length;
   const avgFocus = logs.length > 0 ? (logs.reduce((a, l) => a + l.focusRating, 0) / logs.length).toFixed(1) : 'n/a';
   const avgProductivity = logs.length > 0 ? Math.round(logs.reduce((a, l) => a + l.productivityScore, 0) / logs.length) : 0;
+  const now = useNow();
+  const planStartedAt = profile?.startedAt;
   const daysOnAcad = useMemo(() => {
-    if (!profile?.startedAt) return null;
-    const start = new Date(profile.startedAt).getTime();
+    if (!planStartedAt) return null;
+    const start = new Date(planStartedAt).getTime();
     if (Number.isNaN(start)) return null;
-    return Math.max(1, Math.floor((Date.now() - start) / 86400000));
-  }, [profile?.startedAt]);
+    return Math.max(1, Math.floor((now - start) / 86400000));
+  }, [planStartedAt, now]);
 
   function handleSubmit(e) {
     e.preventDefault();

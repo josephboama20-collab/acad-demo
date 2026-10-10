@@ -6,18 +6,24 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "preview": "vite preview",
     "test:plan": "node scripts/test-planCapacity.js",
     "test:searxng": "node scripts/test-searxng.mjs",
-    "seed:demo": "node scripts/seed-demo-users.mjs"
+    "seed:demo": "node scripts/seed-demo-users.mjs",
+    "test:regression": "node --test scripts/test-storage.js scripts/test-syncOutbox.js scripts/test-pageAccess.js scripts/test-reportPdf.js scripts/test-onboarding.js",
+    "test:gpa": "node scripts/test-gpa.js",
+    "test": "npm run test:plan && npm run test:gpa && npm run test:functional && npm run test:regression",
+    "test:functional": "node scripts/test-functional.mjs"
   },
   "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
     "@supabase/supabase-js": "^2.108.2",
     "canvas-confetti": "^1.9.4",
     "chart.js": "^4.5.1",
     "lucide-react": "^1.12.0",
     "marked": "^18.0.2",
+    "pdf-lib": "^1.17.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },

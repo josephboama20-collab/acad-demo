@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   Activity,
   BookOpen,
-  Bot,
   ChartLine,
   Flame,
   GraduationCap,

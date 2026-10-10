@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useCourses } from '../contexts/CoursesContext.jsx';
 import { useFlashcards } from '../contexts/FlashcardsContext.jsx';
@@ -107,7 +107,7 @@ export default function Dashboard({ setPage }) {
     }
   });
 
-  function loadTask() {
+  const loadTask = useCallback(() => {
     setLoading(true);
     setTask(null);
     setDone(false);
@@ -117,9 +117,17 @@ export default function Dashboard({ setPage }) {
       setTask(res.data);
       setLoading(false);
     });
-  }
+  }, [profile, progressionStatus]);
 
-  useEffect(() => { loadTask(); }, []);
+  useEffect(() => {
+    let active = true;
+    fetchDailyTask({ ...profile, progressionStatus }).then((res) => {
+      if (!active) return;
+      setTask(res.data);
+      setLoading(false);
+    });
+    return () => { active = false; };
+  }, [profile, progressionStatus]);
 
   useEffect(() => {
     if (!running) return;

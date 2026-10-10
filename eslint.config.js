@@ -18,4 +18,17 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    files: ['scripts/**/*.{js,mjs}'],
+    languageOptions: { globals: globals.node },
+  },
+  {
+    files: ['src/contexts/*.jsx'],
+    rules: {
+      'react-refresh/only-export-components': ['warn', {
+        allowConstantExport: true,
+        allowExportNames: ['useAuth', 'useCourses', 'useFlashcards', 'useGame', 'useHabits', 'useSemesters', 'useStudyGroups', 'useTheme', 'initTheme', 'MOOD_OPTIONS', 'THEMES', 'SELF_ID'],
+      }],
+    },
+  },
 ])

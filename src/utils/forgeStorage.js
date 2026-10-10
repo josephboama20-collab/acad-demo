@@ -1,4 +1,4 @@
-import { loadJSON, saveJSON, STORAGE_KEYS } from './storage.js';
+import { loadJSON, STORAGE_KEYS } from './storage.js';
 import { persistWithCloud } from './cloudSync.js';
 
 function allWorkspaces() {

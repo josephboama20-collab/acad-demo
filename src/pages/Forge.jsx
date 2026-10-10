@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { getMilestoneProgress, loadForgeWorkspace, saveForgeWorkspace } from '../utils/forgeStorage.js';
 import { resolveProjectMilestones } from '../utils/projects.js';
@@ -6,8 +6,8 @@ import ContextNote from '../components/ContextNote.jsx';
 
 export default function Forge({ setPage, project }) {
   const { setFocusMode, settings, saveProject, userId } = useAuth();
-  const [milestones, setMilestones] = useState({});
-  const [draft, setDraft] = useState('');
+  const [milestones, setMilestones] = useState(() => getMilestoneProgress(project));
+  const [draft, setDraft] = useState(() => loadForgeWorkspace(project?.title).draft);
   const [saved, setSaved] = useState(false);
 
   const milestoneDefs = useMemo(
@@ -15,12 +15,12 @@ export default function Forge({ setPage, project }) {
     [project],
   );
 
-  useEffect(() => {
-    if (!project?.title) return;
-    const ws = loadForgeWorkspace(project.title);
-    setDraft(ws.draft);
+  const [previousProject, setPreviousProject] = useState(project);
+  if (previousProject !== project) {
+    setPreviousProject(project);
+    setDraft(loadForgeWorkspace(project?.title).draft);
     setMilestones(getMilestoneProgress(project));
-  }, [project]);
+  }
 
   if (!project) {
     return (

@@ -76,7 +76,7 @@ export default function ChallengesPanel() {
     return rows
       .sort((a, b) => b.streak - a.streak || b.xp - a.xp)
       .map((row, i) => ({ ...row, rank: i + 1 }));
-  }, [activeGroup, getGroupRoster, user?.name, streak.current, xp, level]);
+  }, [activeGroup, getGroupRoster, user?.name, streak, xp, level]);
 
   const hasDemoStats = board.some((row) => !row.isUser);
 

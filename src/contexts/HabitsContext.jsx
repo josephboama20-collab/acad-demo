@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useStoredState } from '../hooks/useStoredState.js';
+import { createContext, useCallback, useContext, useMemo } from 'react';
 import { Frown, Smile, Meh, Sun, TrendingUp, Target, Zap } from 'lucide-react';
 import { useAuth } from './AuthContext.jsx';
 import { correlationInsight, pearsonCorrelation } from '../utils/analytics.js';
@@ -8,12 +9,10 @@ import { loadJSON, STORAGE_KEYS } from '../utils/storage.js';
 const HabitsContext = createContext(null);
 
 export function HabitsProvider({ children }) {
-  const { userId, dataEpoch } = useAuth();
-  const [logs, setLogs] = useState(() => loadJSON(STORAGE_KEYS.habits) ?? []);
+  const { userId } = useAuth();
+  const [logs, setLogs] = useStoredState(STORAGE_KEYS.habits, () => loadJSON(STORAGE_KEYS.habits) ?? []);
 
-  useEffect(() => {
-    setLogs(loadJSON(STORAGE_KEYS.habits) ?? []);
-  }, [dataEpoch]);
+
 
   const persist = useCallback(
     (updater) => {
@@ -23,7 +22,7 @@ export function HabitsProvider({ children }) {
         return next;
       });
     },
-    [userId],
+    [userId, setLogs],
   );
 
   const addLog = useCallback(

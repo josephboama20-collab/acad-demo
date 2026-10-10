@@ -1,5 +1,6 @@
 import { supabase, isCloudEnabled } from '../lib/supabase.js';
-import { saveJSON, STORAGE_KEYS } from './storage.js';
+import { saveJSON, STORAGE_KEYS, getStorageUser } from './storage.js';
+import { createSyncOutbox } from './syncOutbox.js';
 
 /** Logical data buckets synced per user. */
 export const DATA_BUCKETS = {
@@ -13,26 +14,61 @@ export const DATA_BUCKETS = {
 };
 
 const debounceTimers = new Map();
+const localRevisions = new Map();
+const outbox = createSyncOutbox({
+  storage: {
+    getItem: (key) => localStorage.getItem(key),
+    setItem: (key, value) => localStorage.setItem(key, value),
+    removeItem: (key) => localStorage.removeItem(key),
+  },
+  getOwner: getStorageUser,
+  write: upsertBucket,
+  withLock: (name, run) => typeof navigator !== 'undefined' && navigator.locks
+    ? navigator.locks.request(name, run) : run(),
+});
+let syncError = null;
+const syncListeners = new Set();
+export function subscribeSyncStatus(listener) {
+  syncListeners.add(listener);
+  return () => syncListeners.delete(listener);
+}
+export function getSyncStatus() { return syncError; }
+function notifySync(error) {
+  syncError = error ? 'Changes remain on this device. Cloud sync will retry when the connection returns.' : null;
+  syncListeners.forEach((listener) => listener());
+}
+export async function flushCloudSaves(userId = getStorageUser()) {
+  try {
+    await outbox.flush(userId);
+    notifySync(null);
+  } catch (error) {
+    notifySync(error);
+    throw error;
+  }
+}
 
 export function persistWithCloud(userId, bucket, value) {
   const storageKey = DATA_BUCKETS[bucket];
   if (!storageKey) return;
-  saveJSON(storageKey, value);
+  if (isCloudEnabled() && (!userId || userId !== getStorageUser())) return;
+  if (!saveJSON(storageKey, value)) {
+    throw new Error('This device could not save your changes. Free storage space and try again.');
+  }
+  localRevisions.set(`${userId}:${bucket}`, (localRevisions.get(`${userId}:${bucket}`) ?? 0) + 1);
   if (userId && isCloudEnabled()) {
     scheduleCloudSave(userId, bucket, value);
   }
 }
 
 export function scheduleCloudSave(userId, bucket, value) {
+  outbox.enqueue(userId, bucket, value);
   const key = `${userId}:${bucket}`;
   if (debounceTimers.has(key)) clearTimeout(debounceTimers.get(key));
   debounceTimers.set(
     key,
     setTimeout(() => {
       debounceTimers.delete(key);
-      upsertBucket(userId, bucket, value).catch(() => {
-        /* network errors - local cache remains */
-      });
+      flushCloudSaves(userId).catch(() => {});
     }, 700),
   );
 }
@@ -63,13 +99,25 @@ export async function fetchAllBuckets(userId) {
 }
 
 export async function hydrateLocalFromCloud(userId) {
+  const pending = outbox.pending(userId);
+  const revisions = new Map(localRevisions);
   const buckets = await fetchAllBuckets(userId);
+  if (userId !== getStorageUser()) return {};
   Object.entries(DATA_BUCKETS).forEach(([bucket, storageKey]) => {
+    if (revisions.get(`${userId}:${bucket}`) !== localRevisions.get(`${userId}:${bucket}`)) return;
+    if (pending[bucket] || outbox.pending(userId)[bucket]) return;
     if (buckets[bucket] !== undefined) {
       saveJSON(storageKey, buckets[bucket]);
     }
   });
+  await flushCloudSaves(userId).catch(() => {});
   return buckets;
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => flushCloudSaves().catch(() => {}));
+  window.addEventListener('pagehide', () => flushCloudSaves().catch(() => {}));
+  window.addEventListener('focus', () => flushCloudSaves().catch(() => {}));
 }
 
 export async function pushAllBucketsToCloud(userId, snapshot) {
