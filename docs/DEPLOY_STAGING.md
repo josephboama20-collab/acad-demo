@@ -57,10 +57,14 @@ For free tier, share the staging URL only with testers privately.
 
 ## Staging checklist (Tier 1)
 
-- [ ] Staging banner visible at top
-- [ ] Demo login (1month@acad.app / demo) shows courses + flashcards in nav
-- [ ] Semester journey reachable from nav at 0 courses
-- [ ] `robots.txt` disallows crawlers; `noindex` meta on staging builds
+- [x] Staging banner visible at top
+- [x] Demo login (1month@acad.app / demo) shows courses + flashcards in nav
+- [x] Semester journey reachable from nav at 0 courses
+- [x] `robots.txt` disallows crawlers; `noindex` meta on staging builds
+- [x] Netlify deploy live (GitHub → Netlify)
+
+Tier 1 sign-off: [`TIER_1_COMPLETE.md`](./TIER_1_COMPLETE.md)  
+Tier 2 next steps: [`TIER_2.md`](./TIER_2.md)
 
 ## Demo accounts
 
