@@ -154,9 +154,7 @@ export function buildOnboardingFlow(ctx) {
     });
   }
 
-  if (!prefillDuration) {
-    steps.push(habitStep(ONBOARDING_QUESTIONS[0]));
-  }
+  steps.push(habitStep(ONBOARDING_QUESTIONS[0]));
 
   const aiLearnPrereqsMet =
     universityName?.trim() &&
