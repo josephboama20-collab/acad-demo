@@ -51,6 +51,15 @@
 .ht-log-table th{letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-size:10px;font-weight:500;background:var(--void-light)}
 .ht-log-table td{color:var(--mist);font-weight:300}
 .ht-log-notes{max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--slate)!important}
+.ht-checkin-locked{opacity:.72;border-color:var(--border-dim)!important}
+.ht-checkin-locked .ht-checkin-title{color:var(--slate)}
+.ht-lock-badge{letter-spacing:.08em;text-transform:uppercase;color:var(--gold-dim);background:var(--gold-faint);border:1px solid var(--border);align-items:center;gap:4px;padding:2px 8px;font-size:11px;display:inline-flex}
+.ht-lock-badge svg{flex-shrink:0}
+.ht-fieldset{border:none;margin:0;padding:0}
+.ht-fieldset:disabled .form-input,.ht-fieldset:disabled .ht-slider,.ht-fieldset:disabled .ht-star,.ht-fieldset:disabled .ht-energy-btn,.ht-fieldset:disabled .ht-mood-btn{cursor:not-allowed;opacity:.55;pointer-events:none}
+.ht-fieldset:disabled .btn{opacity:.45;cursor:not-allowed;pointer-events:none}
+.ht-cal-cell.ht-cal-locked{position:relative}
+.ht-cal-cell.ht-cal-locked:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 2px,#0000001a 2px,#0000001a 4px)}
 
 /* Account settings */
 .as-page{padding-bottom:60px}

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Star, Zap } from 'lucide-react';
+import { Lock, Star, Zap } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useHabits, MOOD_OPTIONS } from '../contexts/HabitsContext.jsx';
 import { useGame } from '../contexts/GameContext.jsx';
@@ -61,7 +61,8 @@ function studyCellColor(hours) {
   return 'var(--gold)';
 }
 
-function StudyCalendar({ logs }) {
+function StudyCalendar({ logs, isLogLocked }) {
+  const today = new Date().toISOString().split('T')[0];
   const cells = useMemo(() => {
     const byDate = {};
     logs.forEach((l) => {
@@ -81,14 +82,17 @@ function StudyCalendar({ logs }) {
     <div className="ht-chart-box">
       <p className="ht-chart-title">Study activity (6 weeks)</p>
       <div className="ht-calendar" role="img" aria-label="Study activity calendar heatmap">
-        {cells.map((c) => (
-          <div
-            key={c.date}
-            className="ht-cal-cell"
-            style={{ background: studyCellColor(c.hours) }}
-            title={`${c.date}: ${c.hours}h studied`}
-          />
-        ))}
+        {cells.map((c) => {
+          const locked = isLogLocked ? isLogLocked(c.date) : false;
+          return (
+            <div
+              key={c.date}
+              className={`ht-cal-cell${locked ? ' ht-cal-locked' : ''}`}
+              style={{ background: studyCellColor(c.hours) }}
+              title={`${c.date}: ${c.hours}h studied${locked ? ' (locked)' : ''}`}
+            />
+          );
+        })}
       </div>
       <div className="ht-cal-legend">
         {[
@@ -109,7 +113,7 @@ function StudyCalendar({ logs }) {
 
 export default function HabitTracker() {
   const { profile } = useAuth();
-  const { logs, todayLog, insights, addLog } = useHabits();
+  const { logs, todayLog, isTodayLocked, isLogLocked, insights, addLog } = useHabits();
   const { earnXP, advanceChallenge, unlockAchievement } = useGame();
   const [energy, setEnergy] = useState(3);
   const [stress, setStress] = useState(3);
@@ -172,45 +176,53 @@ export default function HabitTracker() {
           <div className="ht-week-kpi"><span className="ht-week-val font-mono">{daysLogged}</span><span className="ht-week-lbl">Days logged</span></div>
         </div>
 
-        <div className="ht-checkin">
+        <div className={`ht-checkin${isTodayLocked ? ' ht-checkin-locked' : ''}`}>
           <div className="ht-checkin-title">
             Today&apos;s Check-in
-            {todayLog && <span className="ht-done-badge">✓ Logged</span>}
+            {isTodayLocked ? (
+              <span className="ht-lock-badge"><Lock size={11} /> Locked</span>
+            ) : (
+              todayLog && <span className="ht-done-badge">✓ Logged</span>
+            )}
           </div>
           <form onSubmit={handleSubmit}>
-            <div className="ht-form-grid">
-              <div className="ht-energy-field">
-                <label className="form-label">Energy Level</label>
-                <div className="ht-energy-btns" role="radiogroup" aria-label="Energy level">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <button key={n} type="button" className={`ht-energy-btn${energy === n ? ' active' : ''}`} onClick={() => setEnergy(n)} aria-label={`Energy ${n}`}>
-                      <Zap size={16} fill={n <= energy ? 'currentColor' : 'none'} />
-                    </button>
-                  ))}
+            <fieldset className="ht-fieldset" disabled={isTodayLocked}>
+              <div className="ht-form-grid">
+                <div className="ht-energy-field">
+                  <label className="form-label">Energy Level</label>
+                  <div className="ht-energy-btns" role="radiogroup" aria-label="Energy level">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button key={n} type="button" className={`ht-energy-btn${energy === n ? ' active' : ''}`} onClick={() => setEnergy(n)} aria-label={`Energy ${n}`} tabIndex={isTodayLocked ? -1 : undefined}>
+                        <Zap size={16} fill={n <= energy ? 'currentColor' : 'none'} />
+                      </button>
+                    ))}
+                  </div>
+                  <span className="ht-energy-desc">{energyLabel(energy)}</span>
                 </div>
-                <span className="ht-energy-desc">{energyLabel(energy)}</span>
+                <StarRating label="Focus Rating" value={focus} onChange={setFocus} id="ht-focus" />
+                <StarRating label="Stress Level" value={stress} onChange={setStress} id="ht-stress" />
               </div>
-              <StarRating label="Focus Rating" value={focus} onChange={setFocus} id="ht-focus" />
-              <StarRating label="Stress Level" value={stress} onChange={setStress} id="ht-stress" />
-            </div>
-            <div className="ht-form-grid">
-              <SliderField label={`Study hours: ${studyHours}h`} min={0} max={12} step={0.5} value={studyHours} onChange={setStudyHours} id="ht-study" />
-              <div>
-                <label className="form-label">Mood</label>
-                <div className="ht-mood-row">
-                  {MOOD_OPTIONS.map((opt) => (
-                    <button key={opt.key} type="button" className={`ht-mood-btn${mood === opt.key ? ' active' : ''}`} onClick={() => setMood(opt.key)} aria-label={opt.key} id={`btn-ht-mood-${opt.key}`}>
-                      {opt.emoji}
-                    </button>
-                  ))}
+              <div className="ht-form-grid">
+                <SliderField label={`Study hours: ${studyHours}h`} min={0} max={12} step={0.5} value={studyHours} onChange={setStudyHours} id="ht-study" />
+                <div>
+                  <label className="form-label">Mood</label>
+                  <div className="ht-mood-row">
+                    {MOOD_OPTIONS.map((opt) => (
+                      <button key={opt.key} type="button" className={`ht-mood-btn${mood === opt.key ? ' active' : ''}`} onClick={() => setMood(opt.key)} aria-label={opt.key} id={`btn-ht-mood-${opt.key}`} tabIndex={isTodayLocked ? -1 : undefined}>
+                        {opt.emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="form-label">Notes (optional)</label>
+                  <input className="form-input" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="What did you study today?" id="ht-notes" readOnly={isTodayLocked} />
                 </div>
               </div>
-              <div>
-                <label className="form-label">Notes (optional)</label>
-                <input className="form-input" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="What did you study today?" id="ht-notes" />
-              </div>
-            </div>
-            <button type="submit" className="btn btn-primary" id="btn-ht-submit">{submitted ? '✓ Logged' : 'Log Today'}</button>
+              <button type="submit" className="btn btn-primary" id="btn-ht-submit" disabled={isTodayLocked}>
+                {submitted ? '✓ Logged' : isTodayLocked ? 'Locked' : 'Log Today'}
+              </button>
+            </fieldset>
           </form>
         </div>
 
@@ -235,7 +247,7 @@ export default function HabitTracker() {
         )}
 
         <div className="ht-charts-grid ht-charts-single">
-          <StudyCalendar logs={logs} />
+          <StudyCalendar logs={logs} isLogLocked={isLogLocked} />
         </div>
       </div>
     </main>

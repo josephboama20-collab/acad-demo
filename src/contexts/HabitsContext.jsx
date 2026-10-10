@@ -55,6 +55,16 @@ export function HabitsProvider({ children }) {
     return logs.find((l) => l.date === today) ?? null;
   }, [logs]);
 
+  const isTodayLocked = useMemo(() => todayLog !== null, [todayLog]);
+
+  const isLogLocked = useCallback(
+    (date) => {
+      const today = new Date().toISOString().split('T')[0];
+      return date < today;
+    },
+    [],
+  );
+
   const insights = useMemo(() => {
     if (logs.length < 14) return [];
     const slice = logs.slice(-30);
@@ -88,8 +98,8 @@ export function HabitsProvider({ children }) {
   }, [logs]);
 
   const value = useMemo(
-    () => ({ logs, todayLog, insights, addLog, clearLogsBefore, clearAllLogs }),
-    [logs, todayLog, insights, addLog, clearLogsBefore, clearAllLogs],
+    () => ({ logs, todayLog, isTodayLocked, isLogLocked, insights, addLog, clearLogsBefore, clearAllLogs }),
+    [logs, todayLog, isTodayLocked, isLogLocked, insights, addLog, clearLogsBefore, clearAllLogs],
   );
 
   return <HabitsContext.Provider value={value}>{children}</HabitsContext.Provider>;
