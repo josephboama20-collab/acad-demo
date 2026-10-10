@@ -52,7 +52,7 @@ export function getFastPathSemesterSlot(studentPath, currentLevel, currentSemest
 }
 
 /**
- * Fast onboarding: programme setup → AI profile → one semester → focus course.
+ * Fast onboarding: programme setup to AI profile to one semester to focus course.
  * Habit questions and full semester history are deferred to in-product setup.
  */
 export function buildOnboardingFlow(ctx) {
@@ -66,6 +66,8 @@ export function buildOnboardingFlow(ctx) {
     currentSemester,
     learnedProfile,
     aiLearnDone,
+    postAiLearnUnlocked,
+    profileReviewConfirmed,
     prefillDuration,
   } = ctx;
 
@@ -75,7 +77,7 @@ export function buildOnboardingFlow(ctx) {
     type: 'welcome',
     id: 'welcome',
     q: 'Let us get you started',
-    hint: 'About five minutes — your university, one semester of grades, and your first focus course. Everything else unfolds inside Acad as you use it.',
+    hint: 'About five minutes - your university, one semester of grades, and your first focus course. Everything else unfolds inside Acad as you use it.',
   });
 
   steps.push({
@@ -117,7 +119,7 @@ export function buildOnboardingFlow(ctx) {
       type: 'trackType',
       id: 'trackType',
       q: 'How is your programme structured?',
-      hint: 'Single major or combined — you can add a second programme later in Settings.',
+      hint: 'Single major or combined - you can add a second programme later in Settings.',
       opts: ['Single major', 'Combined major'],
     });
   }
@@ -147,7 +149,7 @@ export function buildOnboardingFlow(ctx) {
       type: 'semesterPick',
       id: 'currentSemester',
       q: `Which semester of Level ${currentLevel} are you in?`,
-      hint: 'We will ask for your most recent completed term only — add older terms later from Semester journey.',
+      hint: 'We will ask for your most recent completed term only - add older terms later from Semester journey.',
       opts: ['Semester 1', 'Semester 2'],
     });
   }
@@ -156,18 +158,26 @@ export function buildOnboardingFlow(ctx) {
     steps.push(habitStep(ONBOARDING_QUESTIONS[0]));
   }
 
-  if (universityName?.trim() && programName?.trim() && studentPath) {
+  const aiLearnPrereqsMet =
+    universityName?.trim() &&
+    programName?.trim() &&
+    country &&
+    trackType &&
+    studentPath &&
+    (studentPath === 'new' || (currentLevel && currentSemester));
+
+  if (aiLearnPrereqsMet) {
     steps.push({
       type: 'aiLearn',
       id: 'aiLearn',
       q: aiLearnDone ? 'Acad has learned your programme' : 'Acad is learning your programme…',
       hint: aiLearnDone
-        ? 'Review the summary on the next step — you can edit everything.'
-        : 'Mapping your grading scale and course structure. This runs in the background while you continue.',
+        ? 'Review the summary below, then continue to edit and confirm your profile.'
+        : 'Mapping your grading scale and course structure from your university and programme.',
     });
   }
 
-  if (aiLearnDone && learnedProfile) {
+  if (aiLearnDone && learnedProfile && postAiLearnUnlocked) {
     steps.push({
       type: 'profileReview',
       id: 'profileReview',
@@ -176,7 +186,7 @@ export function buildOnboardingFlow(ctx) {
     });
   }
 
-  if (aiLearnDone && learnedProfile && studentPath) {
+  if (aiLearnDone && learnedProfile && profileReviewConfirmed && studentPath) {
     if (studentPath === 'new') {
       const slot = getFastPathSemesterSlot(studentPath, currentLevel, currentSemester);
       steps.push({

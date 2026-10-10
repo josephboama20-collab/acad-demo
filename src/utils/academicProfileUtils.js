@@ -21,15 +21,14 @@ function getMaxAllowedSemester(currentLevel, currentSemester, studentPath) {
   if (studentPath === 'new') return { level: 100, semester: 2 };
   if (!currentLevel || !currentSemester) return { level: 100, semester: 2 };
   if (currentSemester === 1) return { level: currentLevel, semester: 2 };
-  if (currentLevel >= 400) return { level: 400, semester: 2 };
-  return { level: currentLevel + 100, semester: 1 };
+  return { level: currentLevel, semester: 2 };
 }
 
 function semesterIndex(level, semester) {
   return (Number(level) - 100) * 2 + Number(semester);
 }
 
-/** Keep all prior work, current term, and immediate next term only. */
+/** Keep all prior work plus the current academic level only. */
 export function trimCurriculumToLearningWindow(curriculum, params) {
   if (!curriculum || typeof curriculum !== 'object') return {};
   const max = getMaxAllowedSemester(params.currentLevel, params.currentSemester, params.studentPath);

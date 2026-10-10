@@ -413,7 +413,7 @@ function ManageCards({ cards, subjects, addCard, addCards, deleteCard }) {
                 aria-label={`Delete card: ${c.front}`}
                 title="Delete"
               >
-                ×
+                x
               </button>
             </div>
           ))}

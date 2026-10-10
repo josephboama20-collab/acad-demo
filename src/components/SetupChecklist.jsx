@@ -2,6 +2,7 @@ import { dismissSetupChecklist } from '../utils/conditioningProgress.js';
 
 export default function SetupChecklist({ items, setupPct, setPage, onDismiss }) {
   const pending = items.filter((item) => !item.optional && !item.done);
+  const navigateable = (item) => !item.done && item.page && item.page !== 'dashboard';
 
   function handleDismiss() {
     dismissSetupChecklist();
@@ -13,7 +14,7 @@ export default function SetupChecklist({ items, setupPct, setPage, onDismiss }) 
       <div className="dash-plan-head">
         <div>
           <p className="card-label">Getting started</p>
-          <p className="card-sublabel">Finish these as you explore — no rush.</p>
+          <p className="card-sublabel">Finish these as you explore - no rush.</p>
         </div>
         <span className="dash-conditioning-overall font-mono">{setupPct}%</span>
       </div>
@@ -23,15 +24,17 @@ export default function SetupChecklist({ items, setupPct, setPage, onDismiss }) 
             key={item.id}
             type="button"
             className={`dash-setup-row${item.done ? ' done' : ''}`}
-            onClick={() => item.page && setPage(item.page)}
-            disabled={item.done}
+            onClick={() => navigateable(item) && setPage(item.page)}
+            disabled={item.done || !navigateable(item)}
           >
-            <span className="dash-setup-check" aria-hidden="true">{item.done ? '✓' : '○'}</span>
+            <span className="dash-setup-check" aria-hidden="true">{item.done ? 'OK' : 'o'}</span>
             <span className="dash-setup-body">
               <span className="dash-setup-label">{item.label}</span>
               <span className="dash-setup-detail">{item.detail}</span>
             </span>
-            {!item.done && item.page && <span className="dash-setup-go">Go →</span>}
+            {!item.done && item.page && (
+              <span className="dash-setup-go">{item.page === 'dashboard' ? 'Here' : 'Open'}</span>
+            )}
           </button>
         ))}
       </div>

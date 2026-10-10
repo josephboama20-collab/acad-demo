@@ -38,8 +38,8 @@ export default function Onboarding({ setPage }) {
   const [answers, setAnswers] = useState(() => ({
     duration: preAccount?.duration || '',
     intention: preAccount?.intention || '',
-    studentPath: preAccount?.studentPath || '',
   }));
+  const [postAiLearnUnlocked, setPostAiLearnUnlocked] = useState(false);
   const [selected, setSelected] = useState(null);
   const [animKey, setAnimKey] = useState(0);
   const [semesterGrades, setSemesterGrades] = useState({});
@@ -79,9 +79,11 @@ export default function Onboarding({ setPage }) {
       currentSemester: answers.currentSemester ? parseSemester(answers.currentSemester) : null,
       learnedProfile,
       aiLearnDone,
+      postAiLearnUnlocked,
+      profileReviewConfirmed,
       prefillDuration: Boolean(answers.duration || preAccount?.duration),
     };
-  }, [answers, learnedProfile, aiLearnDone, preAccount]);
+  }, [answers, learnedProfile, aiLearnDone, postAiLearnUnlocked, profileReviewConfirmed, preAccount]);
 
   const steps = useMemo(() => buildOnboardingFlow(ctx), [ctx]);
   const total = steps.length;
@@ -95,7 +97,13 @@ export default function Onboarding({ setPage }) {
 
   const learnParamsReady = useMemo(() => {
     const params = buildLearnParams(answers);
-    return Boolean(params.universityName && params.programName && params.studentPath && answers.country && answers.trackType);
+    if (!params.universityName || !params.programName || !params.studentPath || !answers.country || !answers.trackType) {
+      return false;
+    }
+    if (params.studentPath === 'continuing' && (!params.currentLevel || !params.currentSemester)) {
+      return false;
+    }
+    return true;
   }, [answers]);
 
   function getStepCourses(step) {
@@ -172,11 +180,13 @@ export default function Onboarding({ setPage }) {
     setAiError('');
     setAiMeta(null);
     setAiLearnElapsed(0);
+    setPostAiLearnUnlocked(false);
     setAiLearnAttempt((n) => n + 1);
     aiFetchStartedRef.current = false;
   }
 
   useEffect(() => {
+    if (current?.type !== 'aiLearn') return;
     if (!learnParamsReady || aiLearnDone || aiFetchStartedRef.current) return;
     aiFetchStartedRef.current = true;
     let cancelled = false;
@@ -207,7 +217,7 @@ export default function Onboarding({ setPage }) {
     return () => {
       cancelled = true;
     };
-  }, [learnParamsReady, learnParams, aiLearnDone, aiLearnAttempt]);
+  }, [current?.type, learnParamsReady, learnParams, aiLearnDone, aiLearnAttempt]);
 
   function toggleFocusCourse(course) {
     setSelectedFocus((prev) => {
@@ -250,7 +260,9 @@ export default function Onboarding({ setPage }) {
     }
     if (current.type === 'country') return Boolean(answers.country);
     if (current.type === 'trackType') return Boolean(answers.trackType);
-    if (current.type === 'studentPath') return Boolean(answers.studentPath);
+    if (current.type === 'studentPath') {
+      return Boolean(answers.studentPath || preAccount?.studentPath);
+    }
     if (current.type === 'yearLevel') return Boolean(answers.currentLevel);
     if (current.type === 'semesterPick') return Boolean(answers.currentSemester);
     if (current.type === 'habit') return Boolean(selected ?? answers[current.id]);
@@ -383,6 +395,15 @@ export default function Onboarding({ setPage }) {
     if (current.type === 'habit' && selected) {
       setAnswers((a) => ({ ...a, [current.id]: selected }));
     }
+    if (current.type === 'studentPath' && !answers.studentPath && preAccount?.studentPath) {
+      setAnswers((a) => ({ ...a, studentPath: preAccount.studentPath }));
+    }
+    if (current.type === 'aiLearn') {
+      setPostAiLearnUnlocked(true);
+      stepIdRef.current = 'profileReview';
+      setAnimKey((k) => k + 1);
+      return;
+    }
     if (step < total - 1) {
       const nextStep = step + 1;
       stepIdRef.current = steps[nextStep]?.id ?? stepIdRef.current;
@@ -422,7 +443,7 @@ export default function Onboarding({ setPage }) {
             </p>
           )}
           {current.optional && (
-            <p className="ob-hint">Optional — skip if you are not sure; Acad will still map your programme.</p>
+            <p className="ob-hint">Optional - skip if you are not sure; Acad will still map your programme.</p>
           )}
           {current.suggestions ? (
             <AutocompleteInput
@@ -480,13 +501,15 @@ export default function Onboarding({ setPage }) {
             : current.type === 'yearLevel'
               ? 'currentLevel'
               : 'currentSemester';
+      const selectedValue =
+        answers[field] || (current.type === 'studentPath' ? preAccount?.studentPath : '');
       return (
         <div className="ob-options" role="radiogroup">
           {current.opts.map((opt) => (
             <button
               key={opt}
               type="button"
-              className={`ob-opt${answers[field] === opt ? ' sel' : ''}`}
+              className={`ob-opt${selectedValue === opt ? ' sel' : ''}`}
               onClick={() => setAnswers((a) => ({ ...a, [field]: opt }))}
             >
               {opt}
@@ -519,7 +542,7 @@ export default function Onboarding({ setPage }) {
                   Grounded with {aiMeta.search.resultCount} official search snippets from {aiMeta.search.sites.join(', ')}.
                 </p>
               )}
-              <p className="ob-accuracy-note">AI can make mistakes — you will review and edit everything on the next step.</p>
+              <p className="ob-accuracy-note">AI can make mistakes - you will review and edit everything on the next step.</p>
             </div>
           ) : null}
         />
@@ -558,7 +581,7 @@ export default function Onboarding({ setPage }) {
 
       return (
         <>
-          <p className="ob-accuracy-note">AI may miss courses or get titles wrong — edit code, title, credit hours, then pick grades.</p>
+          <p className="ob-accuracy-note">AI may miss courses or get titles wrong - edit code, title, credit hours, then pick grades.</p>
           <SemesterCourseEditor
             aiCourses={current.courses || []}
             customCourses={stepCustom}
@@ -629,7 +652,7 @@ export default function Onboarding({ setPage }) {
             }}
           />
           {!(current.courses?.length) && stepCustom.length === 0 && (
-            <p className="ob-hint">No AI-mapped courses yet — add your own below with code, title, credits, and grade.</p>
+            <p className="ob-hint">No AI-mapped courses yet - add your own below with code, title, credits, and grade.</p>
           )}
         </>
       );

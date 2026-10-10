@@ -23,7 +23,7 @@ const QUIZ_BANK = {
     { question: 'What is the difference between genotype and phenotype?', hint: 'Genetic makeup vs observable traits', answer: 'Genotype is the genetic composition; phenotype is the observable expression of those genes.' },
     { question: 'Define a Punnett square and its purpose.', hint: 'Predicting offspring genotypes', answer: 'A Punnett square is a grid used to predict the probability of offspring genotypes from parental allele combinations.' },
     { question: 'What is a dominant allele?', hint: 'Expressed when at least one copy is present', answer: 'A dominant allele is expressed in the phenotype when at least one copy is present in the genotype.' },
-    { question: 'Explain incomplete dominance with an example.', hint: 'Blended phenotype in heterozygotes', answer: 'In incomplete dominance, heterozygotes show a blended phenotype, e.g. red × white flowers producing pink offspring.' },
+    { question: 'Explain incomplete dominance with an example.', hint: 'Blended phenotype in heterozygotes', answer: 'In incomplete dominance, heterozygotes show a blended phenotype, e.g. red x white flowers producing pink offspring.' },
   ],
   Derivatives: [
     { question: 'State the limit definition of the derivative.', hint: "f'(x) = lim(h→0) [f(x+h)−f(x)]/h", answer: "f'(x) = lim(h→0) [f(x+h) − f(x)] / h, provided the limit exists." },
