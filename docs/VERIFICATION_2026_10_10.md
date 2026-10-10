@@ -11,9 +11,9 @@ npm run lint
 npm run build
 ```
 
-The verified release runs 21 plan assertions, 13 GPA assertions, 45 functional fixtures and 29 regression test cases. Coverage overlaps; this is not a requirement pass percentage. All passed locally. Lint passed without errors or warnings. The production build passed with a bundle-size warning.
+The verified release runs 21 plan assertions, 13 GPA assertions, 45 functional fixtures and 29 regression test cases. Coverage overlaps; this is not a requirement pass percentage. All passed locally and in hosted CI for source commit 06880b5213288c0893f8e091db8b0b92092f8836. Lint passed without errors or warnings. The production build passed with a bundle-size warning.
 
-The functional harness fixes its reference clock at 10 October 2026 12:00 UTC. It covers SM-2 intervals, ease-factor floor, due dates, seeding and deduplication, plan limits, grade weighting, onboarding gates, semester restrictions and report aggregation. It now expects the corrected unequal-credit GPA of 3.50, rather than the historical defective 3.00 result.
+The functional harness fixes its reference clock at 10 October 2026 12:00 UTC. It covers SM-2 intervals, ease-factor floor, due dates, seeding and deduplication, plan limits, grade weighting, onboarding gates, semester restrictions and report aggregation. The unequal-credit GPA expectation is 3.50.
 
 ## Changes and evidence
 
@@ -31,7 +31,7 @@ The functional harness fixes its reference clock at 10 October 2026 12:00 UTC. I
 
 ## Live verification boundaries
 
-The live website responded HTTP 200. Two documented demo logins were rejected with HTTP 400 invalid credentials. No private records or credentials are included here. Authenticated cross-user RLS, independent-session cloud restoration, full new/continuing onboarding UI, multi-tab session termination and live PDF download remain unverified. The code-level fixes and tests do not establish the current deployment's behaviour. Identify the deployed revision and execute those cases with two dedicated test accounts before release sign-off.
+Source commit `06880b5213288c0893f8e091db8b0b92092f8836` is published on master. [CI run 38056251710](https://github.com/josephboama20-collab/acad-demo/actions/runs/38056251710) and [Deploy Staging run 38056251711](https://github.com/josephboama20-collab/acad-demo/actions/runs/38056251711) succeeded. These public workflow records verify automated release checks. They do not establish authenticated database isolation, independent-device restoration, complete onboarding journeys, multi-tab session termination or download delivery through the live interface. Controlled fixtures establish only their explicit inputs and test environments.
 
 ## Learner evaluation
 
