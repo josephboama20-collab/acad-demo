@@ -52,6 +52,7 @@ const PAGE_GUIDES = {
       { title: 'Due Cards', body: 'Only study what is due today. Consistent daily sessions beat cramming with spaced repetition.' },
     ],
   },
+  /* [AI Buddy deactivated]
   'ai-buddy': {
     title: 'AI Buddy',
     steps: [
@@ -59,6 +60,7 @@ const PAGE_GUIDES = {
       { title: 'Context', body: 'The buddy sees your course history and grades — better answers come from more logged semesters.' },
     ],
   },
+  */
   'habit-tracker': {
     title: 'Wellness Tracker',
     steps: [

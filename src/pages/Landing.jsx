@@ -17,14 +17,14 @@ import { setPreAccountPrefs } from '../utils/preAccountPrefs.js';
 const FEATURES = [
   { icon: BookOpen, title: 'Your courses', desc: 'Add what you need to recover. Every tool orbits the courses you define.' },
   { icon: Layers, title: 'Flashcards & recall', desc: 'Spaced repetition built from your topics, not generic decks.' },
-  { icon: Bot, title: 'AI study buddy', desc: 'Guided sessions with study methods matched to how you learn.' },
+  // [AI Buddy deactivated] { icon: Bot, title: 'AI study buddy', desc: 'Guided sessions with study methods matched to how you learn.' },
   { icon: Activity, title: 'Wellness tracking', desc: 'Daily check-ins tie energy, focus, and study hours together.' },
   { icon: ChartLine, title: 'Learning reports', desc: 'Actionable reports on weak topics, recall queues, and course gaps.' },
   { icon: FolderGit2, title: 'Portfolio projects', desc: 'Course-tailored work that proves understanding where it matters.' },
 ];
 
 const TIERS = [
-  { window: '2-3 weeks', courses: '1 course', tools: 'Flashcards, AI buddy' },
+  { window: '2-3 weeks', courses: '1 course', tools: 'Flashcards' /* [AI Buddy deactivated] removed AI buddy */ },
   { window: '1 month', courses: '2 courses', tools: '+ Wellness, reports' },
   { window: '2 months', courses: '4 courses', tools: '+ Projects, study groups' },
   { window: '3 months', courses: '6 courses', tools: 'Full toolkit' },
@@ -60,7 +60,7 @@ export default function Landing({ setPage }) {
     const summary = getPlanSummary({ duration }, 1);
     const toolLabels = {
       flashcards: 'Flashcards',
-      'ai-buddy': 'AI buddy',
+      // [AI Buddy deactivated] 'ai-buddy': 'AI buddy',
       'habit-tracker': 'Wellness',
       reports: 'Reports',
       projects: 'Projects',

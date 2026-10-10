@@ -26,7 +26,7 @@ const NAV_ITEMS = [
   { key: 'courses', icon: BookOpen, label: 'Courses' },
   { key: 'semester-journey', icon: GraduationCap, label: 'Semester' },
   { key: 'flashcards', icon: Layers, label: 'Flashcards' },
-  { key: 'ai-buddy', icon: Bot, label: 'AI Buddy' },
+  // [AI Buddy deactivated] { key: 'ai-buddy', icon: Bot, label: 'AI Buddy' },
   { key: 'habit-tracker', icon: Activity, label: 'Wellness' },
   { key: 'study-groups', icon: Users, label: 'Groups' },
   null,
@@ -34,7 +34,7 @@ const NAV_ITEMS = [
   { key: 'reports', icon: ChartLine, label: 'Reports' },
 ];
 
-const MOBILE_TABS = ['dashboard', 'courses', 'flashcards', 'ai-buddy', 'study-groups'];
+const MOBILE_TABS = ['dashboard', 'courses', 'flashcards', /* [AI Buddy deactivated] 'ai-buddy', */ 'study-groups'];
 
 function NavMark() {
   return <img className="nav-mark-img" src="/favicon.svg" alt="" aria-hidden="true" width={28} height={28} />;

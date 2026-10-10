@@ -15,7 +15,7 @@ import Projects from './pages/Projects.jsx';
 import Forge from './pages/Forge.jsx';
 import Reports from './pages/Reports.jsx';
 import Flashcards from './pages/Flashcards.jsx';
-import AIBuddy from './pages/AIBuddy.jsx';
+// [AI Buddy deactivated] import AIBuddy from './pages/AIBuddy.jsx';
 import HabitTracker from './pages/HabitTracker.jsx';
 import StudyGroups from './pages/StudyGroups.jsx';
 import StudyRoom from './pages/StudyRoom.jsx';
@@ -120,7 +120,7 @@ export default function App() {
 
   useEffect(() => {
     if (!user) return;
-    const gated = ['dashboard', 'courses', 'flashcards', 'ai-buddy', 'habit-tracker', 'semester-journey', 'reports', 'study-groups', 'study-room', 'projects', 'forge', 'settings', 'manage-plan'];
+    const gated = ['dashboard', 'courses', 'flashcards', 'habit-tracker', 'semester-journey', 'reports', 'study-groups', 'study-room', 'projects', 'forge', 'settings', 'manage-plan'];
     if (gated.includes(page) && page !== 'settings' && page !== 'manage-plan' && !enabledTools.includes(page) && page !== 'study-room') {
       try {
         sessionStorage.setItem(
@@ -164,7 +164,7 @@ export default function App() {
       )}
       {page === 'reports' && enabledTools.includes('reports') && <Reports setPage={navigate} />}
       {page === 'flashcards' && enabledTools.includes('flashcards') && <Flashcards setPage={navigate} />}
-      {page === 'ai-buddy' && enabledTools.includes('ai-buddy') && <AIBuddy setPage={navigate} />}
+      {/* [AI Buddy deactivated] {page === 'ai-buddy' && enabledTools.includes('ai-buddy') && <AIBuddy setPage={navigate} />} */}
       {page === 'habit-tracker' && enabledTools.includes('habit-tracker') && <HabitTracker />}
       {page === 'study-groups' && enabledTools.includes('study-groups') && <StudyGroups setPage={navigate} />}
       {page === 'study-room' && enabledTools.includes('study-groups') && (
