@@ -7,6 +7,7 @@ import CourseFocusPicker from '../components/CourseFocusPicker.jsx';
 import { learnAcademicProfile } from '../utils/academicProfileAI.js';
 import { getGradeLettersFromProfile, getGradePointsMap } from '../utils/academicProfileUtils.js';
 import AiLearnProgress from '../components/AiLearnProgress.jsx';
+import AutocompleteInput from '../components/AutocompleteInput.jsx';
 import {
   hasMinimumAcademicSetup,
   minimumSemesterHistoryRequirement,
@@ -412,24 +413,30 @@ export default function Onboarding({ setPage }) {
           {current.optional && (
             <p className="ob-hint">Optional — skip if you are not sure; Acad will still map your programme.</p>
           )}
-          <input
-            className="form-input"
-            placeholder={current.placeholder}
-            value={answers[current.field] || ''}
-            list={current.suggestions ? `${current.id}-suggestions` : undefined}
-            autoComplete="off"
-            onChange={(e) => {
-              setAnswers((a) => ({ ...a, [current.field]: e.target.value }));
-              setValidationError('');
-            }}
-            autoFocus
-          />
-          {current.suggestions && (
-            <datalist id={`${current.id}-suggestions`}>
-              {current.suggestions.map((opt) => (
-                <option key={opt} value={opt} />
-              ))}
-            </datalist>
+          {current.suggestions ? (
+            <AutocompleteInput
+              id={current.id}
+              value={answers[current.field] || ''}
+              placeholder={current.placeholder}
+              suggestions={current.suggestions}
+              autoFocus
+              onChange={(val) => {
+                setAnswers((a) => ({ ...a, [current.field]: val }));
+                setValidationError('');
+              }}
+            />
+          ) : (
+            <input
+              className="form-input"
+              placeholder={current.placeholder}
+              value={answers[current.field] || ''}
+              autoComplete="off"
+              onChange={(e) => {
+                setAnswers((a) => ({ ...a, [current.field]: e.target.value }));
+                setValidationError('');
+              }}
+              autoFocus
+            />
           )}
         </>
       );

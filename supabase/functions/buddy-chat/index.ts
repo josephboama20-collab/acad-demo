@@ -1,12 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { callOpenAI, getOpenAIApiKey } from '../_shared/openai.ts';
+import { AI_MODELS, callOpenAI, getAiConfig } from '../_shared/openai.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-const BUDDY_MODEL = 'gpt-4.1-nano';
 
 const METHOD_PROMPTS: Record<string, (subject: string) => string> = {
   socratic: (s) => `You are Acad's Socratic Study Buddy for ${s}. Guide through questions, not direct answers. Use markdown sparingly.`,
@@ -36,8 +34,8 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
     }
 
-    const openaiKey = getOpenAIApiKey();
-    if (!openaiKey) {
+    const aiConfig = getAiConfig();
+    if (!aiConfig) {
       return new Response(JSON.stringify({ error: 'AI not configured' }), { status: 503, headers: corsHeaders });
     }
 
@@ -49,8 +47,9 @@ Deno.serve(async (req) => {
     }));
 
     const { text: reply, error } = await callOpenAI({
-      apiKey: openaiKey,
-      model: BUDDY_MODEL,
+      apiKey: aiConfig.apiKey,
+      baseUrl: aiConfig.baseUrl,
+      model: AI_MODELS[aiConfig.provider].buddy,
       maxTokens: 512,
       messages: [{ role: 'system', content: systemPrompt }, ...apiMessages],
     });

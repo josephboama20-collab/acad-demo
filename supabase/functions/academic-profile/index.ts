@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { callOpenAI, getOpenAIApiKey } from '../_shared/openai.ts';
+import { AI_MODELS, callOpenAI, getAiConfig } from '../_shared/openai.ts';
 import { searchForAcademicProfile } from '../_shared/searxng.ts';
 import {
   buildProfileFromCatalogue,
@@ -12,8 +12,6 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-const PROFILE_MODEL = 'gpt-4.1-mini';
 
 const PROFILE_SCHEMA_HINT = `Return ONLY valid JSON (no markdown fences) matching this shape:
 {
@@ -111,8 +109,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    const openaiKey = getOpenAIApiKey();
-    if (!openaiKey) {
+    const aiConfig = getAiConfig();
+    if (!aiConfig) {
       if (catalogueMatch) {
         const catalogueBase = buildProfileFromCatalogue(learnParams, catalogueMatch);
         return new Response(JSON.stringify({ profile: catalogueBase }), {
@@ -131,8 +129,9 @@ Deno.serve(async (req) => {
     const system = 'You output only valid JSON academic profile data. No markdown fences or prose.';
 
     const { text, error } = await callOpenAI({
-      apiKey: openaiKey,
-      model: PROFILE_MODEL,
+      apiKey: aiConfig.apiKey,
+      baseUrl: aiConfig.baseUrl,
+      model: AI_MODELS[aiConfig.provider].profile,
       maxTokens: 2048,
       messages: [
         { role: 'system', content: system },
