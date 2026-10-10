@@ -1,17 +1,13 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { AI_MODELS, callOpenAI, getAiConfig } from '../_shared/openai.ts';
 import { searchForAcademicProfile } from '../_shared/searxng.ts';
+import { getCorsHeaders } from '../_shared/cors.ts';
 import {
   buildProfileFromCatalogue,
   findCatalogueMatch,
   mergeCatalogueWithAi,
   PROMPT_RULES_UG,
 } from '../_shared/ugCatalogue.ts';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
 
 const PROFILE_SCHEMA_HINT = `Return ONLY valid JSON (no markdown fences) matching this shape:
 {
@@ -74,13 +70,13 @@ function parseJsonFromText(text: string) {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
 
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: getCorsHeaders(req) });
     }
 
     const supabase = createClient(
@@ -91,7 +87,7 @@ Deno.serve(async (req) => {
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: getCorsHeaders(req) });
     }
 
     const { params } = await req.json();
@@ -104,7 +100,7 @@ Deno.serve(async (req) => {
 
       if (!needsAiMerge) {
         return new Response(JSON.stringify({ profile: catalogueBase }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
         });
       }
     }
@@ -114,10 +110,10 @@ Deno.serve(async (req) => {
       if (catalogueMatch) {
         const catalogueBase = buildProfileFromCatalogue(learnParams, catalogueMatch);
         return new Response(JSON.stringify({ profile: catalogueBase }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
         });
       }
-      return new Response(JSON.stringify({ error: 'AI not configured' }), { status: 503, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: 'AI not configured' }), { status: 503, headers: getCorsHeaders(req) });
     }
 
     const needsWebGrounding = !catalogueMatch;
@@ -143,12 +139,12 @@ Deno.serve(async (req) => {
       if (catalogueMatch) {
         const catalogueBase = buildProfileFromCatalogue(learnParams, catalogueMatch);
         return new Response(JSON.stringify({ profile: catalogueBase, meta: { search: searchMeta } }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
         });
       }
       return new Response(JSON.stringify({ error: 'AI request failed', detail: error, meta: { search: searchMeta } }), {
         status: 502,
-        headers: corsHeaders,
+        headers: getCorsHeaders(req),
       });
     }
 
@@ -157,27 +153,27 @@ Deno.serve(async (req) => {
       if (catalogueMatch) {
         const catalogueBase = buildProfileFromCatalogue(learnParams, catalogueMatch);
         return new Response(JSON.stringify({ profile: catalogueBase, meta: { search: searchMeta } }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
         });
       }
-      return new Response(JSON.stringify({ error: 'Could not parse AI profile', meta: { search: searchMeta } }), { status: 502, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: 'Could not parse AI profile', meta: { search: searchMeta } }), { status: 502, headers: getCorsHeaders(req) });
     }
 
     if (catalogueMatch) {
       const catalogueBase = buildProfileFromCatalogue(learnParams, catalogueMatch);
       const merged = mergeCatalogueWithAi(catalogueBase, { ...aiProfile, source: 'catalogue' });
       return new Response(JSON.stringify({ profile: merged, meta: { search: searchMeta } }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
     return new Response(JSON.stringify({ profile: { ...aiProfile, source: 'ai' }, meta: { search: searchMeta } }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,
-      headers: corsHeaders,
+      headers: getCorsHeaders(req),
     });
   }
 });
