@@ -1,3 +1,5 @@
+import CurriculumPreview from './CurriculumPreview.jsx';
+
 /**
  * Lets users review and correct AI-generated academic profile before continuing.
  */
@@ -16,6 +18,9 @@ export default function AcademicProfileReview({ profile, edits, onChange, onConf
       <p className="ob-accuracy-note">
         AI can make mistakes. Review everything below — edit anything that looks wrong before you continue.
       </p>
+      {profile?.source === 'catalogue' && (
+        <p className="ai-learn-success">Matched the official University of Ghana course catalogue for this programme.</p>
+      )}
       <div className="profile-review-fields">
         <div className="form-group">
           <label className="form-label" htmlFor="pr-institution">University</label>
@@ -35,6 +40,12 @@ export default function AcademicProfileReview({ profile, edits, onChange, onConf
             onChange={(e) => update('programName', e.target.value)}
           />
         </div>
+        {profile?.departmentName && (
+          <div className="form-group">
+            <label className="form-label">Department / school</label>
+            <p className="ob-hint">{profile.departmentName}</p>
+          </div>
+        )}
         <div className="form-group">
           <label className="form-label" htmlFor="pr-grading">Grading scale</label>
           <input
@@ -55,9 +66,7 @@ export default function AcademicProfileReview({ profile, edits, onChange, onConf
           />
         </div>
       </div>
-      <p className="ob-hint">
-        Typical programmes carry 5–7 courses per semester. If a semester shows fewer, add missing courses on the grade steps.
-      </p>
+      <CurriculumPreview profile={profile} />
       <button
         type="button"
         className={`btn btn-outline${confirmed ? ' btn-confirmed' : ''}`}

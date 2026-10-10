@@ -1,6 +1,12 @@
 import { isCloudEnabled, supabase } from '../lib/supabase.js';
 import { normalizeAcademicProfile } from './academicProfileUtils.js';
 import { callDeepSeek } from './llmClient.js';
+import {
+  findCatalogueMatch,
+  buildProfileFromCatalogue,
+  mergeCatalogueWithAi,
+  PROMPT_RULES_UG,
+} from './academicCatalogue.js';
 
 const PROFILE_SCHEMA_HINT = `Return ONLY valid JSON (no markdown fences) matching this shape:
 {
@@ -48,6 +54,7 @@ Tasks:
 3. For combined majors, reflect both programmes' requirements where known.
 4. Include realistic course codes and titles for each level/semester up to the student's current position (and one semester ahead if continuing).
 5. Do NOT ask for transcript data. Use well-established public programme structures.
+${(params.country || '').toLowerCase().includes('ghana') ? `\n\n${PROMPT_RULES_UG}` : ''}
 
 ${PROFILE_SCHEMA_HINT}`;
 }
@@ -231,9 +238,42 @@ function fallbackErrorMessage(edgeError, edgeStatus) {
 
 /**
  * AI learns university/programme structure from key parameters entered by the user.
- * @returns {{ profile, source: 'ai'|'fallback', error: string|null, status: number|null }}
+ * @returns {{ profile, source: 'catalogue'|'ai'|'fallback', error: string|null, status: number|null }}
  */
 export async function learnAcademicProfile(params, { allowFallback = true } = {}) {
+  const catalogueMatch = findCatalogueMatch(params);
+  if (catalogueMatch) {
+    const catalogueBase = buildProfileFromCatalogue(params, catalogueMatch);
+    const needsAiMerge = params.trackType === 'Combined major' && params.secondaryProgram;
+
+    if (!needsAiMerge) {
+      return {
+        profile: normalizeAcademicProfile(catalogueBase, params),
+        source: 'catalogue',
+        error: null,
+        status: 200,
+      };
+    }
+
+    const edge = await callAcademicProfileEdge(params);
+    if (edge.profile) {
+      const merged = mergeCatalogueWithAi(catalogueBase, edge.profile);
+      return {
+        profile: normalizeAcademicProfile(merged, params),
+        source: 'catalogue',
+        error: null,
+        status: edge.status,
+      };
+    }
+
+    return {
+      profile: normalizeAcademicProfile(catalogueBase, params),
+      source: 'catalogue',
+      error: null,
+      status: 200,
+    };
+  }
+
   const edge = await callAcademicProfileEdge(params);
   if (edge.profile) {
     return {
