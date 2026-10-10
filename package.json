@@ -11,7 +11,7 @@
     "test:plan": "node scripts/test-planCapacity.js",
     "test:searxng": "node scripts/test-searxng.mjs",
     "seed:demo": "node scripts/seed-demo-users.mjs",
-    "test:regression": "node --test scripts/test-storage.js scripts/test-syncOutbox.js scripts/test-pageAccess.js scripts/test-reportPdf.js scripts/test-onboarding.js",
+    "test:regression": "node --test scripts/test-storage.js scripts/test-syncOutbox.js scripts/test-pageAccess.js scripts/test-reportPdf.js scripts/test-onboarding.js scripts/test-cloudHydration.js",
     "test:gpa": "node scripts/test-gpa.js",
     "test": "npm run test:plan && npm run test:gpa && npm run test:functional && npm run test:regression",
     "test:functional": "node scripts/test-functional.mjs"

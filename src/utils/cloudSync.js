@@ -1,6 +1,7 @@
 import { supabase, isCloudEnabled } from '../lib/supabase.js';
-import { saveJSON, STORAGE_KEYS, getStorageUser } from './storage.js';
+import { saveJSON, STORAGE_KEYS, getStorageUser, userStorageKey } from './storage.js';
 import { createSyncOutbox } from './syncOutbox.js';
+import { hydrateBuckets } from './cloudHydration.js';
 
 /** Logical data buckets synced per user. */
 export const DATA_BUCKETS = {
@@ -14,7 +15,6 @@ export const DATA_BUCKETS = {
 };
 
 const debounceTimers = new Map();
-const localRevisions = new Map();
 const outbox = createSyncOutbox({
   storage: {
     getItem: (key) => localStorage.getItem(key),
@@ -54,7 +54,6 @@ export function persistWithCloud(userId, bucket, value) {
   if (!saveJSON(storageKey, value)) {
     throw new Error('This device could not save your changes. Free storage space and try again.');
   }
-  localRevisions.set(`${userId}:${bucket}`, (localRevisions.get(`${userId}:${bucket}`) ?? 0) + 1);
   if (userId && isCloudEnabled()) {
     scheduleCloudSave(userId, bucket, value);
   }
@@ -99,16 +98,14 @@ export async function fetchAllBuckets(userId) {
 }
 
 export async function hydrateLocalFromCloud(userId) {
-  const pending = outbox.pending(userId);
-  const revisions = new Map(localRevisions);
-  const buckets = await fetchAllBuckets(userId);
-  if (userId !== getStorageUser()) return {};
-  Object.entries(DATA_BUCKETS).forEach(([bucket, storageKey]) => {
-    if (revisions.get(`${userId}:${bucket}`) !== localRevisions.get(`${userId}:${bucket}`)) return;
-    if (pending[bucket] || outbox.pending(userId)[bucket]) return;
-    if (buckets[bucket] !== undefined) {
-      saveJSON(storageKey, buckets[bucket]);
-    }
+  const buckets = await hydrateBuckets({
+    owner: userId,
+    getOwner: getStorageUser,
+    bucketKeys: DATA_BUCKETS,
+    readLocal: (key) => localStorage.getItem(userStorageKey(key)),
+    writeLocal: saveJSON,
+    getPending: outbox.pending,
+    fetchBuckets: fetchAllBuckets,
   });
   await flushCloudSaves(userId).catch(() => {});
   return buckets;
