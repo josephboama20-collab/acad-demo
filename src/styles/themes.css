@@ -1000,6 +1000,15 @@ body::before {
   width: 100%;
 }
 
+.ai-learn-result {
+  width: 100%;
+  padding: 16px 20px;
+  border: 1px solid var(--border-dim);
+  border-radius: 10px;
+  background: var(--surface);
+  margin: 4px 0 8px;
+}
+
 .ai-learn-status {
   margin: 0;
   font-size: 0.95rem;

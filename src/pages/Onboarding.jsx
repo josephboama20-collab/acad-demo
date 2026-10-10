@@ -526,25 +526,28 @@ export default function Onboarding({ setPage }) {
           elapsedSeconds={aiLearnElapsed}
           error={aiError}
           onRetry={!aiLearnDone ? retryAiLearn : null}
-          summary={aiLearnDone && learnedProfile ? (
-            <div className="ai-learn-summary">
-              <p><strong>{learnedProfile.institutionName}</strong> · {learnedProfile.programName}</p>
-              <p className="ob-hint">{learnedProfile.gradingScale?.label}</p>
-              <p className="ob-hint">{Object.keys(learnedProfile.curriculum || {}).length} year levels mapped</p>
-              {learnedProfile.source === 'catalogue' && (
-                <p className="ob-hint ai-learn-success">Matched official UG course catalogue (CSCD / UGRC codes).</p>
-              )}
-              {learnedProfile.source === 'ai' && (
-                <p className="ob-hint ai-learn-success">Mapped with AI from your university and programme names.</p>
-              )}
-              {aiMeta?.search?.searchUsed && (
-                <p className="ob-hint">
-                  Grounded with {aiMeta.search.resultCount} official search snippets from {aiMeta.search.sites.join(', ')}.
-                </p>
-              )}
-              <p className="ob-accuracy-note">AI can make mistakes - you will review and edit everything on the next step.</p>
-            </div>
-          ) : null}
+               summary={aiLearnDone && learnedProfile ? (
+                <div className="ai-learn-summary">
+                  <p><strong>{learnedProfile.institutionName || 'University'}</strong> · {learnedProfile.programName || 'Programme'}</p>
+                  <p className="ob-hint">{learnedProfile.gradingScale?.label || 'Local grading scale'}</p>
+                  <p className="ob-hint">{Object.keys(learnedProfile.curriculum || {}).length || 4} year levels mapped</p>
+                  {learnedProfile.source === 'catalogue' && (
+                    <p className="ob-hint ai-learn-success">Matched official UG course catalogue with verified course codes.</p>
+                  )}
+                  {learnedProfile.source === 'ai' && (
+                    <p className="ob-hint ai-learn-success">Mapped with AI from your university and programme names.</p>
+                  )}
+                  {learnedProfile.source === 'fallback' && (
+                    <p className="ob-hint" style={{ color: 'var(--gold)' }}>Estimated profile from your inputs — edit and confirm on the next step.</p>
+                  )}
+                  {aiMeta?.search?.searchUsed && (
+                    <p className="ob-hint">
+                      Grounded with {aiMeta.search.resultCount} official search snippets from {aiMeta.search.sites.join(', ')}.
+                    </p>
+                  )}
+                  <p className="ob-accuracy-note">AI can make mistakes - you will review and edit everything on the next step.</p>
+                </div>
+              ) : null}
         />
       );
     }

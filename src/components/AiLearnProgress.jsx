@@ -11,6 +11,8 @@ export default function AiLearnProgress({ loading, elapsedSeconds = 0, error, on
   ];
   const stage = contextStages[Math.min(contextStages.length - 1, Math.floor(elapsedSeconds / 6))];
 
+  const hasSummary = Boolean(summary);
+
   return (
     <div className="ai-learn-panel">
       {loading && (
@@ -29,7 +31,11 @@ export default function AiLearnProgress({ loading, elapsedSeconds = 0, error, on
           )}
         </>
       )}
-      {summary}
+      {hasSummary && (
+        <div className="ai-learn-result" aria-live="polite">
+          {summary}
+        </div>
+      )}
       {error && (
         <div className="ai-learn-error" role="alert">
           <p className="form-error">{error}</p>
