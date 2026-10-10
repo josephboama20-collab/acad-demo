@@ -1425,6 +1425,11 @@ body::before {
   display: block;
 }
 
+/* Bottom rows must share the same horizontal inset as .dock-items buttons */
+#global-nav.nav-dock.expanded .dock-bottom {
+  padding: 0;
+}
+
 .mob-drawer-meta {
   display: flex;
   flex-direction: column;
