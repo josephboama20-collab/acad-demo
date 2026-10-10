@@ -336,7 +336,7 @@ function ActiveRoom({
       text:
         mode === 'solo'
           ? 'Solo extreme session active. All distractions are locked out. Force exit to leave.'
-          : `Collaborative session with ${invited.length} invited friend${invited.length === 1 ? '' : 's'}. Stay focused — force exit to leave.`,
+          : `Collaborative session with ${invited.length} invited friend${invited.length === 1 ? '' : 's'}. Stay focused - force exit to leave.`,
       time: '',
     },
   ];
@@ -492,7 +492,7 @@ function ActiveRoom({
           <div className="sr-chat">
             <div className="sr-chat-head">Room chat · {participants.length} participant{participants.length === 1 ? '' : 's'}</div>
             {mode === 'friends' && (
-              <p className="sr-chat-demo-note">Beta: friend replies are simulated — not real classmates.</p>
+              <p className="sr-chat-demo-note">Beta: friend replies are simulated - not real classmates.</p>
             )}
             <div className="sr-msgs" role="log" aria-live="polite">
               {messages.map((m) => (
@@ -567,7 +567,7 @@ function ActiveRoom({
 }
 
 function SessionSummary({ stats, onNewSession }) {
-  const roomCode = stats?.roomCode ?? '—';
+  const roomCode = stats?.roomCode ?? '-';
   const duration = stats?.durationMin ?? 1;
   const messages = stats?.messageCount ?? 0;
   return (

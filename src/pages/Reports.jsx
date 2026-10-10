@@ -106,7 +106,7 @@ export default function Reports({ setPage }) {
 
         <section className="rep-ai-summary card" aria-label="Acad performance insights">
           <p className="card-label">Acad insights</p>
-          <p className="rep-summary-hint">Rule-based summary from your courses, recall, and wellness data — not a live LLM.</p>
+          <p className="rep-summary-hint">Rule-based summary from your courses, recall, and wellness data - not a live LLM.</p>
           <p className="rep-summary-text">{summary}</p>
         </section>
 
@@ -179,7 +179,7 @@ export default function Reports({ setPage }) {
               </div>
             </div>
             {recall.due > 0 && (
-              <p className="rep-recall-note">Finish due reviews before adding new cards — retention drops when the queue backs up.</p>
+              <p className="rep-recall-note">Finish due reviews before adding new cards - retention drops when the queue backs up.</p>
             )}
           </div>
 

@@ -66,7 +66,7 @@ export function exportReportPdf({ userName, report, courses, streak }) {
   </div>
 
   <h2>Recommended next steps</h2>
-  ${actions.map((a) => `<div class="action"><strong>${a.priority}</strong> — ${a.text}</div>`).join('')}
+  ${actions.map((a) => `<div class="action"><strong>${a.priority}</strong> - ${a.text}</div>`).join('')}
 
   ${
     priorityRows

@@ -7,7 +7,7 @@ export const DEFERRED_HABIT_IDS = ['effort', 'time', 'position', 'sharpness', 'f
 const DEFERRED_META = {
   effort: { label: 'Set your study pace', context: 'Helps calibrate daily task difficulty.' },
   time: { label: 'Daily study time', context: 'We will match tasks to the time you have.' },
-  position: { label: 'Where you are starting from', context: 'No judgment — this shapes pacing.' },
+  position: { label: 'Where you are starting from', context: 'No judgment - this shapes pacing.' },
   sharpness: { label: 'How sharp you feel today', context: 'Updates your cognitive load indicator.' },
   focus: { label: 'Your interest area', context: 'Guides AI Buddy and report emphasis.' },
 };

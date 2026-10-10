@@ -137,7 +137,7 @@ export default function Landing({ setPage }) {
             <p className="lp-kicker">Before you sign up</p>
             <h2 className="lp-section-title">Shape your comeback window</h2>
             <p className="lp-section-desc">
-              Two quick choices — no account needed. The rest of setup happens inside Acad as you use it.
+              Two quick choices - no account needed. The rest of setup happens inside Acad as you use it.
             </p>
           </div>
           <div className="lp-planner-grid">
@@ -292,7 +292,7 @@ export default function Landing({ setPage }) {
         <div className="lp-container lp-final-inner">
           <div>
             <h2 className="lp-final-title">Ready to structure your comeback?</h2>
-            <p className="lp-final-desc">About five minutes after signup — then straight to your dashboard.</p>
+            <p className="lp-final-desc">About five minutes after signup - then straight to your dashboard.</p>
           </div>
           <div className="lp-cta-row">
             <button id="btn-gw-create" type="button" className="btn btn-primary" onClick={savePrefsAndSignup}>

@@ -81,7 +81,7 @@ function getAcademicSemesterAddStatus(currentLevel, currentSemester, gradeHistor
 }
 
 /**
- * Semester add status — new semesters require the comeback plan timeline to end first.
+ * Semester add status - new semesters require the comeback plan timeline to end first.
  */
 export function getSemesterAddStatus(currentLevel, currentSemester, gradeHistory, profile = null) {
   const academic = getAcademicSemesterAddStatus(currentLevel, currentSemester, gradeHistory);

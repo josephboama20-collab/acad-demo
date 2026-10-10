@@ -153,7 +153,7 @@ export default function SemesterJourney({ setPage }) {
               <span className="dash-semester-stat-lbl">Terms logged</span>
             </div>
             <div className={`dash-semester-stat${gradeHistory.at(-1)?.gpa != null ? ' active' : ''}`}>
-              <span className="dash-semester-stat-val font-mono">{gradeHistory.at(-1)?.gpa ?? '—'}</span>
+              <span className="dash-semester-stat-val font-mono">{gradeHistory.at(-1)?.gpa ?? '-'}</span>
               <span className="dash-semester-stat-lbl">Latest GPA</span>
             </div>
           </div>
@@ -227,7 +227,7 @@ export default function SemesterJourney({ setPage }) {
 
           {validCourses.length > 0 && (
             <p className="ob-hint" style={{ marginTop: 8 }}>
-              Term GPA preview: {computeGpaFromGrades(validCourses) ?? '—'}
+              Term GPA preview: {computeGpaFromGrades(validCourses) ?? '-'}
             </p>
           )}
 
@@ -262,7 +262,7 @@ export default function SemesterJourney({ setPage }) {
                     <div>
                       <p className="task-title">{entry.label}</p>
                       <p className="ob-hint">
-                        {statusText(entry.status)} · GPA {entry.gpa ?? '—'}
+                        {statusText(entry.status)} · GPA {entry.gpa ?? '-'}
                         {entry.delta ? ` · ${entry.delta > 0 ? '+' : ''}${entry.delta}` : ''}
                       </p>
                       <p className="ob-hint">{entry.courses.map((c) => `${c.code} (${c.grade})`).join(' · ')}</p>

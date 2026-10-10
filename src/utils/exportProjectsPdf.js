@@ -62,10 +62,10 @@ export function exportCompletedProjectsPdf({ userName, userEmail, profile, proje
             <h2>${escapeHtml(project.title)}</h2>
           </div>
           <dl class="meta-grid">
-            <div><dt>Course</dt><dd>${escapeHtml(project.courseCode || '—')}</dd></div>
-            <div><dt>Focus area</dt><dd>${escapeHtml(project.topicName || project.skillFocus || '—')}</dd></div>
-            <div><dt>Level</dt><dd>${escapeHtml(project.difficulty || '—')}</dd></div>
-            <div><dt>Timeline</dt><dd>${escapeHtml(project.timeline || '—')}</dd></div>
+            <div><dt>Course</dt><dd>${escapeHtml(project.courseCode || '-')}</dd></div>
+            <div><dt>Focus area</dt><dd>${escapeHtml(project.topicName || project.skillFocus || '-')}</dd></div>
+            <div><dt>Level</dt><dd>${escapeHtml(project.difficulty || '-')}</dd></div>
+            <div><dt>Timeline</dt><dd>${escapeHtml(project.timeline || '-')}</dd></div>
           </dl>
           <div class="section">
             <h3>Problem & objective</h3>
@@ -73,7 +73,7 @@ export function exportCompletedProjectsPdf({ userName, userEmail, profile, proje
           </div>
           <div class="section">
             <h3>Competency demonstrated</h3>
-            <p><strong>${escapeHtml(project.principle || 'Applied learning')}</strong> — ${escapeHtml(project.why || project.portfolio || 'Structured work showing depth beyond exam recall.')}</p>
+            <p><strong>${escapeHtml(project.principle || 'Applied learning')}</strong> - ${escapeHtml(project.why || project.portfolio || 'Structured work showing depth beyond exam recall.')}</p>
           </div>
           ${project.outcome ? `<div class="section"><h3>Outcome</h3><p>${escapeHtml(project.outcome)}</p></div>` : ''}
           <div class="section">
@@ -92,7 +92,7 @@ export function exportCompletedProjectsPdf({ userName, userEmail, profile, proje
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Portfolio — ${escapeHtml(userName || 'Acad Member')}</title>
+  <title>Portfolio - ${escapeHtml(userName || 'Acad Member')}</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: "Segoe UI", system-ui, sans-serif; color: #111827; padding: 48px; max-width: 800px; margin: 0 auto; line-height: 1.55; }
@@ -144,7 +144,7 @@ export function exportCompletedProjectsPdf({ userName, userEmail, profile, proje
 
   <section class="summary">
     <h2>Executive summary</h2>
-    <p>${escapeHtml(summaryText)} These projects were completed as structured proof-of-understanding work — suitable for internship applications, employer portfolios, and graduate programme supplements.</p>
+    <p>${escapeHtml(summaryText)} These projects were completed as structured proof-of-understanding work - suitable for internship applications, employer portfolios, and graduate programme supplements.</p>
   </section>
 
   <section class="skills">

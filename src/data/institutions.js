@@ -1,7 +1,7 @@
 /**
  * Curated suggestions for fast, correctly-capitalized onboarding entry.
  * These power the university/programme autocomplete datalists. Users can still
- * type any value — these just make common entries one tap away and improve
+ * type any value - these just make common entries one tap away and improve
  * AI mapping accuracy (proper official names).
  */
 

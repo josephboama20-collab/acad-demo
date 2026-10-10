@@ -168,7 +168,7 @@ export default function AIBuddy() {
 
         {replySource === 'fallback' && (
           <div className="ab-trust-banner card" role="status">
-            <p><strong>Demo response</strong> — cloud AI was unavailable. Connect Supabase edge functions for live tutoring.</p>
+            <p><strong>Demo response</strong> - cloud AI was unavailable. Connect Supabase edge functions for live tutoring.</p>
           </div>
         )}
 

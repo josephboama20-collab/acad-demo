@@ -264,7 +264,7 @@ function InviteComposer() {
     <div className="sg-invite-pane">
       <p className="sg-pane-title">Invite to your workspace</p>
       <p className="sg-pane-desc">
-        Invites are stored on this device only — there is no real user directory yet.
+        Invites are stored on this device only - there is no real user directory yet.
         Add a demo classmate below to explore group chat, rooms, and challenges.
       </p>
       <div className="sg-compose-row">
@@ -289,7 +289,7 @@ function InviteComposer() {
       </button>
       {showDemoUsers && (
         <>
-          <p className="sg-pane-desc">Sample users for local testing — not real Acad accounts.</p>
+          <p className="sg-pane-desc">Sample users for local testing - not real Acad accounts.</p>
           <div className="sg-quick-row">
             {suggestedMembers.map((m) => (
               <button key={m.email} type="button" className="btn btn-outline" onClick={() => invite(m.email, m.name)}>
@@ -602,7 +602,7 @@ function GroupSettingsPane() {
       {admin && (
         <section className="sg-settings-section">
           <p className="sg-settings-label">Invite to this group</p>
-          <p className="sg-pane-desc">Local-only invites — use demo classmates from the workspace tab to test group features.</p>
+          <p className="sg-pane-desc">Local-only invites - use demo classmates from the workspace tab to test group features.</p>
           <div className="sg-compose-row">
             <input
               className="form-input"

@@ -31,7 +31,7 @@ export function scheduleCloudSave(userId, bucket, value) {
     setTimeout(() => {
       debounceTimers.delete(key);
       upsertBucket(userId, bucket, value).catch(() => {
-        /* network errors — local cache remains */
+        /* network errors - local cache remains */
       });
     }, 700),
   );

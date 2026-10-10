@@ -166,7 +166,7 @@ export default function App() {
           title="Sign out of Acad"
           body={
             isCloudMode
-              ? 'You will be signed out on this device. Your data remains in your cloud account — sign in again to continue.'
+              ? 'You will be signed out on this device. Your data remains in your cloud account - sign in again to continue.'
               : 'Your profile and progress stay on this device. Sign back in with the same email to continue.'
           }
           confirmLabel="Sign out"

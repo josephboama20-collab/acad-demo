@@ -80,7 +80,7 @@ export default function AccountSettings({ setPage }) {
       if (source === 'ai') {
         setRelearnSuccess('Programme map updated with AI. Your grade history was kept.');
       } else {
-        setRelearnError(error || 'AI was unavailable — only an estimated profile was saved.');
+        setRelearnError(error || 'AI was unavailable - only an estimated profile was saved.');
       }
     } catch (err) {
       setRelearnError(err?.message || 'Could not re-learn your programme. Try again later.');
@@ -239,7 +239,7 @@ export default function AccountSettings({ setPage }) {
             <SettingRow label="Focus mode" desc="Hide navigation for distraction-free study sessions.">
               <Toggle checked={settings.focusMode} onChange={setFocusMode} id="as-focus" />
             </SettingRow>
-            <SettingRow label="Email notifications" desc="Not available yet — we will email you when this ships.">
+            <SettingRow label="Email notifications" desc="Not available yet - we will email you when this ships.">
               <span className="as-coming-soon">Coming soon</span>
             </SettingRow>
             <SettingRow label="Daily reminders" desc="Controls in-app wellness and task reminders.">

@@ -1,5 +1,5 @@
 /**
- * Meta-search helpers (SearxNG) — site-limited query building and token estimates.
+ * Meta-search helpers (SearxNG) - site-limited query building and token estimates.
  * Server-side fetch lives in supabase/functions/_shared/searxng.ts (keep logic in sync).
  */
 
@@ -93,7 +93,7 @@ export function formatSearchContext(results, { maxResults = 5, maxSnippetChars =
     return `[${i + 1}] ${r.title}\nURL: ${r.url}${snippet ? `\n${snippet}` : ''}`;
   });
 
-  return `Official web sources (use these snippets — do not invent course codes beyond them):\n\n${lines.join('\n\n')}`;
+  return `Official web sources (use these snippets - do not invent course codes beyond them):\n\n${lines.join('\n\n')}`;
 }
 
 export function estimateSearchTokenSavings({ basePrompt, searchContext, aiWebSearchOverhead = 2500 }) {

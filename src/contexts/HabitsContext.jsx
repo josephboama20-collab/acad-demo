@@ -80,7 +80,7 @@ export function HabitsProvider({ children }) {
     if (slice.length >= 7) {
       items.push({
         icon: <TrendingUp size={14} />,
-        text: `Lifetime total: ${totalHours.toFixed(1)}h logged across ${slice.length} check-ins. ${totalHours >= 40 ? 'Strong long-term consistency.' : totalHours >= 20 ? 'Solid foundation — keep building the habit.' : 'Every check-in helps Acad learn your patterns.'}`,
+        text: `Lifetime total: ${totalHours.toFixed(1)}h logged across ${slice.length} check-ins. ${totalHours >= 40 ? 'Strong long-term consistency.' : totalHours >= 20 ? 'Solid foundation - keep building the habit.' : 'Every check-in helps Acad learn your patterns.'}`,
         r: 0.8,
       });
     }

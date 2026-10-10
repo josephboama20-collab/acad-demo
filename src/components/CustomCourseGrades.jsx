@@ -2,7 +2,7 @@ import { useState } from 'react';
 import GradeButtonPicker from './GradeButtonPicker.jsx';
 
 /**
- * Lets users add courses the AI may have missed — code, name, and grade via buttons.
+ * Lets users add courses the AI may have missed - code, name, and grade via buttons.
  */
 export default function CustomCourseGrades({
   gradeLetters,
@@ -30,7 +30,7 @@ export default function CustomCourseGrades({
     <div className="custom-course-block">
       <p className="form-label">Add a course AI missed</p>
       <p className="ob-hint" style={{ marginBottom: 8 }}>
-        Optional — for electives, retakes, or courses not in your programme map.
+        Optional - for electives, retakes, or courses not in your programme map.
       </p>
       <form className="custom-course-form" onSubmit={handleAdd}>
         <input

@@ -197,7 +197,7 @@ function CoursesHome({ courses, weakTopics, allTopics, openCourse, openTopic, se
           <p className="cs-empty-icon">📚</p>
           <h3>No courses yet</h3>
           <p>
-            New accounts pick focus courses during setup. You can also log past semesters in Semester journey — those courses appear here.
+            New accounts pick focus courses during setup. You can also log past semesters in Semester journey - those courses appear here.
           </p>
           <button type="button" className="btn btn-primary" onClick={() => setPage('semester-journey')} style={{ marginTop: 16 }}>
             Open semester journey
@@ -563,7 +563,7 @@ function TopicStudy({ course, topic, updateTopicMastery, earnXP, addCards, cards
           {!answerRevealed ? (
             <p className="cs-quiz-prompt">
               {timerRunning
-                ? `Think through your answer — ${timeLeft}s remaining.`
+                ? `Think through your answer - ${timeLeft}s remaining.`
                 : 'Press Start when you are ready to begin the think time.'}
             </p>
           ) : (

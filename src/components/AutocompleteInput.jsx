@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 /**
- * Themed autocomplete for onboarding — quick-pick chips (ob-opt style) plus a
+ * Themed autocomplete for onboarding - quick-pick chips (ob-opt style) plus a
  * filtered dropdown. Replaces native datalist (inconsistent / off-theme).
  */
 export default function AutocompleteInput({

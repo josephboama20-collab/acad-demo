@@ -21,7 +21,7 @@
       "excludePatterns": ["information technology", "information tech"],
       "programName": "BSc Computer Science",
       "departmentName": "Department of Computer Science, School of Physical and Mathematical Sciences",
-      "adaptationNotes": "Curriculum from the University of Ghana College of Basic & Applied Sciences handbook (Computer Science single major). Core CSCD and UGRC courses per level. Electives are not listed — add yours on the grade steps if required.",
+      "adaptationNotes": "Curriculum from the University of Ghana College of Basic & Applied Sciences handbook (Computer Science single major). Core CSCD and UGRC courses per level. Electives are not listed - add yours on the grade steps if required.",
       "curriculum": {
         "100": {
           "1": [

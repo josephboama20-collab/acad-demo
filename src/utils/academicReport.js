@@ -69,7 +69,7 @@ export function buildAcademicSummary({
 
   if (recall.due > 0) {
     parts.push(
-      `${recall.due} flashcard${recall.due === 1 ? '' : 's'} ${recall.due === 1 ? 'is' : 'are'} due — clearing the queue should be your next move.`,
+      `${recall.due} flashcard${recall.due === 1 ? '' : 's'} ${recall.due === 1 ? 'is' : 'are'} due - clearing the queue should be your next move.`,
     );
   } else if (recall.mastered > 0) {
     parts.push(`${recall.mastered} card${recall.mastered === 1 ? '' : 's'} reached mastered status in your recall pipeline.`);
@@ -90,7 +90,7 @@ export function buildAcademicSummary({
   const strugglingCourse = courseRows.find((c) => c.below60 > 0);
   if (strugglingCourse && strugglingCourse.below60 >= 2) {
     parts.push(
-      `${strugglingCourse.code} has ${strugglingCourse.below60} topics below 60% — weight this course in your next study block.`,
+      `${strugglingCourse.code} has ${strugglingCourse.below60} topics below 60% - weight this course in your next study block.`,
     );
   }
 
@@ -168,7 +168,7 @@ export function buildAcademicReport({
   if (dueCards.length > 0) {
     actions.push({
       priority: 'high',
-      text: `Clear ${dueCards.length} due flashcard${dueCards.length === 1 ? '' : 's'} before starting new topics — spaced repetition only works if reviews stay current.`,
+      text: `Clear ${dueCards.length} due flashcard${dueCards.length === 1 ? '' : 's'} before starting new topics - spaced repetition only works if reviews stay current.`,
     });
   }
 

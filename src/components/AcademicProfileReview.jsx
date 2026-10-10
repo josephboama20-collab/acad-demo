@@ -16,7 +16,7 @@ export default function AcademicProfileReview({ profile, meta, edits, onChange, 
   return (
     <div className="profile-review">
       <p className="ob-accuracy-note">
-        AI can make mistakes. Review everything below — edit anything that looks wrong before you continue.
+        AI can make mistakes. Review everything below - edit anything that looks wrong before you continue.
       </p>
       {profile?.source === 'catalogue' && (
         <p className="ai-learn-success">Matched the official University of Ghana course catalogue for this programme.</p>

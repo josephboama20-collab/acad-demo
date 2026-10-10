@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 /**
- * Pick focus courses for the comeback plan — AI suggestions + manual entry, capped by plan timeline.
+ * Pick focus courses for the comeback plan - AI suggestions + manual entry, capped by plan timeline.
  */
 export default function CourseFocusPicker({
   pattern,
@@ -33,7 +33,7 @@ export default function CourseFocusPicker({
       {pattern && <p className="course-focus-pattern">{pattern}</p>}
       <p className="ob-hint">
         Select up to <strong>{maxCourses}</strong> course{maxCourses === 1 ? '' : 's'} for this plan window.
-        {' '}Everyone has room to improve — you can always change these later on the Courses page.
+        {' '}Everyone has room to improve - you can always change these later on the Courses page.
       </p>
 
       {suggestions.length > 0 && (

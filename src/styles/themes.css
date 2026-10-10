@@ -358,7 +358,7 @@ body::before {
   border-color: color-mix(in srgb, var(--mastery-mastered) 30%, transparent);
 }
 
-/* Theme toggle — icon only, no box or label */
+/* Theme toggle - icon only, no box or label */
 .theme-toggle {
   display: inline-flex;
   align-items: center;
@@ -1377,7 +1377,7 @@ body::before {
   color: var(--parchment);
 }
 
-/* Sidebar meta rows (theme, streak) — match dock-btn layout */
+/* Sidebar meta rows (theme, streak) - match dock-btn layout */
 .dock-meta {
   width: 100%;
   cursor: pointer;
@@ -2852,7 +2852,7 @@ body::before {
   color: var(--slate);
 }
 
-/* Flashcards — mastery distribution card */
+/* Flashcards - mastery distribution card */
 .fc-mastery-card {
   background: var(--void-mid);
   border: 1px solid var(--border-dim);
@@ -4429,7 +4429,7 @@ body::before {
   }
 }
 
-/* Mastery ring — centered percentage */
+/* Mastery ring - centered percentage */
 .cs-mastery-ring {
   position: relative;
   display: inline-flex;
@@ -4796,7 +4796,7 @@ body::before {
   padding: 18px 20px;
 }
 
-/* Self-rate slider — percentage tracks thumb */
+/* Self-rate slider - percentage tracks thumb */
 .cs-rate-slider-wrap {
   position: relative;
   margin: 32px 0;
@@ -5152,7 +5152,7 @@ body::before {
   border: 1px solid rgba(220, 38, 38, 0.2);
 }
 
-/* Dashboard — profile meta chips */
+/* Dashboard - profile meta chips */
 .dash-meta {
   display: flex;
   flex-wrap: wrap;
@@ -5255,7 +5255,7 @@ body::before {
   margin-top: 20px;
 }
 
-/* Courses — sharp corners to match dashboard cards */
+/* Courses - sharp corners to match dashboard cards */
 .cs-course-card,
 .cs-action-banner,
 .cs-action-topic-btn,
@@ -5267,7 +5267,7 @@ body::before {
   border-radius: 0 !important;
 }
 
-/* Projects — guide layout */
+/* Projects - guide layout */
 .proj-timeline-bar {
   margin-bottom: 20px;
   padding: 16px 18px;

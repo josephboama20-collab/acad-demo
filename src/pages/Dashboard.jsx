@@ -267,7 +267,7 @@ export default function Dashboard({ setPage }) {
                 <div className="dash-semester-stats">
                   <div className={`dash-semester-stat${ap ? ' active' : ''}`}>
                     <span className="dash-semester-stat-val font-mono">
-                      {ap ? `L${ap.currentLevel} · S${ap.currentSemester}` : '—'}
+                      {ap ? `L${ap.currentLevel} · S${ap.currentSemester}` : '-'}
                     </span>
                     <span className="dash-semester-stat-lbl">Entering</span>
                   </div>
@@ -276,7 +276,7 @@ export default function Dashboard({ setPage }) {
                     <span className="dash-semester-stat-lbl">Terms logged</span>
                   </div>
                   <div className={`dash-semester-stat${latestTerm?.gpa != null ? ' active' : ''}`}>
-                    <span className="dash-semester-stat-val font-mono">{latestTerm?.gpa ?? '—'}</span>
+                    <span className="dash-semester-stat-val font-mono">{latestTerm?.gpa ?? '-'}</span>
                     <span className="dash-semester-stat-lbl">Latest GPA</span>
                   </div>
                 </div>
@@ -284,7 +284,7 @@ export default function Dashboard({ setPage }) {
                   <p className="dash-semester-program">{ap.programName}</p>
                 )}
                 {pendingSemesterUpdate && !canLogSemesterNow && (
-                  <p className="dash-semester-note">Advance to next term when your comeback window ends — add past grades anytime.</p>
+                  <p className="dash-semester-note">Advance to next term when your comeback window ends - add past grades anytime.</p>
                 )}
               </section>
             )}

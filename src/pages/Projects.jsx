@@ -183,7 +183,7 @@ export default function Projects({ setPage }) {
         <PageHeader
           kicker="Projects"
           title="Portfolio guides"
-          sub="Step-by-step external work mapped to your comeback plan — not built inside Acad."
+          sub="Step-by-step external work mapped to your comeback plan - not built inside Acad."
         />
         <LockedState progress={progress} setPage={setPage} />
       </>,

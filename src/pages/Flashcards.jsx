@@ -346,7 +346,7 @@ function ManageCards({ cards, subjects, addCard, addCards, deleteCard }) {
 
         <div className="fc-add-box">
           <p className="fc-add-title">Generate from Text <BetaBadge label="Template" /></p>
-          <div className="fc-gen-info">Uses a fixed card bank for now — not live AI. Paste material to pick a subject deck; full generation ships later.</div>
+          <div className="fc-gen-info">Uses a fixed card bank for now - not live AI. Paste material to pick a subject deck; full generation ships later.</div>
           {subjectOptions.length > 0 ? (
             <div className="form-group">
               <label className="form-label">Subject</label>
@@ -364,7 +364,7 @@ function ManageCards({ cards, subjects, addCard, addCards, deleteCard }) {
               </select>
             </div>
           ) : (
-            <p className="fc-gen-info" style={{ marginBottom: 12 }}>Log a semester with courses first — subjects come from your course list.</p>
+            <p className="fc-gen-info" style={{ marginBottom: 12 }}>Log a semester with courses first - subjects come from your course list.</p>
           )}
           <div className="form-group">
             <label className="form-label">Study Material</label>

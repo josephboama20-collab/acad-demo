@@ -75,7 +75,7 @@ export function getAdaptationMessage(mode) {
   const messages = {
     foundation: 'You are at the start of your journey. Acad will keep things gentle and build strong habits first.',
     building: 'You are building momentum. Acad balances consistency with steady academic challenge.',
-    accelerate: 'You improved last term. Acad will raise the bar thoughtfully — you are ready for more.',
+    accelerate: 'You improved last term. Acad will raise the bar thoughtfully - you are ready for more.',
     recovery: 'Last term was tougher. Acad will slow the pace and focus on foundations until you regain ground.',
     steady: 'You held steady. Acad keeps a calm, balanced rhythm so progress feels sustainable.',
     finishing: 'You are nearing the finish line. Acad shifts toward revision, projects, and exam readiness.',

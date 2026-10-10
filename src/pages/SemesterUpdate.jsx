@@ -276,7 +276,7 @@ export default function SemesterUpdate({ setPage }) {
                 <p className="task-desc" style={{ marginTop: 8 }}>
                   <strong>{nextTerm.label}</strong>
                   {addStatus.target && (
-                    <> — then you can log <strong>{addStatus.target.label}</strong></>
+                    <> - then you can log <strong>{addStatus.target.label}</strong></>
                   )}
                 </p>
               </div>
@@ -324,7 +324,7 @@ export default function SemesterUpdate({ setPage }) {
             <>
               <h2 className="ob-q">Add new semester</h2>
               <p className="ob-hint">
-                Acad works between semesters — after one term ends and before the next begins.
+                Acad works between semesters - after one term ends and before the next begins.
                 You are entering Level {currentLevel} Semester {currentSemester}, so we will log <strong>{slotLabel}</strong>.
               </p>
               <p className="ob-accuracy-note">
@@ -358,7 +358,7 @@ export default function SemesterUpdate({ setPage }) {
               />
               {validCourses.length > 0 && (
                 <p className="ob-hint" style={{ marginTop: 8 }}>
-                  Term GPA preview: {computeGpaFromGrades(validCourses, gradePoints) ?? '—'}
+                  Term GPA preview: {computeGpaFromGrades(validCourses, gradePoints) ?? '-'}
                 </p>
               )}
               {msg && <p className="form-error" role="alert">{msg}</p>}
@@ -373,7 +373,7 @@ export default function SemesterUpdate({ setPage }) {
             <>
               <h2 className="ob-q">Where to focus next</h2>
               <p className="ob-hint">
-                From your grade pattern — select up to {maxFocusCourses} course{maxFocusCourses === 1 ? '' : 's'} for your {plan.durationLabel} comeback plan.
+                From your grade pattern - select up to {maxFocusCourses} course{maxFocusCourses === 1 ? '' : 's'} for your {plan.durationLabel} comeback plan.
               </p>
               <CourseFocusPicker
                 pattern={focusAnalysis.pattern}

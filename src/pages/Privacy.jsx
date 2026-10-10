@@ -23,7 +23,7 @@ export default function Privacy({ setPage }) {
 
         <section className="legal-section">
           <h2>AI processing</h2>
-          <p>Messages you send to AI Buddy may be processed by our AI provider when cloud mode is enabled. When offline or unavailable, Acad may show template or demo responses — labelled clearly in the app. Do not submit sensitive personal information in chat.</p>
+          <p>Messages you send to AI Buddy may be processed by our AI provider when cloud mode is enabled. When offline or unavailable, Acad may show template or demo responses - labelled clearly in the app. Do not submit sensitive personal information in chat.</p>
         </section>
 
         <section className="legal-section">

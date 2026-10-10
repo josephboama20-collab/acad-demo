@@ -8,10 +8,10 @@ function gradeScore(letter, gradePoints) {
 }
 
 function buildReason(letter, points, avgPoints) {
-  if (points <= 1) return `Grade ${letter} — foundational recovery recommended`;
-  if (points < avgPoints - 0.5) return `Grade ${letter} — below your recent average; high improvement potential`;
-  if (points < avgPoints) return `Grade ${letter} — room to strengthen before the next term`;
-  return `Grade ${letter} — keep building consistency`;
+  if (points <= 1) return `Grade ${letter} - foundational recovery recommended`;
+  if (points < avgPoints - 0.5) return `Grade ${letter} - below your recent average; high improvement potential`;
+  if (points < avgPoints) return `Grade ${letter} - room to strengthen before the next term`;
+  return `Grade ${letter} - keep building consistency`;
 }
 
 /**
@@ -42,13 +42,13 @@ export function deriveImprovementSuggestions(semesterHistory, gradePoints = {}, 
 
   let pattern;
   if (avgPoints <= 1.5) {
-    pattern = 'Your recent grades show several courses needing foundational recovery — Acad will pace gently and rebuild core understanding.';
+    pattern = 'Your recent grades show several courses needing foundational recovery - Acad will pace gently and rebuild core understanding.';
   } else if (weakCount > strongCount) {
-    pattern = 'More courses fell below your average than above it — targeted improvement on weaker areas will lift your next semester most.';
+    pattern = 'More courses fell below your average than above it - targeted improvement on weaker areas will lift your next semester most.';
   } else if (weakCount > 0) {
-    pattern = 'You have a solid base with specific courses that can still move up — focusing on those yields the best return before the next term.';
+    pattern = 'You have a solid base with specific courses that can still move up - focusing on those yields the best return before the next term.';
   } else {
-    pattern = 'Your grades are consistent — even strong students benefit from sharpening key courses before they compound into the next semester.';
+    pattern = 'Your grades are consistent - even strong students benefit from sharpening key courses before they compound into the next semester.';
   }
 
   const ranked = [...graded]

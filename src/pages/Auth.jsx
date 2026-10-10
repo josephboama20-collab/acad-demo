@@ -11,10 +11,10 @@ function readAuthError(err, fallback) {
   const msg = raw && String(raw).trim() !== '{}' ? String(raw).trim() : '';
 
   if (!msg || /failed to fetch|networkerror|network request failed|load failed|503/i.test(msg)) {
-    return 'Can’t reach the server right now — it may be waking up or offline. Check your connection and try again in a moment.';
+    return 'Can’t reach the server right now - it may be waking up or offline. Check your connection and try again in a moment.';
   }
   if (/user already registered/i.test(msg)) {
-    return 'An account with this email already exists — try signing in instead.';
+    return 'An account with this email already exists - try signing in instead.';
   }
   if (/invalid login credentials/i.test(msg)) {
     return 'Incorrect email or password.';
@@ -126,8 +126,8 @@ export default function Auth({ setPage, initialMode = 'signup' }) {
             {isCloudEnabled()
               ? 'Your progress syncs across devices when you sign in.'
               : STAGING_CLOUD_REQUIRED
-                ? 'Staging requires Supabase — add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your host.'
-                : 'Local mode — data stays on this device until cloud is configured.'}
+                ? 'Staging requires Supabase - add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your host.'
+                : 'Local mode - data stays on this device until cloud is configured.'}
           </p>
           {STAGING_CLOUD_REQUIRED && (
             <p className="form-error" role="alert" style={{ marginTop: 12 }}>
@@ -141,7 +141,7 @@ export default function Auth({ setPage, initialMode = 'signup' }) {
           {mode === 'signup' && (
             <>
               <p className="auth-setup-note">
-                About five minutes after signup — university, one semester of grades, and your first focus course.
+                About five minutes after signup - university, one semester of grades, and your first focus course.
                 Everything else unfolds on your dashboard.
               </p>
               <div className="form-group">

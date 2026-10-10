@@ -53,7 +53,7 @@ Tasks:
 2. Map the programme's year-by-year, semester-by-semester core course list as accurately as public curriculum data allows.
 3. For combined majors, reflect both programmes' requirements where known.
 4. Include realistic course codes and titles for each level/semester up to the student's current position (and one semester ahead if continuing).
-5. Do NOT ask for transcript data. Do not invent course codes — omit unknown courses rather than guessing.
+5. Do NOT ask for transcript data. Do not invent course codes - omit unknown courses rather than guessing.
 ${(params.country || '').toLowerCase().includes('ghana') ? `\n\n${PROMPT_RULES_UG}` : ''}
 
 ${PROFILE_SCHEMA_HINT}`;
@@ -79,7 +79,7 @@ function formatEdgeError(status, message, error) {
   if (status === 503) {
     return 'AI is not configured on the server (missing DeepSeek/OpenAI key in Supabase secrets).';
   }
-  if (status === 401) return 'Your session expired — sign in again and retry.';
+  if (status === 401) return 'Your session expired - sign in again and retry.';
   if (status === 502) return 'AI could not generate a valid programme profile. Try again in a moment.';
   const detail = error?.context?.body;
   if (typeof detail === 'string' && detail.includes('AI not configured')) {
@@ -105,7 +105,7 @@ export function buildLearnParamsFromProfile(academicProfile) {
   };
 }
 
-/** Offline fallback when AI is unavailable — still personalized to entered names. */
+/** Offline fallback when AI is unavailable - still personalized to entered names. */
 export function buildFallbackAcademicProfile(params) {
   const levels = [100, 200, 300, 400];
   const curriculum = {};
@@ -114,13 +114,13 @@ export function buildFallbackAcademicProfile(params) {
   levels.forEach((level) => {
     curriculum[level] = {
       1: [
-        { code: `${level}-S1-C1`, name: `${programLabel} — Core course 1`, credits: 3, type: 'core' },
-        { code: `${level}-S1-C2`, name: `${programLabel} — Core course 2`, credits: 3, type: 'core' },
-        { code: `${level}-S1-C3`, name: `${programLabel} — Core course 3`, credits: 3, type: 'core' },
+        { code: `${level}-S1-C1`, name: `${programLabel} - Core course 1`, credits: 3, type: 'core' },
+        { code: `${level}-S1-C2`, name: `${programLabel} - Core course 2`, credits: 3, type: 'core' },
+        { code: `${level}-S1-C3`, name: `${programLabel} - Core course 3`, credits: 3, type: 'core' },
       ],
       2: [
-        { code: `${level}-S2-C1`, name: `${programLabel} — Core course 4`, credits: 3, type: 'core' },
-        { code: `${level}-S2-C2`, name: `${programLabel} — Core course 5`, credits: 3, type: 'core' },
+        { code: `${level}-S2-C1`, name: `${programLabel} - Core course 4`, credits: 3, type: 'core' },
+        { code: `${level}-S2-C2`, name: `${programLabel} - Core course 5`, credits: 3, type: 'core' },
       ],
     };
   });
@@ -245,12 +245,12 @@ async function callAcademicProfileDirect(params) {
 
 function fallbackErrorMessage(edgeError, edgeStatus) {
   if (edgeStatus === 503 || edgeError?.includes('not configured')) {
-    return `${edgeError} A basic estimated profile was created — review it, or re-learn from Settings once AI is connected.`;
+    return `${edgeError} A basic estimated profile was created - review it, or re-learn from Settings once AI is connected.`;
   }
   if (edgeError) {
-    return `${edgeError} A basic estimated profile was created — review and edit it on the next step.`;
+    return `${edgeError} A basic estimated profile was created - review and edit it on the next step.`;
   }
-  return 'Could not reach AI. A basic profile was created — review and edit it on the next step.';
+  return 'Could not reach AI. A basic profile was created - review and edit it on the next step.';
 }
 
 /**
@@ -341,7 +341,7 @@ export async function learnAcademicProfile(params, { allowFallback = true } = {}
 /** Human-readable progress hint for the onboarding AI step. */
 export function getAiLearnProgressMessage(elapsedSeconds) {
   if (elapsedSeconds < 15) return 'Mapping your grading scale and programme structure…';
-  if (elapsedSeconds < 45) return 'Still learning — this usually takes 30–60 seconds.';
+  if (elapsedSeconds < 45) return 'Still learning - this usually takes 30–60 seconds.';
   if (elapsedSeconds < 90) return 'Large programmes can take up to 90 seconds. Please wait…';
   return 'Taking longer than expected. You can keep waiting or tap Retry.';
 }

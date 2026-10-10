@@ -11,14 +11,14 @@ export function validateInstitutionName(value, { strict = false } = {}) {
     return {
       ok: true,
       warn: v === v.toLowerCase() || !/[A-Z]/.test(v)
-        ? 'Proper capitalization helps AI — e.g. "University of Ghana".'
+        ? 'Proper capitalization helps AI - e.g. "University of Ghana".'
         : undefined,
     };
   }
   if (v === v.toLowerCase()) {
     return {
       ok: false,
-      message: 'Use proper capitalization — e.g. "University of Ghana", not "university of ghana".',
+      message: 'Use proper capitalization - e.g. "University of Ghana", not "university of ghana".',
     };
   }
   if (!/[A-Z]/.test(v)) {
@@ -36,14 +36,14 @@ export function validateProgramName(value, { strict = false } = {}) {
     return {
       ok: true,
       warn: v === v.toLowerCase() || !/[A-Z]/.test(v)
-        ? 'Proper capitalization helps AI — e.g. "BSc Information Technology".'
+        ? 'Proper capitalization helps AI - e.g. "BSc Information Technology".'
         : undefined,
     };
   }
   if (v === v.toLowerCase()) {
     return {
       ok: false,
-      message: 'Use proper capitalization — e.g. "BSc Information Technology", not "bsc information technology".',
+      message: 'Use proper capitalization - e.g. "BSc Information Technology", not "bsc information technology".',
     };
   }
   if (!/[A-Z]/.test(v)) {
@@ -57,7 +57,7 @@ export function countGradedCoursesInStep(semesterGrades, stepId) {
 }
 
 /**
- * Acad conditions you between semesters — at least one completed semester of graded work is required.
+ * Acad conditions you between semesters - at least one completed semester of graded work is required.
  * A "semester of work" means at least 3 courses graded in a single term.
  */
 export function minimumSemesterHistoryRequirement(semesterGrades, steps) {
@@ -74,7 +74,7 @@ export function minimumSemesterHistoryRequirement(semesterGrades, steps) {
   if (!hasSemester) {
     return {
       ok: false,
-      message: 'Enter grades for at least one full semester (minimum 3 courses in a single term). University courses compound — history is how Acad knows where to start.',
+      message: 'Enter grades for at least one full semester (minimum 3 courses in a single term). University courses compound - history is how Acad knows where to start.',
     };
   }
 
@@ -91,7 +91,7 @@ export function hasMinimumAcademicSetup(answers, learnedProfile, aiLearnDone, pr
   if (!uni.ok || !prog.ok) return false;
 
   if (answers.trackType === 'Combined major' && !(answers.secondaryProgram || '').trim()) {
-    /* deferred — optional for fast onboarding */
+    /* deferred - optional for fast onboarding */
   }
 
   return true;

@@ -38,7 +38,7 @@ export default function DeleteAccountModal({ isCloudMode, userEmail, onConfirm, 
             </ul>
             <p className="ob-hint">
               {isCloudMode
-                ? 'If you only want to sign out, use Sign out instead — your data stays in your cloud account.'
+                ? 'If you only want to sign out, use Sign out instead - your data stays in your cloud account.'
                 : 'Your data is stored locally on this device. Deleting clears everything on this browser.'}
             </p>
           </div>

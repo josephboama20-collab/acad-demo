@@ -1,5 +1,5 @@
 /**
- * Button-based grade picker — no typing, no transcript upload.
+ * Button-based grade picker - no typing, no transcript upload.
  */
 export default function GradeButtonPicker({ course, grade, gradeLetters, onSelect, onSkip }) {
   return (
