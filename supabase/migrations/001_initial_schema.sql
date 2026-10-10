@@ -60,7 +60,8 @@ begin
     (new.id, 'flashcards', '[]'::jsonb),
     (new.id, 'game', '{"xp":0,"achievements":[],"challengeProgress":{}}'::jsonb),
     (new.id, 'habits', '[]'::jsonb),
-    (new.id, 'forge', '{}'::jsonb);
+    (new.id, 'forge', '{}'::jsonb),
+    (new.id, 'semesters', '{"currentSemesterId":null,"semesters":[],"snapshots":{}}'::jsonb);
   return new;
 end;
 $$;
