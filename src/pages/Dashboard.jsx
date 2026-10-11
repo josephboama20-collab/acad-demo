@@ -242,6 +242,13 @@ export default function Dashboard({ setPage }) {
 
         <DeferredSetupPrompt profile={profile} setProfile={setProfile} />
 
+        <section className="card" aria-label="Plan access explained">
+          <p className="card-label">Your plan and available tools</p>
+          <p>{plan.message}</p>
+          <p>Shorter plans limit workload. Wellness and reports require at least one month; projects require at least two months; study groups require three months. Add a focus course to access course-dependent tools. Change your preparation duration in Manage plan when appropriate.</p>
+          {plan.needsCourses && <p>No focus courses are selected. Select a course before using course-dependent study tools.</p>}
+        </section>
+
         <div className="kpi-row dash-kpi-row" role="list" aria-label="Performance metrics">
           <Kpi id="kpi-streak" value={streak.current} label="Day Streak" gold />
           <Kpi id="kpi-completion" value={`${Math.round(metrics.completionRate * 100)}%`} label="Completion Rate" />
@@ -411,6 +418,7 @@ export default function Dashboard({ setPage }) {
             <div className="dash-insights-grid">
               <div className="card dash-insight-card">
                 <p className="dash-insight-title">Course mastery</p>
+                <p>These percentages average your recorded topic mastery, including self-assessments. They guide revision and do not prove understanding, predict grades or measure retention.</p>
                 {courses.map((c) => {
                   const pct = c.topics.length ? Math.round(c.topics.reduce((a, t) => a + t.masteryLevel, 0) / c.topics.length) : 0;
                   return (
@@ -426,7 +434,7 @@ export default function Dashboard({ setPage }) {
               <div className="card dash-insight-card">
                 <p className="dash-insight-title">Focus Areas</p>
                 {weakTopics.length === 0 ? (
-                  <p className="dash-insight-empty">All topics above 60%. Strong performance.</p>
+                  <p className="dash-insight-empty">All recorded topic scores are above 60%. Use recall practice to check your understanding.</p>
                 ) : (
                   weakTopics.slice(0, 4).map((t) => (
                     <div key={t.topicId} className="dash-weak-row">

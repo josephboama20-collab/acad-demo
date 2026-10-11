@@ -131,7 +131,7 @@ export function getPlanSummary(profile, courseCount = 0) {
 
   const tierMessages = {
     minimal:
-      'Short window: essentials only. One course, flashcards, and guided recall. Acad is less effective under a month; we keep the stack tight.',
+      'Short window: essentials only. One course, flashcards, and guided recall keep the workload focused.',
     short:
       'One-month plan: up to two courses plus wellness tracking and progress reports.',
     medium:
